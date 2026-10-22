@@ -9901,7 +9901,7 @@ export default function AdminPanel({
         .pos-form-field {
           display: flex;
           flex-direction: column;
-          gap: 5px;
+          gap: 3px;
         }
 
         .pos-form-field.full {
@@ -9909,23 +9909,28 @@ export default function AdminPanel({
         }
 
         .pos-form-field label {
-          font-size: 0.78rem;
+          font-size: 0.72rem;
           font-weight: 700;
           color: #475569;
+          letter-spacing: 0.1px;
         }
 
         .pos-form-field input {
-          padding: 9px 12px;
-          border: 1.5px solid #cbd5e1;
-          border-radius: 8px;
-          font-size: 0.86rem;
+          padding: 6px 10px;
+          height: 33px;
+          border: 1px solid #cbd5e1;
+          border-radius: 6px;
+          font-size: 0.8rem;
           outline: none;
           background: #ffffff;
           color: #0f172a;
+          box-sizing: border-box;
+          transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
 
         .pos-form-field input:focus {
           border-color: #7c3aed;
+          box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.12);
         }
 
         .pos-custom-item-btn {
@@ -10410,11 +10415,23 @@ export default function AdminPanel({
           }
           .pos-customer-compact-grid {
             grid-template-columns: 1fr;
-            gap: 8px;
+            gap: 6px;
+          }
+          .pos-form-field {
+            gap: 2px;
+          }
+          .pos-form-field label {
+            font-size: 0.69rem;
+          }
+          .pos-form-field input {
+            padding: 4px 8px;
+            height: 30px;
+            font-size: 0.76rem;
+            border-radius: 5px;
           }
           .pos-form-two-col {
             grid-template-columns: 1fr;
-            gap: 8px;
+            gap: 6px;
           }
           .pos-payment-methods-grid {
             grid-template-columns: repeat(2, 1fr);

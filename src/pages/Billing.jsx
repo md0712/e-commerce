@@ -2535,10 +2535,10 @@ export default function Billing({
 
         .form-field-item label {
           display: block;
-          font-size: 0.85rem;
+          font-size: 0.74rem;
           font-weight: 600;
           color: #38241b;
-          margin-bottom: 6px;
+          margin-bottom: 3px;
         }
         .form-field-item label .req {
           color: #dc2626;
@@ -2546,12 +2546,14 @@ export default function Billing({
         .form-field-item input,
         .form-field-item select {
           width: 100%;
-          padding: 10px 14px;
+          padding: 6px 10px;
+          height: 33px;
           border: 1px solid #d8c4b6;
-          border-radius: 8px;
-          font-size: 0.92rem;
+          border-radius: 6px;
+          font-size: 0.8rem;
           color: #24140e;
           background: #ffffff;
+          box-sizing: border-box;
           transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .form-field-item input:focus,
@@ -3837,7 +3839,18 @@ export default function Billing({
           }
           .panel-form-grid {
             grid-template-columns: 1fr;
-            gap: 10px;
+            gap: 6px;
+          }
+          .form-field-item label {
+            font-size: 0.7rem;
+            margin-bottom: 2px;
+          }
+          .form-field-item input,
+          .form-field-item select {
+            padding: 4px 8px;
+            height: 30px;
+            font-size: 0.76rem;
+            border-radius: 5px;
           }
           .form-field-item.full-width {
             grid-column: span 1;
