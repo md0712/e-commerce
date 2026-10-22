@@ -124,9 +124,6 @@ export default function Footer({ onNavigate, onOpenAdmin, onOpenTrackOrder, stor
             <div className="footer-links-col">
               <h3 className="footer-heading">Customer Service</h3>
               <ul className="footer-nav-list">
-                <li><button onClick={() => handleLink('billing')} style={{ background: 'none', border: 'none', color: 'inherit', padding: 0, font: 'inherit', cursor: 'pointer' }}>🧾 Commercial GST Billing &amp; Invoicing</button></li>
-                <li><button onClick={onOpenTrackOrder} style={{ background: 'none', border: 'none', color: 'inherit', padding: 0, font: 'inherit', cursor: 'pointer' }}>📦 Track Order Status</button></li>
-                <li><button onClick={onOpenAdmin} style={{ background: 'none', border: 'none', color: 'inherit', padding: 0, font: 'inherit', cursor: 'pointer' }}>⚙️ Admin Panel Access</button></li>
                 <li><a href="#returns" onClick={(e) => { e.preventDefault(); alert('Returns & Refunds: 7 days free returns on damaged or transit issues.'); }}>Returns &amp; Refunds</a></li>
                 <li><a href="#warranty" onClick={(e) => { e.preventDefault(); alert('Warranty: All products carry 1 to 10 year manufacturer warranty.'); }}>Warranty Registration</a></li>
                 <li><a href="#emi" onClick={(e) => { e.preventDefault(); handleLink('offers'); }}>No Cost EMI Calculator</a></li>

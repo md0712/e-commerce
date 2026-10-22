@@ -159,18 +159,6 @@ export default function Navbar({
           </div>
 
           <div className="announcement-right desk-only-flex">
-            {onOpenAdmin && (
-              <>
-                <button onClick={onOpenAdmin} className="top-link" title="Admin Dashboard & Invoices" style={{ color: '#c4b5fd', fontWeight: 600 }}>
-                  <ShieldCheck size={13} /> Dashboard
-                </button>
-                <span className="bar-separator">|</span>
-              </>
-            )}
-            <button onClick={() => handleNavClick('billing')} className="top-link" title="Showroom POS & Tax Billing">
-              <FileText size={13} /> Billing &amp; Invoice
-            </button>
-            <span className="bar-separator">|</span>
             <button onClick={() => handleNavClick('contact')} className="top-link">
               <MapPin size={13} /> Find Showrooms
             </button>
@@ -178,10 +166,6 @@ export default function Navbar({
             <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" className="top-link top-whatsapp">
               <MessageCircle size={13} /> WhatsApp Help
             </a>
-            <span className="bar-separator">|</span>
-            <button onClick={onOpenTrackOrder} className="top-link track-pill">
-              <Package size={13} /> Track Order
-            </button>
           </div>
         </div>
       </div>
