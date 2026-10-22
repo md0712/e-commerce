@@ -728,6 +728,7 @@ export default function App() {
           setIsCartOpen(false);
           handleNavigate('billing');
         }}
+        storeSettings={storeSettings}
       />
 
       {/* Wishlist Drawer */}
