@@ -1575,7 +1575,7 @@ export default function AdminPanel({
         {/* Brand Header */}
         <div className="sidebar-brand-header">
           <div className="sidebar-brand-icon">
-            <Home size={22} />
+            <Home size={18} />
           </div>
           {!sidebarCollapsed && (
             <div className="sidebar-brand-title">
@@ -1587,7 +1587,7 @@ export default function AdminPanel({
             className="mobile-close-sidebar" 
             onClick={() => setMobileSidebarOpen(false)}
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
@@ -1598,7 +1598,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('dashboard'); setMobileSidebarOpen(false); }}
             title="Dashboard"
           >
-            <LayoutDashboard size={19} />
+            <LayoutDashboard size={16} />
             {!sidebarCollapsed && <span>Dashboard</span>}
           </button>
 
@@ -1608,7 +1608,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('invoices'); setMobileSidebarOpen(false); }}
             title="Invoices & Tax Bills (Dashboard > Invoices)"
           >
-            <FileText size={19} />
+            <FileText size={16} />
             {!sidebarCollapsed && <span>Invoices</span>}
             {!sidebarCollapsed && <span className="sidebar-count-badge gold">{orders.length}</span>}
           </button>
@@ -1618,7 +1618,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('products'); setMobileSidebarOpen(false); }}
             title="Products"
           >
-            <Package size={19} />
+            <Package size={16} />
             {!sidebarCollapsed && <span>Products</span>}
             {!sidebarCollapsed && <span className="sidebar-count-badge">{products.length}</span>}
           </button>
@@ -1628,7 +1628,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('categories'); setMobileSidebarOpen(false); }}
             title="Categories"
           >
-            <Layers size={19} />
+            <Layers size={16} />
             {!sidebarCollapsed && <span>Categories</span>}
           </button>
 
@@ -1641,18 +1641,18 @@ export default function AdminPanel({
               background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
               color: '#ffffff',
               fontWeight: 800,
-              boxShadow: '0 4px 14px rgba(109, 40, 217, 0.4)'
+              boxShadow: '0 3px 10px rgba(109, 40, 217, 0.4)'
             } : {
               background: 'rgba(139, 92, 246, 0.12)',
               color: '#c4b5fd',
               border: '1px solid rgba(139, 92, 246, 0.28)',
-              margin: '3px 0'
+              margin: '1px 0'
             }}
           >
-            <Receipt size={19} style={{ color: activeTab === 'create-billing' ? '#ffffff' : '#a78bfa' }} />
+            <Receipt size={16} style={{ color: activeTab === 'create-billing' ? '#ffffff' : '#a78bfa' }} />
             {!sidebarCollapsed && <span style={{ fontWeight: 700 }}>Create Billing</span>}
             {!sidebarCollapsed && (
-              <span className="sidebar-count-badge" style={{ background: '#7c3aed', color: '#ffffff', fontSize: '0.65rem', marginLeft: 'auto' }}>
+              <span className="sidebar-count-badge" style={{ background: '#7c3aed', color: '#ffffff', fontSize: '0.62rem', marginLeft: 'auto', padding: '1px 5px' }}>
                 POS
               </span>
             )}
@@ -1663,7 +1663,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('orders'); setMobileSidebarOpen(false); }}
             title="Orders & Billing"
           >
-            <ShoppingCart size={19} />
+            <ShoppingCart size={16} />
             {!sidebarCollapsed && <span>Orders</span>}
             {!sidebarCollapsed && <span className="sidebar-count-badge gold">{orders.length}</span>}
           </button>
@@ -1673,7 +1673,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('enquiries'); setMobileSidebarOpen(false); }}
             title="Enquiries"
           >
-            <MessageSquare size={19} />
+            <MessageSquare size={16} />
             {!sidebarCollapsed && <span>Enquiries</span>}
             {!sidebarCollapsed && (
               <span className="sidebar-count-badge orange">
@@ -1687,7 +1687,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('customers'); setMobileSidebarOpen(false); }}
             title="Customers"
           >
-            <Users size={19} />
+            <Users size={16} />
             {!sidebarCollapsed && <span>Customers</span>}
             {!sidebarCollapsed && (
               <span className="sidebar-count-badge brown">
@@ -1701,7 +1701,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('offers'); setMobileSidebarOpen(false); }}
             title="Offers & Banners"
           >
-            <Tag size={19} />
+            <Tag size={16} />
             {!sidebarCollapsed && <span>Offers &amp; Banners</span>}
           </button>
 
@@ -1710,7 +1710,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('content'); setMobileSidebarOpen(false); }}
             title="Website Content"
           >
-            <Globe size={19} />
+            <Globe size={16} />
             {!sidebarCollapsed && <span>Website Content</span>}
           </button>
 
@@ -1719,7 +1719,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('reviews'); setMobileSidebarOpen(false); }}
             title="Reviews"
           >
-            <Star size={19} />
+            <Star size={16} />
             {!sidebarCollapsed && <span>Reviews</span>}
           </button>
 
@@ -1728,7 +1728,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('reports'); setMobileSidebarOpen(false); }}
             title="Reports"
           >
-            <BarChart3 size={19} />
+            <BarChart3 size={16} />
             {!sidebarCollapsed && <span>Reports</span>}
           </button>
 
@@ -1737,7 +1737,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('settings'); setMobileSidebarOpen(false); }}
             title="Settings"
           >
-            <Settings size={19} />
+            <Settings size={16} />
             {!sidebarCollapsed && <span>Settings</span>}
           </button>
 
@@ -1746,7 +1746,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('admin-users'); setMobileSidebarOpen(false); }}
             title="Admin Users"
           >
-            <ShieldCheck size={19} />
+            <ShieldCheck size={16} />
             {!sidebarCollapsed && <span>Admin Users</span>}
           </button>
         </nav>
@@ -1758,7 +1758,7 @@ export default function AdminPanel({
             onClick={onBackToStore}
             title="Return to customer store"
           >
-            <ExternalLink size={17} />
+            <ExternalLink size={15} />
             {!sidebarCollapsed && <span>View Storefront</span>}
           </button>
 
@@ -1767,7 +1767,7 @@ export default function AdminPanel({
             onClick={handleLogout}
             title="Logout"
           >
-            <LogOut size={17} />
+            <LogOut size={15} />
             {!sidebarCollapsed && <span>Logout</span>}
           </button>
         </div>
@@ -5985,7 +5985,7 @@ export default function AdminPanel({
 
         /* LEFT SIDEBAR (Dark brand warm brown) */
         .admin-sidebar {
-          width: 250px;
+          width: 220px;
           background: #2b170e;
           color: #ffffff;
           display: flex;
@@ -5999,19 +5999,19 @@ export default function AdminPanel({
           z-index: 100;
         }
         .admin-sidebar.collapsed {
-          width: 72px;
+          width: 64px;
         }
         .sidebar-brand-header {
-          padding: 22px 18px;
+          padding: 12px 14px;
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
           border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
         .sidebar-brand-icon {
-          width: 38px;
-          height: 38px;
-          border-radius: 10px;
+          width: 32px;
+          height: 32px;
+          border-radius: 8px;
           background: rgba(255, 255, 255, 0.12);
           display: flex;
           align-items: center;
@@ -6020,17 +6020,17 @@ export default function AdminPanel({
           flex-shrink: 0;
         }
         .sidebar-brand-title h3 {
-          font-size: 1.15rem;
+          font-size: 1.02rem;
           font-weight: 800;
           margin: 0;
           color: #ffffff;
           letter-spacing: -0.3px;
         }
         .sidebar-brand-title small {
-          font-size: 0.62rem;
+          font-size: 0.58rem;
           color: #fde68a;
           font-weight: 700;
-          letter-spacing: 1px;
+          letter-spacing: 0.8px;
           display: block;
         }
         .mobile-close-sidebar {
@@ -6044,22 +6044,22 @@ export default function AdminPanel({
 
         /* Navigation items */
         .sidebar-nav-menu {
-          padding: 16px 12px;
+          padding: 8px 8px;
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          gap: 2px;
           flex: 1;
         }
         .nav-item-btn {
           display: flex;
           align-items: center;
-          gap: 12px;
-          padding: 10px 14px;
+          gap: 9px;
+          padding: 6.5px 10px;
           background: none;
           border: none;
           color: #cbd5e1;
-          border-radius: 8px;
-          font-size: 0.88rem;
+          border-radius: 6px;
+          font-size: 0.82rem;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s ease;
@@ -6074,15 +6074,15 @@ export default function AdminPanel({
           background: #854d0e;
           color: #ffffff;
           font-weight: 700;
-          box-shadow: 0 4px 12px rgba(133, 77, 14, 0.4);
+          box-shadow: 0 3px 10px rgba(133, 77, 14, 0.35);
         }
         .sidebar-count-badge {
           margin-left: auto;
           background: rgba(255, 255, 255, 0.18);
           color: #ffffff;
-          font-size: 0.72rem;
-          padding: 2px 7px;
-          border-radius: 12px;
+          font-size: 0.65rem;
+          padding: 1px 6px;
+          border-radius: 10px;
           font-weight: 700;
         }
         .sidebar-count-badge.gold {
@@ -6096,35 +6096,35 @@ export default function AdminPanel({
 
         /* Bottom Sidebar Actions */
         .sidebar-bottom-actions {
-          padding: 14px 12px 18px;
+          padding: 8px 8px 12px;
           border-top: 1px solid rgba(255, 255, 255, 0.08);
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 4px;
         }
         .sidebar-storefront-btn {
           display: flex;
           align-items: center;
-          gap: 10px;
-          padding: 9px 12px;
+          gap: 8px;
+          padding: 6px 10px;
           background: rgba(255, 255, 255, 0.08);
           border: 1px solid rgba(255, 255, 255, 0.14);
           color: #fde68a;
-          border-radius: 8px;
-          font-size: 0.82rem;
+          border-radius: 6px;
+          font-size: 0.78rem;
           font-weight: 700;
           cursor: pointer;
         }
         .sidebar-logout-btn {
           display: flex;
           align-items: center;
-          gap: 10px;
-          padding: 9px 12px;
+          gap: 8px;
+          padding: 6px 10px;
           background: none;
           border: none;
           color: #ef4444;
-          border-radius: 8px;
-          font-size: 0.82rem;
+          border-radius: 6px;
+          font-size: 0.78rem;
           font-weight: 700;
           cursor: pointer;
         }
@@ -9398,8 +9398,8 @@ export default function AdminPanel({
             top: 0;
             left: 0;
             bottom: 0;
-            width: 270px;
-            max-width: 82vw;
+            width: 235px;
+            max-width: 80vw;
             z-index: 99999 !important;
             transform: translateX(-100%);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
