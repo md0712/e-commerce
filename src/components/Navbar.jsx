@@ -219,7 +219,7 @@ export default function Navbar({
               />
             </div>
             <button type="submit" className="search-submit-btn" aria-label="Search">
-              <Search size={18} />
+              <Search size={16} />
             </button>
           </form>
 
@@ -234,7 +234,7 @@ export default function Navbar({
               title="Quick WhatsApp Enquiry"
             >
               <div className="wa-icon-circle">
-                <MessageCircle size={18} />
+                <MessageCircle size={15} />
               </div>
               <div className="wa-text-block">
                 <span className="wa-label">Enquiry Helpline</span>
@@ -261,7 +261,7 @@ export default function Navbar({
               aria-label="Wishlist"
             >
               <div className="icon-with-badge">
-                <Heart size={22} />
+                <Heart size={20} />
                 {wishlistCount > 0 && <span className="counter-badge">{wishlistCount}</span>}
               </div>
               <span className="icon-btn-label">Wishlist</span>
@@ -275,7 +275,7 @@ export default function Navbar({
               aria-label="Cart"
             >
               <div className="icon-with-badge">
-                <ShoppingBag size={22} />
+                <ShoppingBag size={20} />
                 {cartCount > 0 && <span className="counter-badge badge-accent">{cartCount}</span>}
               </div>
               <span className="icon-btn-label">Cart</span>
@@ -871,8 +871,8 @@ export default function Navbar({
         .top-announcement-bar {
           background: var(--color-warm-dark);
           color: #eeddd2;
-          font-size: 0.82rem;
-          padding: 6px 0;
+          font-size: 0.76rem;
+          padding: 3px 0;
           border-bottom: 1px solid rgba(255, 255, 255, 0.08);
           overflow: hidden;
         }
@@ -886,10 +886,10 @@ export default function Navbar({
           flex: 1;
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
           overflow: hidden;
           position: relative;
-          min-height: 28px;
+          min-height: 22px;
         }
 
         .announcement-slide-track {
@@ -910,9 +910,9 @@ export default function Navbar({
           background: rgba(245, 158, 11, 0.25);
           color: #fde047;
           border: 1px solid rgba(253, 224, 71, 0.3);
-          font-size: 0.65rem;
+          font-size: 0.62rem;
           font-weight: 800;
-          padding: 1px 7px;
+          padding: 1px 6px;
           border-radius: var(--radius-full);
           text-transform: uppercase;
           letter-spacing: 0.5px;
@@ -984,8 +984,8 @@ export default function Navbar({
           color: #f1dfd3;
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          font-size: 0.82rem;
+          gap: 4px;
+          font-size: 0.76rem;
           transition: color var(--transition-fast);
         }
         .top-link:hover {
@@ -1008,7 +1008,7 @@ export default function Navbar({
 
         /* Main Header */
         .main-header {
-          padding: 12px 0;
+          padding: 7px 0;
           background: #ffffff;
           border-bottom: 1px solid var(--color-border-subtle);
         }
@@ -1016,7 +1016,7 @@ export default function Navbar({
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 20px;
+          gap: 16px;
         }
 
         /* Brand Logo */
@@ -1029,25 +1029,25 @@ export default function Navbar({
           flex-shrink: 0;
         }
         .logo-emblem {
-          width: 44px;
-          height: 44px;
+          width: 36px;
+          height: 36px;
           background: linear-gradient(135deg, #a24e23 0%, #6d2f0d 100%);
-          border-radius: 12px;
+          border-radius: 9px;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           color: white;
-          box-shadow: 0 4px 12px rgba(162, 78, 35, 0.3);
+          box-shadow: 0 3px 10px rgba(162, 78, 35, 0.25);
         }
         .logo-icon-roof {
-          font-size: 11px;
+          font-size: 9px;
           line-height: 1;
           margin-bottom: -2px;
           color: #fed7aa;
         }
         .logo-icon-seat {
-          font-size: 18px;
+          font-size: 15px;
           line-height: 1;
         }
         .brand-text {
@@ -1056,19 +1056,19 @@ export default function Navbar({
         }
         .brand-title {
           font-family: var(--font-heading);
-          font-size: 1.6rem;
+          font-size: 1.35rem;
           font-weight: 800;
           color: var(--color-warm-dark);
-          letter-spacing: -0.6px;
+          letter-spacing: -0.5px;
           line-height: 1.1;
         }
         .brand-title span {
           color: var(--color-primary);
         }
         .brand-subtitle {
-          font-size: 0.62rem;
+          font-size: 0.58rem;
           font-weight: 700;
-          letter-spacing: 2.2px;
+          letter-spacing: 1.8px;
           color: var(--color-text-muted);
           margin-top: 1px;
         }
@@ -1076,7 +1076,8 @@ export default function Navbar({
         /* Search Form */
         .search-bar-form {
           flex: 1;
-          max-width: 600px;
+          max-width: 580px;
+          height: 36px;
           display: flex;
           align-items: center;
           border: 1.5px solid #d4c2b5;
@@ -1094,22 +1095,23 @@ export default function Navbar({
           align-items: center;
           background: #faf6f2;
           border-right: 1px solid #e7d8cd;
-          padding: 0 12px;
+          padding: 0 10px;
+          height: 36px;
         }
         .category-dropdown {
           appearance: none;
           background: transparent;
           border: none;
-          font-size: 0.85rem;
+          font-size: 0.8rem;
           font-weight: 600;
           color: var(--color-text-main);
-          padding: 9px 18px 9px 4px;
+          padding: 6px 14px 6px 2px;
           cursor: pointer;
           outline: none;
         }
         .dropdown-arrow {
           position: absolute;
-          right: 8px;
+          right: 6px;
           pointer-events: none;
           color: var(--color-text-muted);
         }
@@ -1120,16 +1122,16 @@ export default function Navbar({
         .search-input {
           width: 100%;
           border: none;
-          padding: 9px 16px;
+          padding: 6px 12px;
           outline: none;
           color: var(--color-text-main);
-          font-size: 0.9rem;
+          font-size: 0.84rem;
         }
         .search-submit-btn {
           background: var(--color-primary);
           color: #ffffff;
-          padding: 0 18px;
-          height: 42px;
+          padding: 0 14px;
+          height: 36px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1139,20 +1141,20 @@ export default function Navbar({
         .header-actions {
           display: flex;
           align-items: center;
-          gap: 16px;
+          gap: 12px;
         }
         .quick-whatsapp-btn {
           display: flex;
           align-items: center;
-          gap: 10px;
-          padding: 5px 12px 5px 6px;
+          gap: 7px;
+          padding: 3px 10px 3px 5px;
           background: #f0fdf4;
           border: 1px solid #bbf7d0;
           border-radius: var(--radius-full);
         }
         .wa-icon-circle {
-          width: 30px;
-          height: 30px;
+          width: 24px;
+          height: 24px;
           background: var(--color-whatsapp);
           color: #ffffff;
           border-radius: 50%;
@@ -1165,13 +1167,13 @@ export default function Navbar({
           flex-direction: column;
         }
         .wa-label {
-          font-size: 0.65rem;
+          font-size: 0.6rem;
           text-transform: uppercase;
           font-weight: 700;
           color: #166534;
         }
         .wa-number {
-          font-size: 0.8rem;
+          font-size: 0.74rem;
           font-weight: 700;
           color: #14532d;
         }
@@ -1186,24 +1188,24 @@ export default function Navbar({
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 3px;
+          gap: 2px;
           color: var(--color-warm-dark);
           position: relative;
-          padding: 4px;
+          padding: 3px;
         }
         .icon-with-badge {
           position: relative;
         }
         .counter-badge {
           position: absolute;
-          top: -6px;
-          right: -10px;
+          top: -5px;
+          right: -9px;
           background: var(--color-primary);
           color: white;
-          font-size: 0.68rem;
+          font-size: 0.64rem;
           font-weight: 700;
-          width: 18px;
-          height: 18px;
+          width: 17px;
+          height: 17px;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -1214,7 +1216,7 @@ export default function Navbar({
           background: #b45309;
         }
         .icon-btn-label {
-          font-size: 0.72rem;
+          font-size: 0.68rem;
           font-weight: 600;
         }
 
@@ -1263,9 +1265,9 @@ export default function Navbar({
         }
         .nav-divider {
           width: 1px;
-          height: 18px;
+          height: 14px;
           background: rgba(140, 59, 16, 0.2);
-          margin: 0 4px;
+          margin: 0 3px;
           flex-shrink: 0;
           align-self: center;
           pointer-events: none;
@@ -1273,9 +1275,9 @@ export default function Navbar({
         .nav-menu-list li button {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          padding: 12px 16px;
-          font-size: 0.92rem;
+          gap: 5px;
+          padding: 7px 13px;
+          font-size: 0.84rem;
           font-weight: 600;
           color: var(--color-text-main);
           position: relative;
@@ -1907,22 +1909,22 @@ export default function Navbar({
             box-shadow: 0 2px 10px rgba(42, 24, 16, 0.08);
           }
           .top-announcement-bar {
-            padding: 4px 0;
-            font-size: 0.74rem;
+            padding: 3px 0;
+            font-size: 0.72rem;
           }
           .announcement-slider-wrapper {
             width: 100%;
             justify-content: center;
-            min-height: 22px;
+            min-height: 20px;
           }
           .announcement-slide-track {
             justify-content: center;
           }
           .slide-text {
-            font-size: 0.74rem;
+            font-size: 0.72rem;
           }
           .main-header {
-            padding: 8px 0;
+            padding: 6px 0;
           }
           .header-container {
             padding: 0 12px;
@@ -1937,12 +1939,12 @@ export default function Navbar({
             flex-shrink: 0;
           }
           .logo-emblem {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
           }
           .brand-title {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             line-height: 1.1;
           }
           .header-actions {
@@ -1952,9 +1954,9 @@ export default function Navbar({
             flex-shrink: 0;
           }
           .action-icon-btn, .mobile-search-toggle-btn, .mobile-toggle-btn {
-            padding: 6px;
-            min-width: 36px;
-            min-height: 36px;
+            padding: 4px;
+            min-width: 32px;
+            min-height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1975,23 +1977,24 @@ export default function Navbar({
             display: none !important;
           }
           .top-announcement-bar {
-            padding: 4px 0;
+            padding: 2.5px 0;
           }
           .slide-text {
-            font-size: 0.72rem;
+            font-size: 0.7rem;
           }
           .brand-logo {
             gap: 6px;
           }
           .logo-emblem {
-            width: 34px;
-            height: 34px;
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
           }
           .logo-icon-seat {
-            font-size: 15px;
+            font-size: 13px;
           }
           .brand-title {
-            font-size: 1.18rem;
+            font-size: 1.12rem;
           }
           .brand-subtitle {
             display: none !important;
@@ -2000,13 +2003,13 @@ export default function Navbar({
             gap: 3px;
           }
           .action-icon-btn, .mobile-search-toggle-btn, .mobile-toggle-btn {
-            padding: 4px;
-            min-width: 34px;
-            min-height: 34px;
+            padding: 3px;
+            min-width: 30px;
+            min-height: 30px;
           }
           .action-icon-btn svg, .mobile-search-toggle-btn svg, .mobile-toggle-btn svg {
-            width: 20px;
-            height: 20px;
+            width: 19px;
+            height: 19px;
           }
         }
 
@@ -2019,34 +2022,34 @@ export default function Navbar({
             gap: 5px;
           }
           .brand-title {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             letter-spacing: -0.3px;
           }
           .logo-emblem {
-            width: 30px;
-            height: 30px;
+            width: 26px;
+            height: 26px;
           }
           .logo-icon-seat {
-            font-size: 13px;
+            font-size: 12px;
           }
           .header-actions {
             gap: 2px;
           }
           .action-icon-btn, .mobile-search-toggle-btn, .mobile-toggle-btn {
-            padding: 3px;
-            min-width: 32px;
-            min-height: 32px;
+            padding: 2px;
+            min-width: 28px;
+            min-height: 28px;
           }
           .action-icon-btn svg, .mobile-search-toggle-btn svg, .mobile-toggle-btn svg {
-            width: 18px;
-            height: 18px;
+            width: 17px;
+            height: 17px;
           }
           .counter-badge {
-            width: 15px;
-            height: 15px;
-            font-size: 0.6rem;
-            top: -4px;
-            right: -6px;
+            width: 14px;
+            height: 14px;
+            font-size: 0.58rem;
+            top: -3px;
+            right: -5px;
           }
         }
       `}</style>
