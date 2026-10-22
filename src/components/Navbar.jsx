@@ -251,20 +251,7 @@ export default function Navbar({
               <Search size={22} />
             </button>
 
-            {/* Dashboard Quick Access (Desktop) */}
-            {onOpenAdmin && (
-              <button 
-                className="action-icon-btn admin-quick-btn desk-only-flex" 
-                onClick={onOpenAdmin}
-                title="Admin Dashboard & Invoices"
-                aria-label="Dashboard"
-              >
-                <div className="icon-with-badge">
-                  <ShieldCheck size={22} className="admin-header-icon" />
-                </div>
-                <span className="icon-btn-label">Dashboard</span>
-              </button>
-            )}
+
 
             {/* Wishlist */}
             <button 
@@ -639,17 +626,7 @@ export default function Navbar({
             <li className={currentPage === 'contact' ? 'active' : ''}>
               <button onClick={() => handleNavClick('contact')}>Contact Us</button>
             </li>
-            {onOpenAdmin && (
-              <>
-                <li className="nav-divider" aria-hidden="true" />
-                <li className={currentPage === 'admin' ? 'active admin-nav-item' : 'admin-nav-item'}>
-                  <button onClick={onOpenAdmin} title="Executive Admin Panel & Tax Invoices" className="admin-nav-btn">
-                    <ShieldCheck size={14} className="admin-nav-icon" /> Dashboard
-                    <span className="nav-admin-tag">Admin</span>
-                  </button>
-                </li>
-              </>
-            )}
+
           </ul>
         </div>
       </nav>
@@ -838,16 +815,7 @@ export default function Navbar({
                 </button>
               )}
 
-              {onOpenAdmin && (
-                <button 
-                  className="drawer-link-btn"
-                  onClick={() => { setMobileMenuOpen(false); onOpenAdmin(); }}
-                  style={{ background: '#f5f3ff', color: '#7c3aed', fontWeight: 700 }}
-                >
-                  <span>⚙️ Admin Dashboard &amp; Invoices</span>
-                  <ArrowRight size={16} />
-                </button>
-              )}
+
 
               <button 
                 className={`drawer-link-btn drawer-offers-btn ${currentPage === 'offers' ? 'active' : ''}`}
