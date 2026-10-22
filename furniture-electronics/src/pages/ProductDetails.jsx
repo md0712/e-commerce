@@ -105,7 +105,7 @@ export default function ProductDetails({
     const msg = encodeURIComponent(
       `Hello Sardar Electricals and Furnitures Team! I am looking at "${name}" (ID: ${id}) priced at ${formatPrice(price)}. Can you please share showroom availability, fabric swatches / color options, and delivery timeline?`
     );
-    window.open(`https://wa.me/919876543210?text=${msg}`, '_blank');
+    window.open(`https://wa.me/916383056338?text=${msg}`, '_blank');
   };
 
   const handleShare = () => {
@@ -145,7 +145,16 @@ export default function ProductDetails({
           {/* Left Column: Image Gallery */}
           <div className="gallery-column">
             <div className="main-display-box">
-              <img src={activeImage} alt={name} className="active-hero-img" />
+              <img 
+                src={activeImage || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80'} 
+                alt={name} 
+                className="active-hero-img" 
+                decoding="async"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80';
+                }}
+              />
               {badge && <span className="detail-badge">{badge}</span>}
               {discount > 0 && <span className="detail-discount">{discount}% OFF</span>}
               <button 

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowRight, Sparkles, Truck, CreditCard, 
-  ShieldCheck, Lock, Star, ChevronRight, ChevronLeft, MessageCircle, MapPin 
+  ShieldCheck, Lock, Star, ChevronRight, ChevronLeft, MessageCircle, MapPin, Package 
 } from 'lucide-react';
 import CategoryCard from '../components/CategoryCard';
 import ProductCard from '../components/ProductCard';
 import OfferBanner from '../components/OfferBanner';
-import { categories, products, testimonials, storeInfo } from '../data/products';
+import { categories, storeInfo } from '../data/products';
+import { subscribeToReviews } from '../services/reviewService';
 
 export default function Home({ 
   onNavigate, 
@@ -18,9 +19,29 @@ export default function Home({
   onUpdateQuantity,
   products: customProducts
 }) {
-  const allProducts = customProducts || products;
+  const allProducts = Array.isArray(customProducts) ? customProducts : (customProducts || []);
   const [activeTab, setActiveTab] = useState('all');
   const [heroSlide, setHeroSlide] = useState(0);
+
+  // Real customer reviews & feedback synced live from Cloud Firestore backend
+  const [backendReviews, setBackendReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
+
+  useEffect(() => {
+    const unsub = subscribeToReviews(
+      (list) => {
+        setBackendReviews(list || []);
+        setLoadingReviews(false);
+      },
+      (err) => {
+        console.warn('Real-time reviews subscription notice on Home:', err);
+        setLoadingReviews(false);
+      }
+    );
+    return () => {
+      if (typeof unsub === 'function') unsub();
+    };
+  }, []);
 
   const heroSlides = [
     {
@@ -87,6 +108,9 @@ export default function Home({
     if (activeTab === 'all') return p.featured;
     return p.featured && p.category === activeTab;
   });
+  const displayFeatured = filteredFeatured.length > 0 
+    ? filteredFeatured 
+    : (activeTab === 'all' ? allProducts : allProducts.filter(p => p.category === activeTab));
 
   const activeHero = heroSlides[heroSlide];
 
@@ -307,24 +331,32 @@ export default function Home({
               className="view-all-link-btn desk-only"
               onClick={() => onNavigate(activeTab === 'all' ? 'furniture' : activeTab)}
             >
-              View All ({products.length}) <ChevronRight size={16} />
+              View All ({allProducts.length}) <ChevronRight size={16} />
             </button>
           </div>
 
-          <div className="products-grid">
-            {filteredFeatured.map((prod) => (
-              <ProductCard
-                key={prod.id}
-                product={prod}
-                onSelectProduct={onSelectProduct}
-                onAddToCart={onAddToCart}
-                isWishlisted={wishlist.some(item => item.id === prod.id)}
-                onToggleWishlist={onToggleWishlist}
-                cartQuantity={cart?.find(item => item.id === prod.id)?.quantity || 0}
-                onUpdateQuantity={onUpdateQuantity}
-              />
-            ))}
-          </div>
+          {displayFeatured.length > 0 ? (
+            <div className="products-grid">
+              {displayFeatured.map((prod) => (
+                <ProductCard
+                  key={prod.id}
+                  product={prod}
+                  onSelectProduct={onSelectProduct}
+                  onAddToCart={onAddToCart}
+                  isWishlisted={wishlist.some(item => item.id === prod.id)}
+                  onToggleWishlist={onToggleWishlist}
+                  cartQuantity={cart?.find(item => item.id === prod.id)?.quantity || 0}
+                  onUpdateQuantity={onUpdateQuantity}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="no-products-box" style={{ textAlign: 'center', padding: '60px 20px', background: '#f8fafc', borderRadius: '16px', margin: '20px 0', border: '1px dashed #cbd5e1' }}>
+              <Package size={48} style={{ color: '#94a3b8', margin: '0 auto 16px', display: 'block' }} />
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#1e293b', marginBottom: '8px' }}>No products found</h3>
+              <p style={{ color: '#64748b', fontSize: '0.95rem' }}>No products available in this category yet from the store database.</p>
+            </div>
+          )}
 
           <div className="center-view-all-box">
             <button 
@@ -340,38 +372,184 @@ export default function Home({
       {/* 6. Trio Deals Campaign: Festival Offers, Combo Deals, EMI Options */}
       <OfferBanner type="trio" onNavigate={onNavigate} />
 
-      {/* 7. Customer Testimonials Section */}
+      {/* 7. Real Customer Reviews Section from Cloud Firestore Backend */}
       <section className="testimonials-section">
         <div className="container">
           <div className="section-header-center">
-            <span className="badge-pill badge-bestseller">Verified Reviews</span>
+            <span className="badge-pill badge-bestseller">Verified Showroom Feedback</span>
             <h2 className="section-main-heading">What Our Valued Customers Say</h2>
-            <p className="section-sub-heading">Over 15,000+ satisfied homeowners have furnished their living spaces with Sardar Electricals and Furnitures</p>
+            <p className="section-sub-heading">
+              Real experiences and reviews submitted by our customers across Chennai
+            </p>
           </div>
 
-          <div className="testimonials-grid">
-            {testimonials.map((t) => (
-              <div key={t.id} className="testimonial-card">
-                <div className="t-stars">
-                  {[...Array(t.rating)].map((_, i) => (
-                    <Star key={i} size={16} fill="#f59e0b" color="#f59e0b" />
-                  ))}
-                </div>
-                <h3 className="t-title">"{t.title}"</h3>
-                <p className="t-comment">"{t.comment}"</p>
-                <div className="t-product-bought">
-                  <span>Purchased:</span> <strong>{t.purchasedItem}</strong>
-                </div>
-                <div className="t-user-info">
-                  <img src={t.avatar} alt={t.name} className="t-avatar" />
-                  <div>
-                    <h4 className="t-name">{t.name}</h4>
-                    <span className="t-loc">{t.location}</span>
-                  </div>
-                </div>
+          {loadingReviews ? (
+            <div style={{ textAlign: 'center', padding: '50px 0', color: '#64748b' }}>
+              <div style={{ 
+                display: 'inline-block', 
+                width: '32px', 
+                height: '32px', 
+                border: '3px solid #e2e8f0', 
+                borderTopColor: '#b45309', 
+                borderRadius: '50%', 
+                animation: 'spin 1s linear infinite' 
+              }} />
+              <p style={{ marginTop: '12px', fontSize: '0.9rem', fontWeight: 600 }}>Loading verified customer reviews...</p>
+            </div>
+          ) : backendReviews.length === 0 ? (
+            <div style={{
+              background: '#ffffff',
+              border: '1.5px dashed #cbd5e1',
+              borderRadius: '16px',
+              padding: '40px 24px',
+              textAlign: 'center',
+              maxWidth: '620px',
+              margin: '0 auto'
+            }}>
+              <Star size={38} color="#f59e0b" style={{ margin: '0 auto 12px' }} />
+              <h3 style={{ margin: '0 0 8px', color: '#1e293b', fontSize: '1.2rem', fontWeight: 700 }}>
+                Share Your Showroom Experience!
+              </h3>
+              <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '22px', lineHeight: 1.6 }}>
+                Have you visited our flagship showroom at E.H Road, Vyasarpadi? We value your thoughts, ratings, and suggestions.
+              </p>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => onNavigate && onNavigate('contact')}
+                style={{ 
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '12px 24px', 
+                  borderRadius: '10px', 
+                  cursor: 'pointer', 
+                  fontWeight: 700,
+                  fontSize: '0.92rem'
+                }}
+              >
+                Write a Showroom Review <ArrowRight size={16} />
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="testimonials-grid">
+                {backendReviews.map((rev) => {
+                  const ratingNum = Math.min(5, Math.max(1, Number(rev.rating) || 5));
+                  const initials = (rev.name || 'Valued Customer')
+                    .trim()
+                    .split(/\s+/)
+                    .map((w) => w[0])
+                    .join('')
+                    .toUpperCase()
+                    .slice(0, 2) || 'VC';
+
+                  const cleanBranch = (rev.branch || '')
+                    .replace(/^Flagship Showroom\s*\(/i, '')
+                    .replace(/\)$/, '')
+                    .replace(/^No\.\s*192,?\s*/i, '');
+
+                  return (
+                    <div key={rev.id} className="testimonial-card">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <div className="t-stars" style={{ margin: 0 }}>
+                          {[...Array(ratingNum)].map((_, i) => (
+                            <Star key={i} size={16} fill="#f59e0b" color="#f59e0b" />
+                          ))}
+                        </div>
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          background: '#ecfdf5',
+                          color: '#047857',
+                          border: '1px solid #a7f3d0',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          padding: '3px 8px',
+                          borderRadius: '12px'
+                        }}>
+                          <ShieldCheck size={12} /> Verified Customer
+                        </span>
+                      </div>
+
+                      {rev.category && (
+                        <div className="t-product-bought">
+                          <span>Interest / Dept:</span> <strong>{rev.category}</strong>
+                        </div>
+                      )}
+
+                      <p className="t-comment">
+                        "{rev.message || rev.feedback || 'Great shopping experience with Sardar Electricals & Furnitures.'}"
+                      </p>
+
+                      <div className="t-user-info" style={{ marginTop: 'auto', paddingTop: '14px', borderTop: '1px solid #f1f5f9' }}>
+                        <div style={{
+                          width: '42px',
+                          height: '42px',
+                          borderRadius: '50%',
+                          background: '#fef3c7',
+                          color: '#b45309',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          fontSize: '0.92rem',
+                          border: '2px solid #ecd8cb',
+                          flexShrink: 0
+                        }}>
+                          {initials}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <h4 className="t-name" style={{ margin: 0, fontSize: '0.95rem', color: '#0f172a', fontWeight: 700 }}>
+                            {rev.name || 'Valued Customer'}
+                          </h4>
+                          <span className="t-loc" style={{ fontSize: '0.75rem', color: '#64748b', display: 'block', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                            {cleanBranch || 'Chennai'} • {rev.date || 'Recent'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
-          </div>
+
+              {/* Bottom Callout: Write a Review on Contact Page */}
+              <div style={{ textAlign: 'center', marginTop: '36px' }}>
+                <button
+                  type="button"
+                  onClick={() => onNavigate && onNavigate('contact')}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px 24px',
+                    borderRadius: '50px',
+                    background: '#ffffff',
+                    border: '1.5px solid #b45309',
+                    color: '#b45309',
+                    fontWeight: 700,
+                    fontSize: '0.88rem',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 8px rgba(180, 83, 9, 0.08)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.background = '#b45309';
+                    e.currentTarget.style.color = '#ffffff';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.background = '#ffffff';
+                    e.currentTarget.style.color = '#b45309';
+                  }}
+                >
+                  <Star size={16} fill="#f59e0b" color="#f59e0b" />
+                  Have you shopped with us? Share your review on our Contact Page
+                  <ArrowRight size={15} />
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </section>
 
@@ -393,7 +571,7 @@ export default function Home({
                   <MapPin size={18} /> Get Showroom Directions
                 </button>
                 <a 
-                  href="https://wa.me/919876543210?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20would%20like%20to%20book%20a%20showroom%20visit" 
+                  href="https://wa.me/916383056338?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20would%20like%20to%20book%20a%20showroom%20visit" 
                   target="_blank" 
                   rel="noreferrer"
                   className="btn-whatsapp"
@@ -406,7 +584,7 @@ export default function Home({
               <div className="showroom-hours-card">
                 <h4>Showroom Hours &amp; Location</h4>
                 <p className="hours-row"><strong>Open:</strong> 9:30 AM – 9:30 PM (All 7 Days)</p>
-                <p className="address-row">123, Market Street, Thousand Lights, Chennai, Tamil Nadu - 600001</p>
+                <p className="address-row">No. 192, E.H Road, Cholan nagar, Vyasarpadi, Erukancheri, Chennai - 39.</p>
                 <div className="live-status-pill">
                   <span className="online-dot"></span> Showroom Open Now
                 </div>

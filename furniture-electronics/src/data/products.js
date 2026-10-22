@@ -707,65 +707,31 @@ export const specialOffers = [
   }
 ];
 
-export const testimonials = [
-  {
-    id: 1,
-    name: 'Rajesh Subramanian',
-    location: 'T. Nagar, Chennai',
-    rating: 5,
-    title: 'Transformed our entire home!',
-    comment: 'We furnished our 3BHK with Sardar Electricals and Furnitures. The teak wood dining set and 55" smart TV package were delivered within 48 hours. Exceptional craftsmanship and polite delivery team!',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
-    purchasedItem: 'Living Room Royale Combo & Dining Suite'
-  },
-  {
-    id: 2,
-    name: 'Ananya Deshmukh',
-    location: 'Anna Nagar, Chennai',
-    rating: 5,
-    title: 'Prompt WhatsApp enquiry & great EMI',
-    comment: 'I sent an enquiry on WhatsApp directly from the product card. Within 5 minutes, their showroom manager sent live video clips of the sofa fabric and arranged 0% EMI instantly.',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
-    purchasedItem: 'Modern Fabric Sofa (3 Seater)'
-  },
-  {
-    id: 3,
-    name: 'Vikram & Priya Nair',
-    location: 'Velachery, Chennai',
-    rating: 5,
-    title: 'Top notch electronics & warranty support',
-    comment: 'Bought the 400L Inverter Refrigerator and Front Load Washer. The installation engineer arrived the same afternoon. Competitive pricing better than large chain showrooms.',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
-    purchasedItem: 'Kitchen & Appliance Suite'
-  }
-];
+export const testimonials = [];
 
 export const storeInfo = {
   name: 'Sardar Electricals and Furnitures',
   tagline: 'Your Home, Our Priority',
-  phone: '+91 98765 43210',
-  whatsapp: '919876543210',
-  email: 'care@sardarelectricals.com',
-  address: '123, Market Street, Thousand Lights, Chennai, Tamil Nadu - 600001',
+  phone: '+91 6383056338',
+  secondaryPhone: '+91 9344623632',
+  whatsapp: '916383056338',
+  secondaryWhatsapp: '919344623632',
+  email: 'sardarmart64@gmail.com',
+  address: 'No. 192, E.H Road, Cholan nagar, Vyasarpadi, Erukancheri, Chennai - 39.',
+  instagram: {
+    name: 'sardar_mart_ch_39',
+    handle: '@sardar_mart_ch_39',
+    url: 'https://www.instagram.com/sardar_mart_ch_39?xtok=N2c2cW8xYmdzM3Fy'
+  },
   hours: 'Monday – Sunday: 09:30 AM – 09:30 PM',
   branches: [
     {
-      name: 'Flagship Showroom (Chennai Central)',
-      address: '123, Market Street, Thousand Lights, Chennai - 600001',
-      phone: '+91 98765 43210',
-      timing: '9:30 AM - 9:30 PM (All 7 Days)'
-    },
-    {
-      name: 'OMR Tech Showroom',
-      address: 'Plot 45, IT Highway, Thoraipakkam, OMR, Chennai - 600097',
-      phone: '+91 98765 43211',
-      timing: '10:00 AM - 9:00 PM'
-    },
-    {
-      name: 'Coimbatore Experience Center',
-      address: '88, Avinashi Road, Near Lakshmi Mills, Coimbatore - 641037',
-      phone: '+91 98765 43212',
-      timing: '10:00 AM - 9:00 PM'
+      name: 'Flagship Mega Showroom (Vyasarpadi / Erukancheri)',
+      address: 'No. 192, E.H Road, Cholan nagar, Vyasarpadi, Erukancheri, Chennai - 39.',
+      phone: '+91 6383056338 / +91 9344623632',
+      whatsapp: '916383056338',
+      email: 'sardarmart64@gmail.com',
+      timing: '9:30 AM - 9:30 PM (All 7 Days Open)'
     }
   ]
 };

@@ -270,7 +270,7 @@ export default function ProductCard({
     const message = encodeURIComponent(
       `Hello Sardar Electricals and Furnitures, I'm interested in inquiring about "${name}" (SKU: ${id}) priced at ${formatPrice(price)}. Is it available for immediate delivery?`
     );
-    window.open(`https://wa.me/919876543210?text=${message}`, '_blank');
+    window.open(`https://wa.me/916383056338?text=${message}`, '_blank');
   };
 
   const handlePrimaryClick = (e) => {
@@ -310,10 +310,15 @@ export default function ProductCard({
       {/* Top Media Area */}
       <div className="product-image-container">
         <img 
-          src={image} 
+          src={image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80'} 
           alt={name} 
           className="product-image" 
           loading="lazy"
+          decoding="async"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80';
+          }}
         />
 
         {/* Top-Left Ribbon Badge */}

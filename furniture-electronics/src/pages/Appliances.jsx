@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { ArrowUpDown, Sparkles, ChefHat } from 'lucide-react';
+import { ArrowUpDown, Sparkles, ChefHat, Package } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-import { products } from '../data/products';
 
 export default function Appliances({ 
   onSelectProduct, 
@@ -15,7 +14,7 @@ export default function Appliances({
   setSelectedSubcategory,
   products: customProducts
 }) {
-  const allProducts = customProducts || products;
+  const allProducts = Array.isArray(customProducts) ? customProducts : (customProducts || []);
   const [selectedSubcat, setSelectedSubcat] = useState(selectedSubcategory);
 
   React.useEffect(() => {
@@ -132,8 +131,10 @@ export default function Appliances({
             ))}
           </div>
         ) : (
-          <div className="no-products-box">
-            <p>No appliances found matching your filters.</p>
+          <div className="no-products-box" style={{ textAlign: 'center', padding: '60px 20px', background: '#f8fafc', borderRadius: '16px', margin: '20px 0', border: '1px dashed #cbd5e1' }}>
+            <Package size={44} style={{ color: '#94a3b8', margin: '0 auto 12px', display: 'block' }} />
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1e293b', marginBottom: '6px' }}>No products found</h3>
+            <p style={{ color: '#64748b', marginBottom: '16px' }}>No appliances found in the store database matching your criteria.</p>
             <button 
               className="btn-primary" 
               onClick={() => { setSelectedSubcat('all'); setMaxPrice(20000); }}

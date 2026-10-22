@@ -38,8 +38,8 @@ furniture-electronics/
 ├── public/
 │   ├── images/
 │   ├── logos/
-│   │   ├── homekart-logo.svg
-│   │   └── homekart-logo-light.svg
+│   │   ├── logo.png
+│   │   └── sardar-logo.png
 │   └── banners/
 ├── src/
 │   ├── components/

@@ -10,7 +10,8 @@ export default function TrackOrderModal({
   onClose, 
   orders = [], 
   initialOrderId = '', 
-  onViewInvoice 
+  onViewInvoice,
+  products = []
 }) {
   const [searchTerm, setSearchTerm] = useState(initialOrderId || '');
   const [searchedOrder, setSearchedOrder] = useState(null);
@@ -68,7 +69,7 @@ export default function TrackOrderModal({
       setSearchError('');
     } else {
       setSearchError(
-        `No order found matching "${searchTerm}". Please verify your Bill Number (e.g. HK-2026-8941) or 10-digit Phone Number.`
+        `No order found matching "${searchTerm}". Please verify your Bill Number (e.g. SEF-2026-8941) or 10-digit Phone Number.`
       );
       setSearchedOrder(null);
     }
@@ -160,7 +161,7 @@ export default function TrackOrderModal({
                     name="billNumberOrPhone"
                     type="text"
                     autoComplete="on"
-                    placeholder="e.g. HK-2026-8941 or 98401 23456"
+                    placeholder="e.g. SEF-2026-8941 or 98401 23456"
                     value={searchTerm}
                     onChange={(e) => {
                       setSearchTerm(e.target.value);
@@ -243,7 +244,7 @@ export default function TrackOrderModal({
                 <span>
                   Having trouble finding your bill?{' '}
                   <a 
-                    href="https://wa.me/919876543210?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20need%20help%20tracking%20my%20order%20status." 
+                    href="https://wa.me/916383056338?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20need%20help%20tracking%20my%20order%20status." 
                     target="_blank" 
                     rel="noreferrer"
                     className="wa-help-link"
@@ -373,7 +374,7 @@ export default function TrackOrderModal({
                     <FileText size={14} /> View &amp; Print Tax Invoice (Bill)
                   </button>
                   <a 
-                    href={`https://wa.me/919876543210?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20am%20inquiring%20about%20my%20Bill%20%23${searchedOrder.id}`}
+                    href={`https://wa.me/916383056338?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20am%20inquiring%20about%20my%20Bill%20%23${searchedOrder.id}`}
                     target="_blank" 
                     rel="noreferrer"
                     className="btn-order-wa"
@@ -390,7 +391,11 @@ export default function TrackOrderModal({
               <div className="items-table-wrap">
                 {searchedOrder.items?.map((item, idx) => (
                   <div key={idx} className="track-item-row">
-                    <img src={item.image} alt={item.name} className="track-item-img" />
+                    <img 
+                      src={item.image || products.find(p => String(p.id) === String(item.id))?.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=200&q=80'} 
+                      alt={item.name} 
+                      className="track-item-img" 
+                    />
                     <div className="track-item-info">
                       <div className="track-item-name">{item.name}</div>
                       <div className="track-item-meta">

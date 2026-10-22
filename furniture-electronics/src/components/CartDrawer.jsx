@@ -16,7 +16,9 @@ export default function CartDrawer({
   onPlaceOrder,
   onOpenTrackOrder,
   onViewInvoice,
-  onNavigate
+  onNavigate,
+  products = [],
+  promoCodes = []
 }) {
   const { currentUser, userProfile } = useAuth();
   const [couponCode, setCouponCode] = useState('');
@@ -50,13 +52,18 @@ export default function CartDrawer({
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   
+  const matchedPromo = promoCodes.find(
+    (p) => p.code?.toUpperCase() === appliedCoupon?.toUpperCase() && p.status !== 'inactive'
+  );
+
   let discountAmount = 0;
-  if (appliedCoupon === 'FESTIVE50' && subtotal >= 40000) {
-    discountAmount = 5000;
-  } else if (appliedCoupon === 'COMBOBEST') {
-    discountAmount = Math.round(subtotal * 0.10);
-  } else if (appliedCoupon === 'HOME5') {
-    discountAmount = Math.round(subtotal * 0.05);
+  if (matchedPromo) {
+    if (!matchedPromo.minOrderAmount || subtotal >= matchedPromo.minOrderAmount) {
+      const calcDiscount = Math.round(subtotal * (Number(matchedPromo.discountPercentage) / 100));
+      discountAmount = (matchedPromo.maxDiscountAmount && matchedPromo.maxDiscountAmount > 0)
+        ? Math.min(calcDiscount, Number(matchedPromo.maxDiscountAmount))
+        : calcDiscount;
+    }
   }
 
   const finalTotal = Math.max(0, subtotal - discountAmount);
@@ -74,24 +81,24 @@ export default function CartDrawer({
     const clean = couponCode.trim().toUpperCase();
     if (!clean) return;
 
-    if (clean === 'FESTIVE50') {
-      if (subtotal < 40000) {
-        setCouponError('FESTIVE50 requires minimum cart value of ₹40,000');
-        setAppliedCoupon(null);
-      } else {
-        setAppliedCoupon('FESTIVE50');
-        setCouponError('');
-      }
-    } else if (clean === 'COMBOBEST') {
-      setAppliedCoupon('COMBOBEST');
-      setCouponError('');
-    } else if (clean === 'HOME5') {
-      setAppliedCoupon('HOME5');
-      setCouponError('');
-    } else {
-      setCouponError('Invalid coupon code. Try FESTIVE50, COMBOBEST, or HOME5');
+    const promo = promoCodes.find(
+      (p) => p.code?.toUpperCase() === clean && p.status !== 'inactive'
+    );
+
+    if (!promo) {
+      setCouponError(`Invalid or inactive promo code: "${clean}".`);
       setAppliedCoupon(null);
+      return;
     }
+
+    if (promo.minOrderAmount && subtotal < promo.minOrderAmount) {
+      setCouponError(`Code "${promo.code}" requires minimum cart value of ₹${Number(promo.minOrderAmount).toLocaleString('en-IN')}.`);
+      setAppliedCoupon(null);
+      return;
+    }
+
+    setAppliedCoupon(promo.code);
+    setCouponError('');
   };
 
   const handleWhatsAppCheckout = () => {
@@ -103,7 +110,7 @@ export default function CartDrawer({
       `Hello Sardar Electricals and Furnitures, I want to confirm my order enquiry:%0A%0A${itemsList}%0A%0ASubtotal: ${formatPrice(subtotal)}%0ADiscount: ${formatPrice(discountAmount)}%0ANet Total: ${formatPrice(finalTotal)}%0A%0APlease provide delivery schedule and invoice confirmation.`
     );
 
-    window.open(`https://wa.me/919876543210?text=${message}`, '_blank');
+    window.open(`https://wa.me/916383056338?text=${message}`, '_blank');
   };
 
   const handleProceedToBilling = () => {
@@ -117,7 +124,7 @@ export default function CartDrawer({
       return;
     }
 
-    const orderId = `HK-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const orderId = `SEF-2026-${Math.floor(1000 + Math.random() * 9000)}`;
     const now = new Date();
     const formattedDate = now.toLocaleDateString('en-GB', {
       day: 'numeric',
@@ -137,14 +144,17 @@ export default function CartDrawer({
         city: billingForm.city,
         pincode: billingForm.pincode
       },
-      items: cartItems.map(item => ({
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        image: item.image,
-        category: item.category
-      })),
+      items: cartItems.map(item => {
+        const backendProduct = products.find(p => String(p.id) === String(item.id));
+        return {
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: backendProduct?.image || item.image || '',
+          category: item.category || backendProduct?.category || 'furniture'
+        };
+      }),
       subtotal,
       discount: discountAmount,
       delivery: 0,

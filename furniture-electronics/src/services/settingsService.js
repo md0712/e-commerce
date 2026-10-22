@@ -13,17 +13,19 @@ const STORE_CONFIG_DOC = 'store_config';
 export const DEFAULT_STORE_CONFIG = {
   // Store Branding & Contact
   storeName: 'Sardar Electricals & Furnitures',
-  phone: '+91 98765 43210',
-  email: 'care@sardarelectricals.com',
-  address: 'Sardar Electricals & Furnitures, Main Commercial Road, Market Area',
+  phone: '+91 6383056338',
+  secondaryPhone: '+91 9344623632',
+  email: 'sardarmart64@gmail.com',
+  address: 'No. 192, E.H Road, Cholan nagar, Vyasarpadi, Erukancheri, Chennai - 39.',
   timing: '9:30 AM – 9:30 PM (All 7 Days Open)',
   announcement1: 'Free Express Delivery & 0% Easy EMI on All Products',
   announcement2: 'Festive Mega Offer: Special Discounts on Complete Living Room & Appliance Combos',
   footerDescription: 'Sardar Electricals & Furnitures is your trusted destination for luxury furniture, smart electronics, and top-tier home appliances. Delivering quality and comfort since 1998.',
-  instagramUrl: 'https://instagram.com',
+  instagramUrl: 'https://www.instagram.com/sardar_mart_ch_39?xtok=N2c2cW8xYmdzM3Fy',
+  instagramHandle: 'sardar_mart_ch_39',
   facebookUrl: 'https://facebook.com',
   youtubeUrl: 'https://youtube.com',
-  whatsappNumber: '+91 98765 43210',
+  whatsappNumber: '+91 6383056338',
 
   // Legal & Tax Settings
   storeLegalName: 'Sardar Electricals & Furnitures Pvt Ltd',

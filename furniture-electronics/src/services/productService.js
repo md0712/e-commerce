@@ -7,6 +7,7 @@ import {
   addDoc, 
   updateDoc, 
   deleteDoc, 
+  onSnapshot,
   serverTimestamp,
   writeBatch
 } from 'firebase/firestore';
@@ -16,8 +17,8 @@ import { products as initialProducts } from '../data/products';
 const PRODUCTS_COLLECTION = 'products';
 
 /**
- * Fetch all products from Firestore.
- * Fallback to bundled initialProducts if Firestore is currently unseeded.
+ * Fetch all products directly from Firestore database.
+ * If collection is empty, returns an empty array [] so the UI can display "No products found".
  */
 export async function getProducts() {
   try {
@@ -25,8 +26,7 @@ export async function getProducts() {
     const snapshot = await getDocs(colRef);
 
     if (snapshot.empty) {
-      // If collection is empty, return local catalog for seamless UX
-      return initialProducts;
+      return [];
     }
 
     const items = [];
@@ -39,13 +39,49 @@ export async function getProducts() {
 
     return items;
   } catch (error) {
-    console.warn('Firestore getProducts error, falling back to local catalog:', error.message);
-    return initialProducts;
+    console.warn('Firestore getProducts error:', error.message);
+    return [];
   }
 }
 
 /**
- * Fetch a single product by ID
+ * Real-time subscription to products collection in Firestore.
+ * Updates the storefront and admin panel immediately whenever a product
+ * is created, edited, deleted, or its image is updated.
+ */
+export function subscribeToProducts(callback) {
+  try {
+    const colRef = collection(db, PRODUCTS_COLLECTION);
+    return onSnapshot(
+      colRef,
+      (snapshot) => {
+        if (snapshot.empty) {
+          callback([]);
+          return;
+        }
+        const items = [];
+        snapshot.forEach((docSnap) => {
+          items.push({
+            id: docSnap.id,
+            ...docSnap.data()
+          });
+        });
+        callback(items);
+      },
+      (error) => {
+        console.warn('Firestore subscribeToProducts error:', error.message);
+        callback([]);
+      }
+    );
+  } catch (err) {
+    console.warn('Could not establish real-time product listener:', err);
+    callback([]);
+    return () => {};
+  }
+}
+
+/**
+ * Fetch a single product by ID from Firestore
  */
 export async function getProductById(productId) {
   try {
@@ -54,11 +90,10 @@ export async function getProductById(productId) {
     if (snap.exists()) {
       return { id: snap.id, ...snap.data() };
     }
-    // Check fallback catalog
-    return initialProducts.find((p) => String(p.id) === String(productId)) || null;
+    return null;
   } catch (error) {
     console.warn(`Firestore getProductById error for ${productId}:`, error.message);
-    return initialProducts.find((p) => String(p.id) === String(productId)) || null;
+    return null;
   }
 }
 
@@ -67,7 +102,7 @@ export async function getProductById(productId) {
  */
 export async function createProduct(productData) {
   const colRef = collection(db, PRODUCTS_COLLECTION);
-  const cleanData = {
+  const rawData = {
     ...productData,
     price: Number(productData.price) || 0,
     originalPrice: Number(productData.originalPrice) || Number(productData.price) || 0,
@@ -78,9 +113,15 @@ export async function createProduct(productData) {
     updatedAt: serverTimestamp()
   };
 
+  // Strip any undefined keys to avoid Firestore rejection
+  const cleanData = Object.entries(rawData).reduce((acc, [k, v]) => {
+    if (v !== undefined) acc[k] = v;
+    return acc;
+  }, {});
+
   if (productData.id && typeof productData.id === 'string' && !productData.id.startsWith('new_')) {
     const docRef = doc(db, PRODUCTS_COLLECTION, productData.id);
-    await setDoc(docRef, cleanData);
+    await setDoc(docRef, cleanData, { merge: true });
     return { id: productData.id, ...cleanData };
   } else {
     const docRef = await addDoc(colRef, cleanData);
@@ -93,13 +134,19 @@ export async function createProduct(productData) {
  */
 export async function updateProduct(productId, updates) {
   const docRef = doc(db, PRODUCTS_COLLECTION, String(productId));
-  const cleanUpdates = {
+  const rawUpdates = {
     ...updates,
     updatedAt: serverTimestamp()
   };
-  if (updates.price !== undefined) cleanUpdates.price = Number(updates.price);
-  if (updates.originalPrice !== undefined) cleanUpdates.originalPrice = Number(updates.originalPrice);
-  if (updates.stock !== undefined) cleanUpdates.stock = Number(updates.stock);
+  if (updates.price !== undefined) rawUpdates.price = Number(updates.price);
+  if (updates.originalPrice !== undefined) rawUpdates.originalPrice = Number(updates.originalPrice);
+  if (updates.stock !== undefined) rawUpdates.stock = Number(updates.stock);
+
+  // Strip any undefined keys
+  const cleanUpdates = Object.entries(rawUpdates).reduce((acc, [k, v]) => {
+    if (v !== undefined) acc[k] = v;
+    return acc;
+  }, {});
 
   await setDoc(docRef, cleanUpdates, { merge: true });
   return { id: productId, ...cleanUpdates };

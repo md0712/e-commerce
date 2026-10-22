@@ -25,6 +25,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { subscribeToStoreSettings, DEFAULT_STORE_CONFIG } from './services/settingsService';
 import { 
   getProducts, 
+  subscribeToProducts,
   createProduct, 
   updateProduct, 
   deleteProduct, 
@@ -37,6 +38,7 @@ import {
   deleteOrder, 
   subscribeToOrdersAdmin 
 } from './services/orderService';
+import { subscribeToPromoCodes } from './services/promoService';
 
 import { products as initialProducts } from './data/products';
 import { MessageCircle, ArrowUp } from 'lucide-react';
@@ -44,8 +46,23 @@ import { MessageCircle, ArrowUp } from 'lucide-react';
 
 function AppContent() {
   const { currentUser, isAdmin } = useAuth();
-  const [currentPage, setCurrentPage] = useState('home');
+  const [currentPage, setCurrentPage] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.hash === '#admin') {
+      return 'admin';
+    }
+    return 'home';
+  });
   const [selectedProduct, setSelectedProduct] = useState(null);
+
+  useEffect(() => {
+    const handleHash = () => {
+      if (window.location.hash === '#admin') {
+        setCurrentPage('admin');
+      }
+    };
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
 
   // Customer Auth Modal State
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -65,31 +82,27 @@ function AppContent() {
     }
   });
 
-  // Dynamic Catalog State (persisted with Firestore sync)
+  // Dynamic Catalog State (Strictly loaded from Cloud Firestore database)
   const [catalogProducts, setCatalogProducts] = useState(() => {
     try {
-      const saved = localStorage.getItem('hk_catalog_products');
-      return saved ? JSON.parse(saved) : initialProducts;
+      const saved = localStorage.getItem('sef_catalog_products');
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return initialProducts;
+      return [];
     }
   });
+  const [isProductsLoading, setIsProductsLoading] = useState(true);
 
-  // Fetch live products from Firestore on initial mount
+  // Real-time listener for products from Cloud Firestore database
   useEffect(() => {
-    let isMounted = true;
-    async function loadCatalog() {
+    const unsubscribe = subscribeToProducts((liveProducts) => {
+      setCatalogProducts(liveProducts || []);
+      setIsProductsLoading(false);
       try {
-        const live = await getProducts();
-        if (isMounted && live && live.length > 0) {
-          setCatalogProducts(live);
-        }
-      } catch (err) {
-        console.warn('Could not load Firestore catalog, using initial catalog:', err);
-      }
-    }
-    loadCatalog();
-    return () => { isMounted = false; };
+        localStorage.setItem('sef_catalog_products', JSON.stringify(liveProducts || []));
+      } catch (e) {}
+    });
+    return () => unsubscribe();
   }, []);
 
   // Real-time listener for orders in Firestore
@@ -106,6 +119,15 @@ function AppContent() {
   useEffect(() => {
     const unsub = subscribeToStoreSettings((liveSettings) => {
       if (liveSettings) setStoreSettings(liveSettings);
+    });
+    return () => unsub();
+  }, []);
+
+  // Real-time listener for promo codes from Cloud Firestore
+  const [promoCodes, setPromoCodes] = useState([]);
+  useEffect(() => {
+    const unsub = subscribeToPromoCodes((livePromos) => {
+      setPromoCodes(livePromos || []);
     });
     return () => unsub();
   }, []);
@@ -317,15 +339,13 @@ function AppContent() {
 
   // Catalog Handlers (Admin Edit & Remove with Firestore persistence)
   const handleAddProductAdmin = async (newProduct) => {
-    setCatalogProducts((prev) => [newProduct, ...prev]);
-    showToast(`Added "${newProduct.name}" to live catalog!`);
+    showToast(`Publishing "${newProduct.name}" to Firebase...`);
     try {
       const saved = await createProduct(newProduct);
-      setCatalogProducts((prev) =>
-        prev.map((p) => (p.name === newProduct.name ? { ...p, id: saved.id } : p))
-      );
+      showToast(`Product "${newProduct.name}" saved to Firestore database!`);
     } catch (err) {
-      console.warn('Could not save product to Firestore:', err);
+      console.error('Could not save product to Firestore:', err);
+      showToast(`Failed to save: ${err.message}`);
     }
   };
 
@@ -385,6 +405,7 @@ function AppContent() {
         <AdminPanel
           products={catalogProducts}
           orders={orders}
+          promoCodes={promoCodes}
           onAddProduct={handleAddProductAdmin}
           onEditProduct={handleEditProductAdmin}
           onDeleteProduct={handleDeleteProductAdmin}
@@ -533,6 +554,7 @@ function AppContent() {
             cart={cart}
             onUpdateQuantity={handleUpdateQuantity}
             products={catalogProducts}
+            promoCodes={promoCodes}
           />
         )}
 
@@ -557,6 +579,8 @@ function AppContent() {
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         cartItems={cart}
+        products={catalogProducts}
+        promoCodes={promoCodes}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveFromCart}
         onClearCart={handleClearCart}
@@ -596,6 +620,7 @@ function AppContent() {
         isOpen={isTrackOrderOpen}
         onClose={() => setIsTrackOrderOpen(false)}
         orders={orders}
+        products={catalogProducts}
         initialOrderId={trackOrderId}
         onViewInvoice={handleViewInvoice}
       />
@@ -630,7 +655,7 @@ function AppContent() {
 
       {/* Floating WhatsApp Quick Action Button */}
       <a
-        href="https://wa.me/919876543210?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20am%20browsing%20your%20website%20and%20would%20like%20to%20enquire%20about%20your%20products"
+        href="https://wa.me/916383056338?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20am%20browsing%20your%20website%20and%20would%20like%20to%20enquire%20about%20your%20products"
         target="_blank"
         rel="noreferrer"
         className="floating-wa-btn pulse-glow"

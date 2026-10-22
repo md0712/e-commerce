@@ -4,6 +4,7 @@ import {
   ShoppingBag, Search, Filter, RefreshCw, AlertTriangle, ShieldCheck, 
   ChevronRight, ArrowUpDown, IndianRupee, Layers, Tag 
 } from 'lucide-react';
+import ProductImagePicker from './ProductImagePicker';
 
 export default function AdminModal({ 
   isOpen, 
@@ -688,12 +689,11 @@ export default function AdminModal({
                           <option value="NEW">NEW</option>
                         </select>
                       </div>
-                      <div className="form-group">
-                        <label>Image URL</label>
-                        <input 
-                          type="text" 
-                          value={editingProduct.image} 
-                          onChange={(e) => setEditingProduct(prev => ({ ...prev, image: e.target.value }))}
+                      <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                        <ProductImagePicker
+                          value={editingProduct.image || ''}
+                          onChange={(imgUrl) => setEditingProduct(prev => ({ ...prev, image: imgUrl }))}
+                          label="Product Image"
                         />
                       </div>
                     </div>
@@ -798,11 +798,11 @@ export default function AdminModal({
                 </div>
 
                 <div className="form-group">
-                  <label>Image URL (High-Res Photo)</label>
-                  <input 
-                    type="text" 
+                  <ProductImagePicker
                     value={newProductForm.image}
-                    onChange={(e) => setNewProductForm(prev => ({ ...prev, image: e.target.value }))}
+                    onChange={(imgUrl) => setNewProductForm(prev => ({ ...prev, image: imgUrl }))}
+                    label="Product Image (Choose File or Drag & Drop)"
+                    required={false}
                   />
                 </div>
 

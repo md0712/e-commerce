@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, Heart, ShoppingBag, Phone, MapPin, 
   Menu, X, ChevronDown, Sparkles, MessageCircle, 
-  ShieldCheck, Truck, User, PlusCircle, ArrowRight, Package,
-  Tv, Armchair, Refrigerator, CookingPot, Layers
+  ShieldCheck, Truck, User, ArrowRight, Package,
+  Flame, Check, Headphones, Compass, Tag
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -29,13 +29,37 @@ export default function Navbar({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchVisible, setMobileSearchVisible] = useState(false);
   const [announcementIndex, setAnnouncementIndex] = useState(0);
-  const [slideDir, setSlideDir] = useState('right');
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [isPaused, setIsPaused] = useState(false);
   const [mobileExpandedCat, setMobileExpandedCat] = useState({
     furniture: false,
-    electronics: false,
-    appliances: false
+    electronics: false
   });
+
+  const accountRef = useRef(null);
+
+  // Close account dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (accountRef.current && !accountRef.current.contains(e.target)) {
+        setIsAccountDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Prevent background scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileMenuOpen]);
 
   const handleNavClick = (page) => {
     setCurrentPage(page);
@@ -57,57 +81,32 @@ export default function Navbar({
   const announcements = [
     {
       id: 1,
-      icon: <Truck size={14} className="inline-icon" />,
-      text: "Free Express Delivery & 0% Easy EMI All Over India",
-      badge: "Free Delivery",
+      badge: "Festive Offers",
+      text: "Grand Festival Season: Up to 50% OFF on Luxury Sofas, Beds & 4K OLED TVs",
       action: () => handleNavClick('offers')
     },
     {
       id: 2,
-      icon: <Sparkles size={14} className="inline-icon" />,
-      text: "Festival Offers: Up to 50% OFF on Sofas, Beds & 4K OLED TVs",
-      badge: "50% OFF",
+      badge: "Showroom Perks",
+      text: "Free Express Delivery & 0% Easy EMI on Bajaj Finserv, HDFC & TVS Credit",
       action: () => handleNavClick('offers')
     },
     {
       id: 3,
-      icon: <MapPin size={14} className="inline-icon" />,
-      text: "Visit Our Flagship Chennai Showrooms (Open 9:30 AM – 9:30 PM)",
-      badge: "Showrooms",
+      badge: "Visit Store",
+      text: "Flagship Showroom: No. 192, E.H Road, Vyasarpadi, Chennai - 39 (Open All 7 Days)",
       action: () => handleNavClick('contact')
-    },
-    {
-      id: 4,
-      icon: <MessageCircle size={14} className="inline-icon text-wa" />,
-      text: "Instant WhatsApp Showroom Help: +91 98765 43210",
-      badge: "WhatsApp Help",
-      action: () => window.open('https://wa.me/919876543210', '_blank')
     }
   ];
 
-  const [isPaused, setIsPaused] = useState(false);
-
-  // Auto-slide announcement ticker every 3.6s (pauses on hover)
+  // Auto-slide announcement ticker
   useEffect(() => {
     if (isPaused) return;
     const timer = setInterval(() => {
-      setSlideDir('right');
       setAnnouncementIndex((prev) => (prev + 1) % announcements.length);
-    }, 3600);
+    }, 4500);
     return () => clearInterval(timer);
   }, [announcements.length, isPaused]);
-
-  // Prevent background scroll when mobile drawer is open
-  useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [mobileMenuOpen]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -117,1111 +116,741 @@ export default function Navbar({
       }
       if (onSearch) onSearch(searchQuery);
       setMobileMenuOpen(false);
+      setMobileSearchVisible(false);
     }
   };
 
   const currentAnn = announcements[announcementIndex];
 
   return (
-    <header className="navbar-wrapper">
-      {/* 1. Sliding Top Announcement Bar */}
-      <div className="top-announcement-bar">
-        <div className="container announcement-inner">
+    <header className="sardar-nav-root">
+      
+      {/* 1. TOP ANNOUNCEMENT MICRO-BAR */}
+      <div className="sardar-top-strip">
+        <div className="container sardar-top-content">
+          
+          {/* Rotating Banner Ticker */}
           <div 
-            className="announcement-slider-wrapper"
+            className="sardar-ticker"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
+            onClick={currentAnn.action}
           >
-            <div 
-              className={`announcement-slide-track slide-anim-${slideDir}`}
-              key={announcementIndex}
-              onClick={currentAnn.action}
-              title="Click to view details"
+            <span className="sardar-ticker-tag">{currentAnn.badge}</span>
+            <span className="sardar-ticker-text">{currentAnn.text}</span>
+          </div>
+
+          {/* Quick Support & Location Actions */}
+          <div className="sardar-top-links">
+            <button onClick={() => handleNavClick('contact')} className="sardar-top-btn">
+              <MapPin size={12} /> Showroom: Vyasarpadi, Chennai
+            </button>
+            <span className="sardar-dot-sep">•</span>
+            <button onClick={onOpenTrackOrder} className="sardar-top-btn">
+              <Package size={12} /> Track Order
+            </button>
+            <span className="sardar-dot-sep">•</span>
+            <a 
+              href="https://wa.me/916383056338" 
+              target="_blank" 
+              rel="noreferrer" 
+              className="sardar-top-btn sardar-top-wa"
             >
-              <span className="slide-badge">{currentAnn.badge}</span>
-              <span className="announcement-highlight">
-                {currentAnn.icon}
-                <span className="slide-text">{currentAnn.text}</span>
-              </span>
-            </div>
-
-            <div className="slider-dots">
-              {announcements.map((_, i) => (
-                <span 
-                  key={i} 
-                  className={`slider-dot ${i === announcementIndex ? 'active' : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSlideDir(i > announcementIndex ? 'right' : 'left');
-                    setAnnouncementIndex(i);
-                  }}
-                  title={`Announcement ${i + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="announcement-right desk-only-flex">
-            <button onClick={() => handleNavClick('contact')} className="top-link">
-              <MapPin size={13} /> Find Showrooms
-            </button>
-            <span className="bar-separator">|</span>
-            <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" className="top-link top-whatsapp">
-              <MessageCircle size={13} /> WhatsApp Help
+              <MessageCircle size={12} /> WhatsApp: +91 6383056338
             </a>
-            <span className="bar-separator">|</span>
-            <button onClick={onOpenTrackOrder} className="top-link track-pill">
-              <Package size={13} /> Track Order
-            </button>
           </div>
+
         </div>
       </div>
 
-      {/* 2. Main Branding & Search Header */}
-      <div className="main-header">
-        <div className="container header-container">
-          {/* Logo */}
-          <div className="brand-logo" onClick={() => handleNavClick('home')}>
+      {/* 2. MAIN HEADER (BRAND + SEARCH + ACTIONS) */}
+      <div className="sardar-main-bar">
+        <div className="container sardar-main-content">
+          
+          {/* Logo & Brand Identity */}
+          <div className="sardar-logo-area" onClick={() => handleNavClick('home')}>
             <img 
               src="/logo.png" 
-              alt="Sardar Electricals and Furnitures" 
-              className="navbar-brand-logo-img" 
+              alt="Sardar Electricals and Furnitures Logo" 
+              className="sardar-logo-img" 
             />
-            <div className="brand-text">
-              <div className="brand-title">
-                Sardar <span>Electricals</span>
+            <div className="sardar-brand-titles">
+              <div className="sardar-brand-primary">
+                Sardar <span className="sardar-gold">Electricals</span>
               </div>
-              <div className="brand-subtitle">&amp; FURNITURES</div>
+              <div className="sardar-brand-secondary">
+                &amp; FURNITURES <span className="sardar-sub-dot">•</span> CHENNAI
+              </div>
             </div>
           </div>
 
-          {/* Desktop Search Bar */}
-          <form className="search-bar-form desk-search" onSubmit={handleSearchSubmit}>
-            <div className="category-select-wrapper">
+          {/* Centered Intelligent Search Capsule */}
+          <form className="sardar-search-bar" onSubmit={handleSearchSubmit}>
+            <div className="sardar-cat-filter">
               <select 
-                id="header-category-select"
-                name="category"
+                id="search-category-filter"
                 aria-label="Filter by category"
                 value={selectedCategory} 
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="category-dropdown"
+                className="sardar-cat-select"
               >
-                <option value="all">All Categories</option>
+                <option value="all">All Catalog</option>
                 <option value="furniture">Furniture</option>
                 <option value="electronics">Electronics</option>
-                <option value="appliances">Home Appliances</option>
+                <option value="appliances">Appliances</option>
               </select>
-              <ChevronDown size={14} className="dropdown-arrow" />
+              <ChevronDown size={13} className="sardar-cat-arrow" />
             </div>
-            <div className="search-input-wrapper">
+
+            <div className="sardar-search-field">
+              <Search size={16} className="sardar-search-icon-left" />
               <input
-                id="header-search-input"
-                name="search"
+                id="search-input-box"
                 type="text"
                 autoComplete="off"
-                aria-label="Search furniture and electronics"
-                placeholder="Search sofas, beds, 4K TVs, refrigerators, washing machines..."
+                aria-label="Search catalog"
+                placeholder="Search sofas, teak beds, 4K OLED TVs, refrigerators..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="search-input"
+                className="sardar-search-input"
               />
+              {searchQuery && (
+                <button 
+                  type="button" 
+                  className="sardar-search-clear"
+                  onClick={() => setSearchQuery('')}
+                  title="Clear search"
+                >
+                  <X size={14} />
+                </button>
+              )}
             </div>
-            <button type="submit" className="search-submit-btn" aria-label="Search">
-              <Search size={18} />
+
+            <button type="submit" className="sardar-search-submit" aria-label="Search products">
+              <Search size={15} />
+              <span>Search</span>
             </button>
           </form>
 
           {/* Right Header Actions */}
-          <div className="header-actions">
-            {/* WhatsApp Quick Dial (Desktop) */}
+          <div className="sardar-actions-bar">
+            
+            {/* Showroom Direct WhatsApp Callout */}
             <a 
-              href="https://wa.me/919876543210?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20would%20like%20to%20enquire%20about%20your%20products"
+              href="https://wa.me/916383056338?text=Hello%20Sardar%20Electricals%20and%20Furnitures!%20I%20would%20like%20to%20enquire%20about%20your%20products."
               target="_blank" 
               rel="noreferrer"
-              className="quick-whatsapp-btn"
-              title="Quick WhatsApp Enquiry"
+              className="sardar-helpline-card"
+              title="Click to chat with Showroom Consultant on WhatsApp"
             >
-              <div className="wa-icon-circle">
-                <MessageCircle size={18} />
+              <div className="sardar-helpline-icon-wrap">
+                <MessageCircle size={16} />
+                <span className="sardar-live-dot" />
               </div>
-              <div className="wa-text-block">
-                <span className="wa-label">Enquiry Helpline</span>
-                <span className="wa-number">+91 98765 43210</span>
+              <div className="sardar-helpline-details">
+                <span className="sardar-helpline-title">Showroom Help</span>
+                <span className="sardar-helpline-phone">+91 6383056338</span>
               </div>
             </a>
 
-            {/* Mobile Search Toggle */}
+            {/* Mobile Search Trigger */}
             <button 
-              className="mobile-search-toggle-btn"
+              className="sardar-mob-search-btn"
               onClick={() => setMobileSearchVisible(!mobileSearchVisible)}
-              aria-label="Toggle search"
+              aria-label="Toggle mobile search"
             >
-              <Search size={22} />
+              <Search size={21} />
             </button>
 
-            {/* Customer Account / Sign In */}
-            <div className="account-menu-wrapper" style={{ position: 'relative' }}>
+            {/* Account / User Menu */}
+            <div className="sardar-account-dropdown-wrapper" ref={accountRef}>
               <button 
-                className="action-icon-btn" 
+                className="sardar-action-item"
                 onClick={currentUser ? () => setIsAccountDropdownOpen(!isAccountDropdownOpen) : onOpenAuth}
-                title={currentUser ? `Signed in as ${userProfile?.name || currentUser.displayName || currentUser.email}` : "Customer Sign In / Register"}
-                aria-label="Account"
+                title={currentUser ? `Signed in as ${userProfile?.name || currentUser.displayName || currentUser.email}` : "Sign In or Register"}
               >
-                <div className="icon-with-badge">
-                  <User size={22} />
+                <div className="sardar-action-icon-box">
+                  <User size={20} />
                   {currentUser && (
-                    <span className="counter-badge" style={{ background: '#16a34a', minWidth: '16px', height: '16px', fontSize: '0.65rem' }}>
-                      ✓
+                    <span className="sardar-auth-indicator">
+                      <Check size={9} strokeWidth={3} />
                     </span>
                   )}
                 </div>
-                <span className="icon-btn-label">
-                  {currentUser ? (userProfile?.name?.split(' ')[0] || currentUser.displayName?.split(' ')[0] || 'Account') : 'Sign In'}
-                </span>
+                <div className="sardar-action-textbox">
+                  <span className="sardar-action-micro">
+                    {currentUser ? 'Welcome' : 'Hello,'}
+                  </span>
+                  <span className="sardar-action-bold">
+                    {currentUser ? (userProfile?.name?.split(' ')[0] || currentUser.displayName?.split(' ')[0] || 'Account') : 'Sign In'}
+                  </span>
+                </div>
               </button>
 
+              {/* Popover Menu */}
               {currentUser && isAccountDropdownOpen && (
-                <div 
-                  className="account-dropdown-menu" 
-                  style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 8px)',
-                    right: 0,
-                    width: '230px',
-                    background: '#ffffff',
-                    borderRadius: '12px',
-                    boxShadow: '0 10px 25px rgba(42, 24, 16, 0.18)',
-                    border: '1px solid #ebd9cc',
-                    padding: '12px',
-                    zIndex: 1000,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '6px'
-                  }}
-                >
-                  <div style={{ borderBottom: '1px solid #f3e8e2', paddingBottom: '8px' }}>
-                    <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#2b170e' }}>
-                      {userProfile?.name || currentUser.displayName || 'Customer'}
-                    </div>
-                    <div style={{ fontSize: '0.78rem', color: '#78716c', wordBreak: 'break-all' }}>
-                      {currentUser.email}
-                    </div>
+                <div className="sardar-account-popover animate-fade-in">
+                  <div className="sardar-popover-header">
+                    <span className="sardar-popover-greeting">Welcome Back</span>
+                    <strong className="sardar-popover-user">{userProfile?.name || currentUser.displayName || 'Customer'}</strong>
+                    <span className="sardar-popover-email">{currentUser.email}</span>
                     {isAdmin && (
-                      <span style={{
-                        display: 'inline-block',
-                        background: '#fef3c7',
-                        color: '#b45309',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        fontSize: '0.68rem',
-                        fontWeight: 800,
-                        marginTop: '4px'
-                      }}>
-                        Admin Privileges
+                      <span className="sardar-popover-admin-badge">
+                        <ShieldCheck size={12} /> Store Administrator
                       </span>
                     )}
                   </div>
 
-                  <button
-                    onClick={() => { setIsAccountDropdownOpen(false); onOpenTrackOrder(); }}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      textAlign: 'left',
-                      padding: '8px',
-                      borderRadius: '6px',
-                      fontSize: '0.85rem',
-                      fontWeight: 600,
-                      color: '#44403c',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                  >
-                    <Package size={16} /> Track My Orders
-                  </button>
-
-                  {isAdmin && (
-                    <button
-                      onClick={() => { setIsAccountDropdownOpen(false); onOpenAdmin(); }}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        textAlign: 'left',
-                        padding: '8px',
-                        borderRadius: '6px',
-                        fontSize: '0.85rem',
-                        fontWeight: 600,
-                        color: '#b45309',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                      }}
-                    >
-                      <ShieldCheck size={16} /> Admin Portal
+                  <div className="sardar-popover-links">
+                    <button onClick={() => { setIsAccountDropdownOpen(false); onOpenTrackOrder(); }} className="sardar-popover-item">
+                      <Package size={15} /> Track My Orders
                     </button>
-                  )}
-
-                  <button
-                    onClick={() => { setIsAccountDropdownOpen(false); logout(); }}
-                    style={{
-                      background: '#fef2f2',
-                      border: 'none',
-                      textAlign: 'left',
-                      padding: '8px',
-                      borderRadius: '6px',
-                      fontSize: '0.85rem',
-                      fontWeight: 700,
-                      color: '#dc2626',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                  >
-                    <X size={16} /> Sign Out
-                  </button>
+                    {isAdmin && (
+                      <button onClick={() => { setIsAccountDropdownOpen(false); onOpenAdmin(); }} className="sardar-popover-item admin">
+                        <ShieldCheck size={15} /> Admin Dashboard
+                      </button>
+                    )}
+                    <button onClick={() => { setIsAccountDropdownOpen(false); logout(); }} className="sardar-popover-item signout">
+                      <X size={15} /> Sign Out
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Wishlist */}
+            {/* Wishlist Button */}
             <button 
-              className="action-icon-btn" 
+              className="sardar-action-item"
               onClick={onOpenWishlist}
-              title="My Wishlist"
-              aria-label="Wishlist"
+              title="View Wishlist"
             >
-              <div className="icon-with-badge">
-                <Heart size={22} />
-                {wishlistCount > 0 && <span className="counter-badge">{wishlistCount}</span>}
+              <div className="sardar-action-icon-box">
+                <Heart size={20} />
+                {wishlistCount > 0 && (
+                  <span className="sardar-count-pill">{wishlistCount}</span>
+                )}
               </div>
-              <span className="icon-btn-label">Wishlist</span>
+              <div className="sardar-action-textbox">
+                <span className="sardar-action-micro">Saved</span>
+                <span className="sardar-action-bold">Wishlist</span>
+              </div>
             </button>
 
-            {/* Cart */}
+            {/* Shopping Cart Button */}
             <button 
-              className="action-icon-btn" 
+              className="sardar-action-item sardar-cart-action"
               onClick={onOpenCart}
-              title="Shopping Cart"
-              aria-label="Cart"
+              title="View Shopping Cart"
             >
-              <div className="icon-with-badge">
-                <ShoppingBag size={22} />
-                {cartCount > 0 && <span className="counter-badge badge-accent">{cartCount}</span>}
+              <div className="sardar-action-icon-box">
+                <ShoppingBag size={20} />
+                {cartCount > 0 && (
+                  <span className="sardar-count-pill cart-pill">{cartCount}</span>
+                )}
               </div>
-              <span className="icon-btn-label">Cart</span>
+              <div className="sardar-action-textbox">
+                <span className="sardar-action-micro">Bag</span>
+                <span className="sardar-action-bold">Cart ({cartCount})</span>
+              </div>
             </button>
 
-            {/* Mobile Menu Toggle Button */}
+            {/* Mobile Hamburger Drawer Button */}
             <button 
-              className="mobile-toggle-btn"
+              className="sardar-mob-menu-btn"
               onClick={() => setMobileMenuOpen(true)}
-              aria-label="Open mobile menu"
+              aria-label="Open Navigation Menu"
             >
-              <Menu size={26} />
+              <Menu size={24} />
             </button>
+
           </div>
         </div>
 
-        {/* Mobile Search Input Row */}
+        {/* Mobile Search Expandable Bar */}
         {mobileSearchVisible && (
-          <div className="container mobile-search-row animate-fade-in">
-            <form onSubmit={handleSearchSubmit} className="mobile-search-form">
+          <div className="container sardar-mob-search-container animate-fade-in">
+            <form onSubmit={handleSearchSubmit} className="sardar-mob-search-form">
+              <Search size={16} className="sardar-mob-search-icon" />
               <input 
-                id="mobile-search-input"
-                name="mobileSearch"
-                type="text" 
+                type="text"
                 autoComplete="off"
-                aria-label="Search products"
-                placeholder="Search furniture, TVs, fridges..."
+                placeholder="Search sofas, beds, smart TVs, fridges..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 autoFocus
               />
-              <button type="submit" aria-label="Search"><Search size={18} /></button>
+              <button type="submit">Search</button>
             </form>
           </div>
         )}
       </div>
 
-      {/* 3. Primary Desktop Navigation Bar */}
-      <nav className="primary-nav">
-        <div className="container nav-container">
-          <ul className="nav-menu-list">
-            <li className={currentPage === 'home' ? 'active' : ''}>
-              <button onClick={() => handleNavClick('home')}>Home</button>
+      {/* 3. PRIMARY CATEGORY NAVIGATION BAR */}
+      <nav className="sardar-nav-bar">
+        <div className="container sardar-nav-content">
+          <ul className="sardar-nav-items">
+            
+            {/* Home */}
+            <li className={`sardar-nav-tab ${currentPage === 'home' ? 'active' : ''}`}>
+              <button onClick={() => handleNavClick('home')}>
+                <span>Home</span>
+              </button>
             </li>
-            <li className="nav-divider" aria-hidden="true" />
-            {/* 1. Furniture with Drop List */}
+
+            {/* Furniture Mega Menu */}
             <li 
-              className={`nav-item-dropdown dropdown-furniture ${currentPage === 'furniture' ? 'active' : ''}`}
+              className={`sardar-nav-tab has-menu ${currentPage === 'furniture' ? 'active' : ''}`}
               onMouseEnter={() => setActiveDropdown('furniture')}
               onMouseLeave={() => setActiveDropdown(null)}
             >
-              <button 
-                onClick={() => handleNavClick('furniture')}
-                className="nav-btn-with-dropdown"
-                aria-expanded={activeDropdown === 'furniture'}
-                aria-haspopup="true"
-              >
+              <button onClick={() => handleNavClick('furniture')} className="tab-btn-dropdown">
                 <span>Furniture</span>
-                <span 
-                  className="nav-chevron-wrap"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActiveDropdown(activeDropdown === 'furniture' ? null : 'furniture');
-                  }}
-                  title="Toggle Furniture menu"
-                >
-                  <ChevronDown size={14} className={`nav-chevron ${activeDropdown === 'furniture' ? 'open' : ''}`} />
-                </span>
+                <ChevronDown size={13} className={`tab-chevron ${activeDropdown === 'furniture' ? 'rotated' : ''}`} />
               </button>
 
-              {/* Furniture Drop List Menu */}
-              <div className={`nav-dropdown-menu ${activeDropdown === 'furniture' ? 'show' : ''}`}>
-                <div className="dropdown-grid">
-                  <div className="dropdown-links-col">
-                    <span className="dropdown-col-heading">POPULAR FURNITURE CATEGORIES</span>
-                    <div className="dropdown-links-list">
-                      <button onClick={(e) => { e.stopPropagation(); handleSubcatClick('furniture', 'sofas'); }} className="dropdown-item-link">
-                        <span className="dropdown-item-icon">🛋️</span>
-                        <div className="dropdown-item-content">
-                          <strong className="dropdown-item-title">Sofas &amp; Recliners</strong>
-                          <span className="dropdown-item-desc">L-Shape, Sectionals, 3-Seater Leatherette</span>
-                        </div>
-                        <span className="dropdown-item-badge">24+ Models</span>
-                      </button>
-
-                      <button onClick={(e) => { e.stopPropagation(); handleSubcatClick('furniture', 'beds'); }} className="dropdown-item-link">
-                        <span className="dropdown-item-icon">🛏️</span>
-                        <div className="dropdown-item-content">
-                          <strong className="dropdown-item-title">Beds &amp; Mattresses</strong>
-                          <span className="dropdown-item-desc">King, Queen Hydraulic Storage &amp; Ortho</span>
-                        </div>
-                        <span className="dropdown-item-badge">18+ Models</span>
-                      </button>
-
-                      <button onClick={(e) => { e.stopPropagation(); handleSubcatClick('furniture', 'dining'); }} className="dropdown-item-link">
-                        <span className="dropdown-item-icon">🪑</span>
-                        <div className="dropdown-item-content">
-                          <strong className="dropdown-item-title">Dining Sets &amp; Tables</strong>
-                          <span className="dropdown-item-desc">Solid Sheesham Wood 6-Seater &amp; Marble</span>
-                        </div>
-                        <span className="dropdown-item-badge">15+ Models</span>
-                      </button>
-
-                      <button onClick={(e) => { e.stopPropagation(); handleSubcatClick('furniture', 'wardrobes'); }} className="dropdown-item-link">
-                        <span className="dropdown-item-icon">🚪</span>
-                        <div className="dropdown-item-content">
-                          <strong className="dropdown-item-title">Wardrobes &amp; Almirahs</strong>
-                          <span className="dropdown-item-desc">3-Door, Sliding Mirrors &amp; Modern Closets</span>
-                        </div>
-                        <span className="dropdown-item-badge">12+ Models</span>
-                      </button>
-
-                      <button onClick={(e) => { e.stopPropagation(); handleSubcatClick('furniture', 'chairs'); }} className="dropdown-item-link">
-                        <span className="dropdown-item-icon">💼</span>
-                        <div className="dropdown-item-content">
-                          <strong className="dropdown-item-title">Chairs &amp; Study Desks</strong>
-                          <span className="dropdown-item-desc">Ergonomic Mesh Chairs &amp; Workstations</span>
-                        </div>
-                        <span className="dropdown-item-badge">10+ Models</span>
-                      </button>
+              {activeDropdown === 'furniture' && (
+                <div className="sardar-mega-dropdown animate-fade-in">
+                  <div className="sardar-mega-grid">
+                    <div className="sardar-mega-categories">
+                      <span className="sardar-mega-header">SOLID TEAK &amp; LUXURY LIVING</span>
+                      <div className="sardar-mega-list">
+                        <button onClick={() => handleSubcatClick('furniture', 'sofas')} className="sardar-mega-link">
+                          <span className="sardar-mega-emoji">🛋️</span>
+                          <div>
+                            <strong>Sofas &amp; Recliners</strong>
+                            <small>L-Shape, Recliners, 3-Seater Leatherette</small>
+                          </div>
+                        </button>
+                        <button onClick={() => handleSubcatClick('furniture', 'beds')} className="sardar-mega-link">
+                          <span className="sardar-mega-emoji">🛏️</span>
+                          <div>
+                            <strong>Beds &amp; Mattresses</strong>
+                            <small>King, Queen Hydraulic Storage &amp; Ortho</small>
+                          </div>
+                        </button>
+                        <button onClick={() => handleSubcatClick('furniture', 'dining')} className="sardar-mega-link">
+                          <span className="sardar-mega-emoji">🪑</span>
+                          <div>
+                            <strong>Dining Sets &amp; Tables</strong>
+                            <small>Solid Sheesham &amp; Teak 6-Seater Suites</small>
+                          </div>
+                        </button>
+                        <button onClick={() => handleSubcatClick('furniture', 'wardrobes')} className="sardar-mega-link">
+                          <span className="sardar-mega-emoji">🚪</span>
+                          <div>
+                            <strong>Wardrobes &amp; Closets</strong>
+                            <small>3-Door, Sliding Mirrors &amp; Modern Almirahs</small>
+                          </div>
+                        </button>
+                        <button onClick={() => handleSubcatClick('furniture', 'chairs')} className="sardar-mega-link">
+                          <span className="sardar-mega-emoji">💼</span>
+                          <div>
+                            <strong>Study &amp; Office Chairs</strong>
+                            <small>Ergonomic Mesh &amp; Executive Desks</small>
+                          </div>
+                        </button>
+                      </div>
+                      <div className="sardar-mega-footer">
+                        <button onClick={() => { setActiveDropdown(null); handleNavClick('furniture'); }}>
+                          View All Furniture Models <ArrowRight size={13} />
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="dropdown-footer-link">
-                      <button onClick={() => { setActiveDropdown(null); handleNavClick('furniture'); }}>
-                        View Full Furniture Showroom Collection <ArrowRight size={14} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Dropdown Spotlight Card */}
-                  <div className="dropdown-spotlight-card" onClick={() => { setActiveDropdown(null); handleNavClick('offers'); }}>
-                    <div className="spotlight-badge">HOT DEAL</div>
-                    <img 
-                      src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80" 
-                      alt="Living Room Gala" 
-                      className="spotlight-img"
-                    />
-                    <div className="spotlight-body">
-                      <h4>Living Room Gala</h4>
-                      <p>Up to 50% OFF on Chesterfield &amp; L-shaped Sofas + 0% Easy EMI.</p>
-                      <span className="spotlight-action">Explore Deals →</span>
+                    <div className="sardar-mega-banner furn" onClick={() => { setActiveDropdown(null); handleNavClick('offers'); }}>
+                      <span className="sardar-banner-chip">HOT DEAL</span>
+                      <h4>Custom Teak Wood Sets</h4>
+                      <p>Custom fabric colors, high-density foam &amp; 10-year termite warranty.</p>
+                      <span className="sardar-banner-cta">Explore Combo Offers →</span>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
             </li>
-            <li className="nav-divider" aria-hidden="true" />
 
-            {/* 2. Electronics with Drop List */}
+            {/* Electronics Mega Menu */}
             <li 
-              className={`nav-item-dropdown dropdown-electronics ${currentPage === 'electronics' ? 'active' : ''}`}
+              className={`sardar-nav-tab has-menu ${currentPage === 'electronics' ? 'active' : ''}`}
               onMouseEnter={() => setActiveDropdown('electronics')}
               onMouseLeave={() => setActiveDropdown(null)}
             >
-              <button 
-                onClick={() => handleNavClick('electronics')}
-                className="nav-btn-with-dropdown"
-                aria-expanded={activeDropdown === 'electronics'}
-                aria-haspopup="true"
-              >
+              <button onClick={() => handleNavClick('electronics')} className="tab-btn-dropdown">
                 <span>Electronics</span>
-                <span 
-                  className="nav-chevron-wrap"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActiveDropdown(activeDropdown === 'electronics' ? null : 'electronics');
-                  }}
-                  title="Toggle Electronics menu"
-                >
-                  <ChevronDown size={14} className={`nav-chevron ${activeDropdown === 'electronics' ? 'open' : ''}`} />
-                </span>
+                <ChevronDown size={13} className={`tab-chevron ${activeDropdown === 'electronics' ? 'rotated' : ''}`} />
               </button>
 
-              {/* Electronics Drop List Menu */}
-              <div className={`nav-dropdown-menu ${activeDropdown === 'electronics' ? 'show' : ''}`}>
-                <div className="dropdown-grid">
-                  <div className="dropdown-links-col">
-                    <span className="dropdown-col-heading">FEATURED ELECTRONICS CATEGORIES</span>
-                    <div className="dropdown-links-list">
-                      <button onClick={(e) => { e.stopPropagation(); handleSubcatClick('electronics', 'tvs'); }} className="dropdown-item-link">
-                        <span className="dropdown-item-icon">📺</span>
-                        <div className="dropdown-item-content">
-                          <strong className="dropdown-item-title">Smart TVs &amp; OLED Displays</strong>
-                          <span className="dropdown-item-desc">55" &amp; 65" 4K Google TVs, Dolby Atmos</span>
-                        </div>
-                        <span className="dropdown-item-badge">20+ Models</span>
-                      </button>
-
-                      <button onClick={(e) => { e.stopPropagation(); handleSubcatClick('electronics', 'refrigerators'); }} className="dropdown-item-link">
-                        <span className="dropdown-item-icon">❄️</span>
-                        <div className="dropdown-item-content">
-                          <strong className="dropdown-item-title">Inverter Refrigerators</strong>
-                          <span className="dropdown-item-desc">Double Door Frost Free, Multi-Door</span>
-                        </div>
-                        <span className="dropdown-item-badge">16+ Models</span>
-                      </button>
-
-                      <button onClick={(e) => { e.stopPropagation(); handleSubcatClick('electronics', 'washers'); }} className="dropdown-item-link">
-                        <span className="dropdown-item-icon">🧺</span>
-                        <div className="dropdown-item-content">
-                          <strong className="dropdown-item-title">Washing Machines</strong>
-                          <span className="dropdown-item-desc">Front Load AI DirectDrive &amp; Top Load</span>
-                        </div>
-                        <span className="dropdown-item-badge">14+ Models</span>
-                      </button>
-
-                      <button onClick={(e) => { e.stopPropagation(); handleSubcatClick('electronics', 'acs'); }} className="dropdown-item-link">
-                        <span className="dropdown-item-icon">💨</span>
-                        <div className="dropdown-item-content">
-                          <strong className="dropdown-item-title">Air Conditioners</strong>
-                          <span className="dropdown-item-desc">1.5 Ton 5-Star Dual Inverter Split ACs</span>
-                        </div>
-                        <span className="dropdown-item-badge">12+ Models</span>
-                      </button>
+              {activeDropdown === 'electronics' && (
+                <div className="sardar-mega-dropdown animate-fade-in">
+                  <div className="sardar-mega-grid">
+                    <div className="sardar-mega-categories">
+                      <span className="sardar-mega-header">ENTERTAINMENT &amp; APPLIANCES</span>
+                      <div className="sardar-mega-list">
+                        <button onClick={() => handleSubcatClick('electronics', 'tvs')} className="sardar-mega-link">
+                          <span className="sardar-mega-emoji">📺</span>
+                          <div>
+                            <strong>Smart 4K &amp; OLED TVs</strong>
+                            <small>Sony Bravia, Samsung, LG 43" to 75" Google TVs</small>
+                          </div>
+                        </button>
+                        <button onClick={() => handleSubcatClick('electronics', 'refrigerators')} className="sardar-mega-link">
+                          <span className="sardar-mega-emoji">🧊</span>
+                          <div>
+                            <strong>Inverter Refrigerators</strong>
+                            <small>Double Door, Side-by-Side Frost Free</small>
+                          </div>
+                        </button>
+                        <button onClick={() => handleSubcatClick('electronics', 'washing-machines')} className="sardar-mega-link">
+                          <span className="sardar-mega-emoji">🧺</span>
+                          <div>
+                            <strong>Washing Machines</strong>
+                            <small>Front Load &amp; Top Load Smart Inverters</small>
+                          </div>
+                        </button>
+                        <button onClick={() => handleSubcatClick('electronics', 'air-conditioners')} className="sardar-mega-link">
+                          <span className="sardar-mega-emoji">❄️</span>
+                          <div>
+                            <strong>Inverter Air Conditioners</strong>
+                            <small>1.5 Ton 5-Star Split ACs with Copper Condensers</small>
+                          </div>
+                        </button>
+                        <button onClick={() => handleSubcatClick('electronics', 'audio')} className="sardar-mega-link">
+                          <span className="sardar-mega-emoji">🔊</span>
+                          <div>
+                            <strong>Soundbars &amp; Audio</strong>
+                            <small>Dolby Atmos Wireless Subwoofer Systems</small>
+                          </div>
+                        </button>
+                      </div>
+                      <div className="sardar-mega-footer">
+                        <button onClick={() => { setActiveDropdown(null); handleNavClick('electronics'); }}>
+                          View All Electronics <ArrowRight size={13} />
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="dropdown-footer-link">
-                      <button onClick={() => { setActiveDropdown(null); handleNavClick('electronics'); }}>
-                        View Full Electronics Showroom Collection <ArrowRight size={14} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Dropdown Spotlight Card */}
-                  <div className="dropdown-spotlight-card" onClick={() => { setActiveDropdown(null); handleNavClick('offers'); }}>
-                    <div className="spotlight-badge">CINEMA SALE</div>
-                    <img 
-                      src="https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=600&q=80" 
-                      alt="4K Smart OLED Fest" 
-                      className="spotlight-img"
-                    />
-                    <div className="spotlight-body">
-                      <h4>4K OLED Cinema Fest</h4>
-                      <p>Exchange bonus up to ₹8,000 + 10-Yr Inverter Warranty.</p>
-                      <span className="spotlight-action">Shop Big Screen Deals →</span>
+                    <div className="sardar-mega-banner elec" onClick={() => { setActiveDropdown(null); handleNavClick('offers'); }}>
+                      <span className="sardar-banner-chip">0% EASY EMI</span>
+                      <h4>Authorized Brand Dealership</h4>
+                      <p>Instant approval via Bajaj Finserv, HDFC &amp; TVS Credit at 0% interest.</p>
+                      <span className="sardar-banner-cta">Check EMI Options →</span>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
             </li>
-            <li className="nav-divider" aria-hidden="true" />
 
-            {/* 3. Home Appliances with Drop List */}
-            <li 
-              className={`nav-item-dropdown dropdown-appliances ${currentPage === 'appliances' ? 'active' : ''}`}
-              onMouseEnter={() => setActiveDropdown('appliances')}
-              onMouseLeave={() => setActiveDropdown(null)}
-            >
-              <button 
-                onClick={() => handleNavClick('appliances')}
-                className="nav-btn-with-dropdown"
-                aria-expanded={activeDropdown === 'appliances'}
-                aria-haspopup="true"
-              >
+            {/* Home Appliances */}
+            <li className={`sardar-nav-tab ${currentPage === 'appliances' ? 'active' : ''}`}>
+              <button onClick={() => handleNavClick('appliances')}>
                 <span>Home Appliances</span>
-                <span 
-                  className="nav-chevron-wrap"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActiveDropdown(activeDropdown === 'appliances' ? null : 'appliances');
-                  }}
-                  title="Toggle Home Appliances menu"
-                >
-                  <ChevronDown size={14} className={`nav-chevron ${activeDropdown === 'appliances' ? 'open' : ''}`} />
-                </span>
               </button>
-
-              {/* Appliances Drop List Menu */}
-              <div className={`nav-dropdown-menu ${activeDropdown === 'appliances' ? 'show' : ''}`}>
-                <div className="dropdown-grid">
-                  <div className="dropdown-links-col">
-                    <span className="dropdown-col-heading">KITCHEN &amp; HOME ESSENTIALS</span>
-                    <div className="dropdown-links-list">
-                      <button onClick={(e) => { e.stopPropagation(); handleSubcatClick('appliances', 'mixers'); }} className="dropdown-item-link">
-                        <span className="dropdown-item-icon">🍲</span>
-                        <div className="dropdown-item-content">
-                          <strong className="dropdown-item-title">Mixer Grinders &amp; Blenders</strong>
-                          <span className="dropdown-item-desc">1000W Heavy Duty Copper Motor, 4 Jars</span>
-                        </div>
-                        <span className="dropdown-item-badge">8+ Models</span>
-                      </button>
-
-                      <button onClick={(e) => { e.stopPropagation(); handleSubcatClick('appliances', 'kitchen'); }} className="dropdown-item-link">
-                        <span className="dropdown-item-icon">🍳</span>
-                        <div className="dropdown-item-content">
-                          <strong className="dropdown-item-title">Air Fryers &amp; Microwaves</strong>
-                          <span className="dropdown-item-desc">Digital Air Fryers &amp; Convection OTGs</span>
-                        </div>
-                        <span className="dropdown-item-badge">10+ Models</span>
-                      </button>
-
-                      <button onClick={(e) => { e.stopPropagation(); handleSubcatClick('appliances', 'home'); }} className="dropdown-item-link">
-                        <span className="dropdown-item-icon">💧</span>
-                        <div className="dropdown-item-content">
-                          <strong className="dropdown-item-title">RO Water Purifiers</strong>
-                          <span className="dropdown-item-desc">Active Copper + Mineralizer + UV Tech</span>
-                        </div>
-                        <span className="dropdown-item-badge">6+ Models</span>
-                      </button>
-                    </div>
-
-                    <div className="dropdown-footer-link">
-                      <button onClick={() => { setActiveDropdown(null); handleNavClick('appliances'); }}>
-                        View Full Appliances Collection <ArrowRight size={14} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Dropdown Spotlight Card */}
-                  <div className="dropdown-spotlight-card" onClick={() => { setActiveDropdown(null); handleNavClick('offers'); }}>
-                    <div className="spotlight-badge">COMBO OFFER</div>
-                    <img 
-                      src="https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=600&q=80" 
-                      alt="Kitchen Essentials" 
-                      className="spotlight-img"
-                    />
-                    <div className="spotlight-body">
-                      <h4>Smart Kitchen Trio</h4>
-                      <p>Buy Chimney + Cooktop + Mixer &amp; Save Flat ₹5,000.</p>
-                      <span className="spotlight-action">View Appliance Bundles →</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </li>
-            <li className="nav-divider" aria-hidden="true" />
-            <li className={currentPage === 'offers' ? 'active offers-nav-item' : 'offers-nav-item'}>
+
+            {/* Festival Offers Tab with Flame Badge */}
+            <li className={`sardar-nav-tab offers-tab ${currentPage === 'offers' ? 'active' : ''}`}>
               <button onClick={() => handleNavClick('offers')}>
-                <Sparkles size={14} className="sparkle-icon" /> Offers &amp; Combos
-                <span className="nav-discount-tag">50% Off</span>
+                <Flame size={14} className="sardar-flame-icon" />
+                <span>Festival Offers</span>
+                <span className="sardar-discount-tag">50% OFF</span>
               </button>
             </li>
-            <li className="nav-divider" aria-hidden="true" />
-            <li className={currentPage === 'about' ? 'active' : ''}>
-              <button onClick={() => handleNavClick('about')}>About Us</button>
+
+            {/* About Showroom */}
+            <li className={`sardar-nav-tab ${currentPage === 'about' ? 'active' : ''}`}>
+              <button onClick={() => handleNavClick('about')}>
+                <span>About Showroom</span>
+              </button>
             </li>
-            <li className="nav-divider" aria-hidden="true" />
-            <li className={currentPage === 'contact' ? 'active' : ''}>
-              <button onClick={() => handleNavClick('contact')}>Contact Us</button>
+
+            {/* Contact & Directions */}
+            <li className={`sardar-nav-tab ${currentPage === 'contact' ? 'active' : ''}`}>
+              <button onClick={() => handleNavClick('contact')}>
+                <span>Contact &amp; Visit</span>
+              </button>
             </li>
+
           </ul>
+
+          {/* Right Showroom Timing Tag */}
+          <div className="sardar-nav-timing">
+            <span className="sardar-timing-dot" />
+            <span>Open 9:30 AM – 9:30 PM (All 7 Days)</span>
+          </div>
+
         </div>
       </nav>
 
-      {/* 4. Luxury Mobile Side Drawer Menu */}
+      {/* 4. LUXURY MOBILE SLIDE DRAWER */}
       {mobileMenuOpen && (
-        <div className="mobile-drawer-backdrop" onClick={() => setMobileMenuOpen(false)}>
-          <div className="mobile-drawer-panel" onClick={(e) => e.stopPropagation()}>
-            {/* Drawer Header */}
-            <div className="drawer-top-brand">
-              <div className="drawer-brand" onClick={() => handleNavClick('home')}>
-                <img 
-                  src="/logo.png" 
-                  alt="Sardar Electricals and Furnitures" 
-                  style={{ height: '36px', width: 'auto', objectFit: 'contain', borderRadius: '6px' }} 
-                />
+        <div className="sardar-drawer-overlay animate-fade-in" onClick={() => setMobileMenuOpen(false)}>
+          <div className="sardar-drawer-container" onClick={(e) => e.stopPropagation()}>
+            
+            {/* Drawer Top */}
+            <div className="sardar-drawer-head">
+              <div className="sardar-drawer-brand-wrap" onClick={() => handleNavClick('home')}>
+                <img src="/logo.png" alt="Sardar Logo" className="sardar-drawer-logo" />
                 <div>
-                  <h3 className="brand-title" style={{ fontSize: '1.15rem' }}>Sardar <span>Electricals</span></h3>
-                  <small style={{ fontSize: '0.6rem', color: '#9c887e', letterSpacing: '1px' }}>&amp; FURNITURES</small>
+                  <h3 className="sardar-drawer-brand-name">Sardar <span>Electricals</span></h3>
+                  <small>&amp; FURNITURES • CHENNAI</small>
                 </div>
               </div>
-              <button className="drawer-close-btn" onClick={() => setMobileMenuOpen(false)}>
-                <X size={24} />
+              <button 
+                className="sardar-drawer-close-btn"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label="Close Menu"
+              >
+                <X size={22} />
               </button>
             </div>
 
-            {/* Mobile Drawer Search Form */}
-            <form onSubmit={handleSearchSubmit} className="drawer-search-form">
-              <Search size={16} className="drawer-search-icon" />
+            {/* Drawer Quick Search */}
+            <form onSubmit={handleSearchSubmit} className="sardar-drawer-search">
+              <Search size={16} color="#94a3b8" />
               <input 
-                id="drawer-search-input"
-                name="drawerSearch"
                 type="text" 
-                autoComplete="off"
-                aria-label="Search catalog"
-                placeholder="Search products..." 
+                placeholder="Search sofas, beds, TVs, fridges..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button type="submit">Go</button>
+              <button type="submit">Search</button>
             </form>
 
             {/* Drawer Navigation Links */}
-            <div className="drawer-links-scrollable">
-              <span className="drawer-section-label">MAIN CATEGORIES</span>
-              
+            <div className="sardar-drawer-body">
+              <span className="sardar-drawer-label">BROWSE STORE</span>
+
               <button 
-                className={`drawer-link-btn ${currentPage === 'home' ? 'active' : ''}`}
+                className={`sardar-drawer-nav-item ${currentPage === 'home' ? 'active' : ''}`}
                 onClick={() => handleNavClick('home')}
               >
-                <span>🏠 Home</span>
-                <ArrowRight size={16} />
+                <span>🏠 Home Page</span>
+                <ArrowRight size={15} />
               </button>
 
-              {/* Mobile Furniture Accordion Drop List */}
-              <div className="mobile-drawer-accordion">
-                <div className="drawer-accordion-header">
+              {/* Furniture Accordion */}
+              <div className="sardar-drawer-accordion-block">
+                <div className="sardar-accordion-header-row">
                   <button 
-                    className={`drawer-link-btn ${currentPage === 'furniture' ? 'active' : ''}`}
+                    className={`sardar-drawer-nav-item ${currentPage === 'furniture' ? 'active' : ''}`}
                     onClick={() => handleNavClick('furniture')}
                   >
-                    <span>🛋️ Furniture</span>
+                    <span>🛋️ Furniture Catalog</span>
                   </button>
                   <button 
-                    className="drawer-accordion-toggle"
+                    className="sardar-accordion-trigger"
                     onClick={() => setMobileExpandedCat(prev => ({ ...prev, furniture: !prev.furniture }))}
-                    aria-label="Expand Furniture subcategories"
                   >
-                    <ChevronDown size={18} className={`accordion-chevron ${mobileExpandedCat.furniture ? 'open' : ''}`} />
+                    <ChevronDown size={18} className={`sardar-acc-icon ${mobileExpandedCat.furniture ? 'open' : ''}`} />
                   </button>
                 </div>
                 {mobileExpandedCat.furniture && (
-                  <div className="drawer-accordion-body animate-fade-in">
-                    <button onClick={() => handleSubcatClick('furniture', 'sofas')} className="drawer-subcat-btn">
-                      <span>🛋️ Sofas &amp; Recliners</span>
-                      <small>24+ Models</small>
-                    </button>
-                    <button onClick={() => handleSubcatClick('furniture', 'beds')} className="drawer-subcat-btn">
-                      <span>🛏️ Beds &amp; Mattresses</span>
-                      <small>18+ Models</small>
-                    </button>
-                    <button onClick={() => handleSubcatClick('furniture', 'dining')} className="drawer-subcat-btn">
-                      <span>🪑 Dining Sets &amp; Tables</span>
-                      <small>15+ Models</small>
-                    </button>
-                    <button onClick={() => handleSubcatClick('furniture', 'wardrobes')} className="drawer-subcat-btn">
-                      <span>🚪 Wardrobes &amp; Closets</span>
-                      <small>12+ Models</small>
-                    </button>
-                    <button onClick={() => handleSubcatClick('furniture', 'chairs')} className="drawer-subcat-btn">
-                      <span>💼 Chairs &amp; Study Desks</span>
-                      <small>10+ Models</small>
-                    </button>
-                    <button onClick={() => handleSubcatClick('furniture', 'all')} className="drawer-subcat-btn view-all-subcat">
-                      <span>Explore All Furniture →</span>
-                    </button>
+                  <div className="sardar-drawer-sublinks animate-fade-in">
+                    <button onClick={() => handleSubcatClick('furniture', 'sofas')}>🛋️ Sofas &amp; Recliners</button>
+                    <button onClick={() => handleSubcatClick('furniture', 'beds')}>🛏️ Beds &amp; Mattresses</button>
+                    <button onClick={() => handleSubcatClick('furniture', 'dining')}>🪑 Dining Sets &amp; Tables</button>
+                    <button onClick={() => handleSubcatClick('furniture', 'wardrobes')}>🚪 Wardrobes &amp; Closets</button>
+                    <button onClick={() => handleSubcatClick('furniture', 'chairs')}>💼 Study &amp; Office Chairs</button>
+                    <button onClick={() => handleSubcatClick('furniture', 'all')} className="see-all">Explore All Furniture →</button>
                   </div>
                 )}
               </div>
 
-              {/* Mobile Electronics Accordion Drop List */}
-              <div className="mobile-drawer-accordion">
-                <div className="drawer-accordion-header">
+              {/* Electronics Accordion */}
+              <div className="sardar-drawer-accordion-block">
+                <div className="sardar-accordion-header-row">
                   <button 
-                    className={`drawer-link-btn ${currentPage === 'electronics' ? 'active' : ''}`}
+                    className={`sardar-drawer-nav-item ${currentPage === 'electronics' ? 'active' : ''}`}
                     onClick={() => handleNavClick('electronics')}
                   >
-                    <span>📺 Electronics</span>
+                    <span>📺 Electronics &amp; TVs</span>
                   </button>
                   <button 
-                    className="drawer-accordion-toggle"
+                    className="sardar-accordion-trigger"
                     onClick={() => setMobileExpandedCat(prev => ({ ...prev, electronics: !prev.electronics }))}
-                    aria-label="Expand Electronics subcategories"
                   >
-                    <ChevronDown size={18} className={`accordion-chevron ${mobileExpandedCat.electronics ? 'open' : ''}`} />
+                    <ChevronDown size={18} className={`sardar-acc-icon ${mobileExpandedCat.electronics ? 'open' : ''}`} />
                   </button>
                 </div>
                 {mobileExpandedCat.electronics && (
-                  <div className="drawer-accordion-body animate-fade-in">
-                    <button onClick={() => handleSubcatClick('electronics', 'tvs')} className="drawer-subcat-btn">
-                      <span>📺 Smart TVs &amp; OLED</span>
-                      <small>20+ Models</small>
-                    </button>
-                    <button onClick={() => handleSubcatClick('electronics', 'refrigerators')} className="drawer-subcat-btn">
-                      <span>❄️ Inverter Refrigerators</span>
-                      <small>16+ Models</small>
-                    </button>
-                    <button onClick={() => handleSubcatClick('electronics', 'washers')} className="drawer-subcat-btn">
-                      <span>🧺 Washing Machines</span>
-                      <small>14+ Models</small>
-                    </button>
-                    <button onClick={() => handleSubcatClick('electronics', 'acs')} className="drawer-subcat-btn">
-                      <span>💨 Air Conditioners</span>
-                      <small>12+ Models</small>
-                    </button>
-                    <button onClick={() => handleSubcatClick('electronics', 'all')} className="drawer-subcat-btn view-all-subcat">
-                      <span>Explore All Electronics →</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Mobile Appliances Accordion Drop List */}
-              <div className="mobile-drawer-accordion">
-                <div className="drawer-accordion-header">
-                  <button 
-                    className={`drawer-link-btn ${currentPage === 'appliances' ? 'active' : ''}`}
-                    onClick={() => handleNavClick('appliances')}
-                  >
-                    <span>🍳 Home Appliances</span>
-                  </button>
-                  <button 
-                    className="drawer-accordion-toggle"
-                    onClick={() => setMobileExpandedCat(prev => ({ ...prev, appliances: !prev.appliances }))}
-                    aria-label="Expand Appliances subcategories"
-                  >
-                    <ChevronDown size={18} className={`accordion-chevron ${mobileExpandedCat.appliances ? 'open' : ''}`} />
-                  </button>
-                </div>
-                {mobileExpandedCat.appliances && (
-                  <div className="drawer-accordion-body animate-fade-in">
-                    <button onClick={() => handleSubcatClick('appliances', 'mixers')} className="drawer-subcat-btn">
-                      <span>🍲 Mixer Grinders</span>
-                      <small>8+ Models</small>
-                    </button>
-                    <button onClick={() => handleSubcatClick('appliances', 'kitchen')} className="drawer-subcat-btn">
-                      <span>🍳 Air Fryers &amp; Microwaves</span>
-                      <small>10+ Models</small>
-                    </button>
-                    <button onClick={() => handleSubcatClick('appliances', 'home')} className="drawer-subcat-btn">
-                      <span>💧 RO Water Purifiers</span>
-                      <small>6+ Models</small>
-                    </button>
-                    <button onClick={() => handleSubcatClick('appliances', 'all')} className="drawer-subcat-btn view-all-subcat">
-                      <span>Explore All Appliances →</span>
-                    </button>
+                  <div className="sardar-drawer-sublinks animate-fade-in">
+                    <button onClick={() => handleSubcatClick('electronics', 'tvs')}>📺 Smart 4K &amp; OLED TVs</button>
+                    <button onClick={() => handleSubcatClick('electronics', 'refrigerators')}>🧊 Inverter Refrigerators</button>
+                    <button onClick={() => handleSubcatClick('electronics', 'washing-machines')}>🧺 Washing Machines</button>
+                    <button onClick={() => handleSubcatClick('electronics', 'air-conditioners')}>❄️ Inverter Air Conditioners</button>
+                    <button onClick={() => handleSubcatClick('electronics', 'audio')}>🔊 Soundbars &amp; Home Audio</button>
+                    <button onClick={() => handleSubcatClick('electronics', 'all')} className="see-all">Explore All Electronics →</button>
                   </div>
                 )}
               </div>
 
               <button 
-                className={`drawer-link-btn drawer-offers-btn ${currentPage === 'offers' ? 'active' : ''}`}
+                className={`sardar-drawer-nav-item ${currentPage === 'appliances' ? 'active' : ''}`}
+                onClick={() => handleNavClick('appliances')}
+              >
+                <span>🍳 Home Appliances</span>
+                <ArrowRight size={15} />
+              </button>
+
+              <button 
+                className={`sardar-drawer-nav-item offers-link ${currentPage === 'offers' ? 'active' : ''}`}
                 onClick={() => handleNavClick('offers')}
               >
-                <span>✨ Offers &amp; Combo Deals</span>
-                <span className="drawer-badge-red">50% OFF</span>
+                <span>🔥 Festival Offers (Up to 50% OFF)</span>
+                <ArrowRight size={15} />
               </button>
 
-              <span className="drawer-section-label" style={{ marginTop: '14px' }}>ABOUT &amp; SUPPORT</span>
+              <span className="sardar-drawer-label" style={{ marginTop: '16px' }}>SERVICES &amp; SHOWROOM</span>
 
               <button 
-                className={`drawer-link-btn ${currentPage === 'about' ? 'active' : ''}`}
+                className={`sardar-drawer-nav-item ${currentPage === 'about' ? 'active' : ''}`}
                 onClick={() => handleNavClick('about')}
               >
-                <span>🏢 About Us &amp; Heritage</span>
-                <ArrowRight size={16} />
+                <span>🏢 About Sardar Heritage</span>
+                <ArrowRight size={15} />
               </button>
 
               <button 
-                className={`drawer-link-btn ${currentPage === 'contact' ? 'active' : ''}`}
+                className={`sardar-drawer-nav-item ${currentPage === 'contact' ? 'active' : ''}`}
                 onClick={() => handleNavClick('contact')}
               >
-                <span>📍 Showroom Locations &amp; Map</span>
-                <ArrowRight size={16} />
+                <span>📍 Showroom Address &amp; Map</span>
+                <ArrowRight size={15} />
               </button>
-
-              {/* Mobile Drawer Account Section */}
-              {currentUser ? (
-                <div style={{
-                  padding: '12px 14px',
-                  background: '#fbf7f4',
-                  borderRadius: '10px',
-                  border: '1px solid #ebd9cc',
-                  marginBottom: '8px'
-                }}>
-                  <div style={{ fontWeight: 800, color: '#2b170e', fontSize: '0.9rem' }}>
-                    {userProfile?.name || currentUser.displayName || 'Customer Account'}
-                  </div>
-                  <div style={{ fontSize: '0.78rem', color: '#78716c', marginBottom: '8px' }}>
-                    {currentUser.email}
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    {isAdmin && (
-                      <button
-                        onClick={() => { setMobileMenuOpen(false); onOpenAdmin(); }}
-                        style={{
-                          flex: 1,
-                          padding: '6px 10px',
-                          background: '#fef3c7',
-                          color: '#b45309',
-                          border: '1px solid #fde68a',
-                          borderRadius: '6px',
-                          fontWeight: 700,
-                          fontSize: '0.78rem',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Admin Portal
-                      </button>
-                    )}
-                    <button
-                      onClick={() => { setMobileMenuOpen(false); logout(); }}
-                      style={{
-                        flex: 1,
-                        padding: '6px 10px',
-                        background: '#fee2e2',
-                        color: '#dc2626',
-                        border: '1px solid #fecaca',
-                        borderRadius: '6px',
-                        fontWeight: 700,
-                        fontSize: '0.78rem',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  className="drawer-link-btn"
-                  onClick={() => { setMobileMenuOpen(false); if (onOpenAuth) onOpenAuth(); }}
-                  style={{
-                    background: 'linear-gradient(135deg, #2b170e 0%, #4a2818 100%)',
-                    color: '#ffffff',
-                    borderRadius: '10px',
-                    padding: '12px 16px',
-                    marginBottom: '8px',
-                    fontWeight: 700
-                  }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <User size={18} /> Customer Sign In / Register
-                  </span>
-                  <ArrowRight size={16} />
-                </button>
-              )}
 
               <button 
-                className="drawer-link-btn"
+                className="sardar-drawer-nav-item"
                 onClick={() => { setMobileMenuOpen(false); onOpenTrackOrder(); }}
               >
-                <span>📦 Track Order Status</span>
-                <ArrowRight size={16} />
+                <span>📦 Track Your Live Order</span>
+                <ArrowRight size={15} />
               </button>
 
-              {/* Direct WhatsApp Callout in Drawer */}
-              <div className="drawer-whatsapp-box">
-                <div className="wa-box-header">
-                  <MessageCircle size={20} color="#22c55e" />
-                  <strong>Need Immediate Assistance?</strong>
+              {/* Showroom WhatsApp Card */}
+              <div className="sardar-drawer-card">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#166534', fontWeight: 800, fontSize: '0.85rem' }}>
+                  <MessageCircle size={16} /> Live Showroom Consultant
                 </div>
-                <p>Chat directly with our Chennai showroom managers on WhatsApp.</p>
+                <p style={{ margin: '6px 0 10px', fontSize: '0.78rem', color: '#15803d', lineHeight: 1.4 }}>
+                  Enquire about solid wood, sofa fabric customizations, and 0% EMI schemes directly.
+                </p>
                 <a 
-                  href="https://wa.me/919876543210?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20need%20assistance%20with%20products" 
-                  target="_blank" 
+                  href="https://wa.me/916383056338"
+                  target="_blank"
                   rel="noreferrer"
-                  className="btn-whatsapp"
-                  style={{ width: '100%', justifyContent: 'center' }}
+                  className="sardar-drawer-wa-btn"
                 >
-                  <MessageCircle size={18} /> Chat: +91 98765 43210
+                  <MessageCircle size={15} /> Chat: +91 6383056338
                 </a>
               </div>
+
             </div>
           </div>
         </div>
       )}
 
-      {/* Styles for Navbar */}
+      {/* 5. LUXURY RESPONSIVE NAVBAR STYLES */}
       <style>{`
-        .navbar-wrapper {
+        .sardar-nav-root {
           position: sticky;
           top: 0;
-          z-index: 900;
+          z-index: 1000;
           background: #ffffff;
-          box-shadow: 0 4px 20px rgba(42, 24, 16, 0.08);
+          box-shadow: 0 4px 20px -2px rgba(42, 24, 16, 0.08);
+          font-family: inherit;
         }
 
-        /* Top Sliding Announcement Bar */
-        .top-announcement-bar {
-          background: var(--color-warm-dark);
-          color: #eeddd2;
-          font-size: 0.82rem;
-          padding: 6px 0;
+        /* 1. TOP ANNOUNCEMENT STRIP */
+        .sardar-top-strip {
+          background: #180f0a;
+          color: #f1dfd3;
+          padding: 7px 0;
           border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-          overflow: hidden;
+          font-size: 0.78rem;
         }
-        .announcement-inner {
+        .sardar-top-content {
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 16px;
         }
-        .announcement-slider-wrapper {
+        .sardar-ticker {
           flex: 1;
           display: flex;
           align-items: center;
           gap: 10px;
-          overflow: hidden;
-          position: relative;
-          min-height: 28px;
-        }
-
-        .announcement-slide-track {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          gap: 8px;
           cursor: pointer;
-          white-space: nowrap;
+          min-height: 22px;
           overflow: hidden;
-          text-overflow: ellipsis;
         }
-        .announcement-slide-track:hover .slide-text {
-          text-decoration: underline;
-        }
-
-        .slide-badge {
-          background: rgba(245, 158, 11, 0.25);
-          color: #fde047;
-          border: 1px solid rgba(253, 224, 71, 0.3);
+        .sardar-ticker-tag {
+          background: #b45309;
+          color: #ffffff;
           font-size: 0.65rem;
           font-weight: 800;
-          padding: 1px 7px;
-          border-radius: var(--radius-full);
+          padding: 2px 8px;
+          border-radius: 9999px;
+          letter-spacing: 0.3px;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
           flex-shrink: 0;
         }
-
-        .announcement-highlight {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          color: #fbd38d;
-          font-weight: 600;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        .slide-text {
+        .sardar-ticker-text {
+          font-weight: 500;
           color: #ffffff;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
-
-        .slider-dots {
-          display: flex;
-          gap: 4px;
-          align-items: center;
-          flex-shrink: 0;
-        }
-        .slider-dot {
-          width: 5px;
-          height: 5px;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.25);
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-        .slider-dot.active {
-          width: 14px;
-          border-radius: 4px;
-          background: #fde047;
-        }
-
-        /* Slide animations */
-        @keyframes slideInRightAnim {
-          from { opacity: 0; transform: translateX(25px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes slideInLeftAnim {
-          from { opacity: 0; transform: translateX(-25px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        .slide-anim-right {
-          animation: slideInRightAnim 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .slide-anim-left {
-          animation: slideInLeftAnim 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .text-wa { color: #4ade80 !important; }
-        .text-adm { color: #fde047 !important; }
-
-        .announcement-right {
+        .sardar-top-links {
           display: flex;
           align-items: center;
           gap: 12px;
           flex-shrink: 0;
         }
-        .top-link {
+        .sardar-top-btn {
+          background: none;
+          border: none;
           color: #f1dfd3;
+          font-size: 0.78rem;
+          font-weight: 500;
           display: inline-flex;
           align-items: center;
           gap: 5px;
-          font-size: 0.82rem;
-          transition: color var(--transition-fast);
+          cursor: pointer;
+          text-decoration: none;
+          padding: 0;
+          transition: color 0.15s ease;
         }
-        .top-link:hover {
-          color: #ffffff;
+        .sardar-top-btn:hover {
+          color: #f59e0b;
         }
-        .top-whatsapp {
-          color: #86efac;
+        .sardar-top-wa {
+          color: #6ee7b7;
+          font-weight: 600;
         }
-        .bar-separator {
-          color: #664f43;
+        .sardar-top-wa:hover {
+          color: #a7f3d0;
+        }
+        .sardar-dot-sep {
+          color: #5c4538;
           font-size: 0.75rem;
         }
-        .admin-pill {
-          background: rgba(217, 119, 6, 0.25);
-          color: #fcd34d;
-          padding: 2px 8px;
-          border-radius: var(--radius-full);
-          border: 1px solid rgba(252, 211, 77, 0.35);
-        }
 
-        /* Main Header */
-        .main-header {
-          padding: 12px 0;
+        /* 2. MAIN HEADER BAR */
+        .sardar-main-bar {
           background: #ffffff;
-          border-bottom: 1px solid var(--color-border-subtle);
+          padding: 12px 0;
+          border-bottom: 1px solid #f1e7df;
+          position: relative;
         }
-        .header-container {
+        .sardar-main-content {
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 20px;
         }
 
-        /* Brand Logo */
-        .brand-logo {
+        /* Brand & Logo */
+        .sardar-logo-area {
           display: flex;
           align-items: center;
           gap: 12px;
@@ -1229,882 +858,918 @@ export default function Navbar({
           user-select: none;
           flex-shrink: 0;
         }
-        .navbar-brand-logo-img {
-          height: 46px;
+        .sardar-logo-img {
+          height: 48px;
           width: auto;
-          max-width: 140px;
+          max-width: 130px;
           object-fit: contain;
           border-radius: 8px;
+          filter: drop-shadow(0 2px 4px rgba(42, 24, 16, 0.1));
+          transition: transform 0.2s ease;
         }
-        .logo-icon-roof {
-          font-size: 11px;
-          line-height: 1;
-          margin-bottom: -2px;
-          color: #fed7aa;
+        .sardar-logo-area:hover .sardar-logo-img {
+          transform: scale(1.02);
         }
-        .logo-icon-seat {
-          font-size: 18px;
-          line-height: 1;
-        }
-        .brand-text {
+        .sardar-brand-titles {
           display: flex;
           flex-direction: column;
         }
-        .brand-title {
-          font-family: var(--font-heading);
-          font-size: 1.6rem;
-          font-weight: 800;
-          color: var(--color-warm-dark);
-          letter-spacing: -0.6px;
+        .sardar-brand-primary {
+          font-size: 1.55rem;
+          font-weight: 900;
+          color: #1c0e08;
           line-height: 1.1;
+          letter-spacing: -0.6px;
         }
-        .brand-title span {
-          color: var(--color-primary);
+        .sardar-gold {
+          color: #b45309;
         }
-        .brand-subtitle {
+        .sardar-brand-secondary {
           font-size: 0.62rem;
-          font-weight: 700;
-          letter-spacing: 2.2px;
-          color: var(--color-text-muted);
-          margin-top: 1px;
+          font-weight: 800;
+          letter-spacing: 2px;
+          color: #8c766b;
+          margin-top: 2px;
+        }
+        .sardar-sub-dot {
+          color: #b45309;
         }
 
-        /* Search Form */
-        .search-bar-form {
+        /* Centered Intelligent Search Capsule */
+        .sardar-search-bar {
           flex: 1;
-          max-width: 600px;
+          max-width: 620px;
+          min-width: 280px;
           display: flex;
           align-items: center;
-          border: 1.5px solid #d4c2b5;
-          border-radius: var(--radius-full);
+          background: #faf7f4;
+          border: 1.5px solid #e5d8cc;
+          border-radius: 9999px;
+          padding: 3px 3px 3px 14px;
+          transition: all 0.2s ease;
+        }
+        .sardar-search-bar:focus-within {
           background: #ffffff;
-          overflow: hidden;
+          border-color: #b45309;
+          box-shadow: 0 0 0 3.5px rgba(180, 83, 9, 0.12);
         }
-        .search-bar-form:focus-within {
-          border-color: var(--color-primary);
-          box-shadow: 0 0 0 3px rgba(162, 78, 35, 0.15);
-        }
-        .category-select-wrapper {
+        .sardar-cat-filter {
           position: relative;
           display: flex;
           align-items: center;
-          background: #faf6f2;
-          border-right: 1px solid #e7d8cd;
-          padding: 0 12px;
+          padding-right: 12px;
+          border-right: 1.5px solid #e7d8cc;
+          flex-shrink: 0;
         }
-        .category-dropdown {
+        .sardar-cat-select {
           appearance: none;
           background: transparent;
           border: none;
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: var(--color-text-main);
-          padding: 9px 18px 9px 4px;
-          cursor: pointer;
           outline: none;
+          font-size: 0.82rem;
+          font-weight: 700;
+          color: #44322a;
+          cursor: pointer;
+          padding-right: 16px;
         }
-        .dropdown-arrow {
+        .sardar-cat-arrow {
           position: absolute;
-          right: 8px;
+          right: 0;
           pointer-events: none;
-          color: var(--color-text-muted);
+          color: #8c766b;
         }
-        .search-input-wrapper {
+        .sardar-search-field {
           flex: 1;
           display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 0 10px;
+          position: relative;
         }
-        .search-input {
+        .sardar-search-icon-left {
+          color: #a89487;
+          flex-shrink: 0;
+        }
+        .sardar-search-input {
           width: 100%;
           border: none;
-          padding: 9px 16px;
-          outline: none;
-          color: var(--color-text-main);
-          font-size: 0.9rem;
-        }
-        .search-submit-btn {
-          background: var(--color-primary);
-          color: #ffffff;
-          padding: 0 18px;
-          height: 42px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        /* Actions */
-        .header-actions {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-        }
-        .quick-whatsapp-btn {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 5px 12px 5px 6px;
-          background: #f0fdf4;
-          border: 1px solid #bbf7d0;
-          border-radius: var(--radius-full);
-        }
-        .wa-icon-circle {
-          width: 30px;
-          height: 30px;
-          background: var(--color-whatsapp);
-          color: #ffffff;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .wa-text-block {
-          display: flex;
-          flex-direction: column;
-        }
-        .wa-label {
-          font-size: 0.65rem;
-          text-transform: uppercase;
-          font-weight: 700;
-          color: #166534;
-        }
-        .wa-number {
-          font-size: 0.8rem;
-          font-weight: 700;
-          color: #14532d;
-        }
-
-        .mobile-search-toggle-btn {
-          display: none;
-          color: var(--color-warm-dark);
-          padding: 6px;
-        }
-
-        .action-icon-btn {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 3px;
-          color: var(--color-warm-dark);
-          position: relative;
-          padding: 4px;
-        }
-        .icon-with-badge {
-          position: relative;
-        }
-        .counter-badge {
-          position: absolute;
-          top: -6px;
-          right: -10px;
-          background: var(--color-primary);
-          color: white;
-          font-size: 0.68rem;
-          font-weight: 700;
-          width: 18px;
-          height: 18px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: 2px solid white;
-        }
-        .counter-badge.badge-accent {
-          background: #b45309;
-        }
-        .icon-btn-label {
-          font-size: 0.72rem;
-          font-weight: 600;
-        }
-
-        .mobile-toggle-btn {
-          display: none;
-          color: var(--color-warm-dark);
-          padding: 6px;
-          cursor: pointer;
-        }
-
-        /* Primary Nav */
-        .primary-nav {
-          background: var(--color-warm-cream);
-          border-bottom: 1px solid rgba(140, 59, 16, 0.14);
-          box-shadow: 0 1px 3px rgba(46, 28, 20, 0.03);
-          position: relative;
-          z-index: 100;
-          width: 100%;
-        }
-        .nav-container {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 0 16px;
-          overflow-x: visible;
-        }
-        .nav-menu-list {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          list-style: none;
-          gap: 2px;
-          margin: 0;
-          padding: 0;
-          flex-wrap: nowrap;
-          white-space: nowrap;
-          width: 100%;
-        }
-        .nav-menu-list > li {
-          display: inline-flex;
-          align-items: center;
-          position: relative;
-          flex-shrink: 0;
-        }
-        .nav-divider {
-          width: 1px;
-          height: 18px;
-          background: rgba(140, 59, 16, 0.2);
-          margin: 0 4px;
-          flex-shrink: 0;
-          align-self: center;
-          pointer-events: none;
-        }
-        .nav-menu-list li button {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 12px 16px;
-          font-size: 0.92rem;
-          font-weight: 600;
-          color: var(--color-text-main);
-          position: relative;
-          white-space: nowrap;
           background: transparent;
-          border-radius: var(--radius-sm);
-          transition: color 0.18s ease, background-color 0.18s ease;
-          cursor: pointer;
-          border: none;
           outline: none;
+          font-size: 0.88rem;
+          color: #1e0d07;
+          font-weight: 500;
         }
-        .nav-menu-list li button:hover {
-          color: var(--color-primary);
-          background: rgba(140, 59, 16, 0.05);
+        .sardar-search-input::placeholder {
+          color: #94a3b8;
+          font-size: 0.83rem;
         }
-        .nav-menu-list li.active button {
-          color: var(--color-primary);
-          font-weight: 700;
-        }
-        .nav-menu-list li.active button::after {
-          content: '';
-          position: absolute;
-          bottom: 0;
-          left: 14px;
-          right: 14px;
-          height: 2.5px;
-          background: var(--color-primary);
-          border-radius: 4px 4px 0 0;
-        }
-        .offers-nav-item button {
-          color: #c2410c !important;
-          font-weight: 700 !important;
-        }
-        .offers-nav-item button:hover {
-          background: rgba(194, 65, 12, 0.07) !important;
-        }
-        .sparkle-icon {
-          color: #ea580c;
-          flex-shrink: 0;
-        }
-        .nav-discount-tag {
-          background: #fee2e2;
-          color: #b91c1c;
-          font-size: 0.65rem;
-          font-weight: 800;
-          padding: 1px 7px;
-          border-radius: var(--radius-full);
-          margin-left: 4px;
-          flex-shrink: 0;
-          border: 1px solid rgba(220, 38, 38, 0.2);
-        }
-
-        /* Drop List (Mega Dropdown Menu) */
-        .nav-item-dropdown {
-          position: relative;
-        }
-        .nav-btn-with-dropdown {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-        }
-        .nav-chevron-wrap {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 2px 4px;
-          border-radius: 4px;
-          transition: background-color 0.15s ease;
+        .sardar-search-clear {
+          background: none;
+          border: none;
+          color: #94a3b8;
           cursor: pointer;
-        }
-        .nav-chevron-wrap:hover {
-          background: rgba(140, 59, 16, 0.12);
-        }
-        .nav-chevron {
-          transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-          flex-shrink: 0;
-        }
-        .nav-chevron.open,
-        .nav-item-dropdown:hover .nav-chevron {
-          transform: rotate(180deg);
-          color: var(--color-primary);
-        }
-
-        .nav-dropdown-menu {
-          position: absolute;
-          top: 100%;
-          left: 0;
-          width: 640px;
-          max-width: calc(100vw - 32px);
-          background: #ffffff;
-          border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-          box-shadow: 0 20px 40px -10px rgba(46, 28, 20, 0.22), 0 0 1px rgba(46, 28, 20, 0.15);
-          border: 1px solid rgba(140, 59, 16, 0.15);
-          border-top: 3px solid var(--color-primary);
-          opacity: 0;
-          visibility: hidden;
-          transform: translateY(8px);
-          transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s;
-          z-index: 999;
-          padding: 22px;
-          pointer-events: none;
-        }
-
-        .nav-dropdown-menu.show,
-        .nav-item-dropdown:hover .nav-dropdown-menu {
-          opacity: 1;
-          visibility: visible;
-          transform: translateY(0);
-          pointer-events: auto;
-        }
-
-        /* Specific dropdown alignments */
-        .dropdown-appliances .nav-dropdown-menu {
-          left: -80px;
-        }
-        @media (max-width: 1200px) {
-          .dropdown-appliances .nav-dropdown-menu {
-            left: auto;
-            right: -60px;
-          }
-        }
-        @media (max-width: 1100px) and (min-width: 993px) {
-          .nav-menu-list li button {
-            padding: 11px 11px;
-            font-size: 0.85rem;
-            gap: 4px;
-          }
-          .nav-divider {
-            margin: 0 2px;
-          }
-          .nav-discount-tag {
-            font-size: 0.6rem;
-            padding: 1px 5px;
-          }
-        }
-
-        .dropdown-grid {
-          display: grid;
-          grid-template-columns: 1fr 220px;
-          gap: 20px;
-        }
-
-        .dropdown-links-col {
+          padding: 2px;
           display: flex;
-          flex-direction: column;
         }
-        .dropdown-col-heading {
-          font-size: 0.72rem;
-          font-weight: 800;
-          color: var(--color-text-muted);
-          letter-spacing: 0.8px;
-          margin-bottom: 12px;
-          display: block;
+        .sardar-search-clear:hover {
+          color: #334155;
         }
-        .dropdown-links-list {
+        .sardar-search-submit {
+          background: linear-gradient(135deg, #b45309 0%, #853704 100%);
+          color: #ffffff;
+          border: none;
+          border-radius: 9999px;
+          height: 38px;
+          padding: 0 18px;
           display: flex;
-          flex-direction: column;
+          align-items: center;
           gap: 6px;
+          font-size: 0.84rem;
+          font-weight: 700;
+          cursor: pointer;
+          flex-shrink: 0;
+          box-shadow: 0 2px 6px rgba(180, 83, 9, 0.25);
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
-        .dropdown-item-link {
+        .sardar-search-submit:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 10px rgba(180, 83, 9, 0.35);
+        }
+
+        /* Right Actions Bar */
+        .sardar-actions-bar {
           display: flex;
           align-items: center;
           gap: 12px;
-          padding: 8px 10px;
-          border-radius: var(--radius-md);
-          background: transparent;
-          transition: all var(--transition-fast);
-          text-align: left;
-          border: 1px solid transparent;
-          width: 100%;
-          cursor: pointer;
+          flex-shrink: 0;
         }
-        .dropdown-item-link:hover {
-          background: var(--color-warm-sand);
-          border-color: rgba(140, 59, 16, 0.12);
-          transform: translateX(4px);
+
+        /* Showroom WhatsApp Card */
+        .sardar-helpline-card {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 6px 14px 6px 8px;
+          background: #f0fdf4;
+          border: 1.5px solid #bbf7d0;
+          border-radius: 9999px;
+          text-decoration: none;
+          transition: all 0.2s ease;
         }
-        .dropdown-item-icon {
-          font-size: 1.25rem;
-          width: 32px;
-          height: 32px;
-          border-radius: var(--radius-sm);
-          background: rgba(140, 59, 16, 0.08);
+        .sardar-helpline-card:hover {
+          background: #dcfce7;
+          border-color: #86efac;
+          transform: translateY(-1px);
+          box-shadow: 0 3px 10px rgba(22, 163, 74, 0.12);
+        }
+        .sardar-helpline-icon-wrap {
+          position: relative;
+          width: 30px;
+          height: 30px;
+          background: #16a34a;
+          color: #ffffff;
+          border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          flex-shrink: 0;
         }
-        .dropdown-item-content {
-          flex: 1;
+        .sardar-live-dot {
+          position: absolute;
+          width: 8px;
+          height: 8px;
+          background: #22c55e;
+          border-radius: 50%;
+          top: -1px;
+          right: -1px;
+          box-shadow: 0 0 0 2px #ffffff;
+          animation: pulseGreen 2s infinite;
+        }
+        @keyframes pulseGreen {
+          0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+          70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+          100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        .sardar-helpline-details {
           display: flex;
           flex-direction: column;
         }
-        .dropdown-item-title {
-          font-size: 0.88rem;
-          font-weight: 700;
-          color: var(--color-text-main);
-          line-height: 1.2;
+        .sardar-helpline-title {
+          font-size: 0.65rem;
+          font-weight: 800;
+          color: #15803d;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          line-height: 1;
         }
-        .dropdown-item-link:hover .dropdown-item-title {
-          color: var(--color-primary);
-        }
-        .dropdown-item-desc {
-          font-size: 0.73rem;
-          color: var(--color-text-muted);
-          line-height: 1.3;
-        }
-        .dropdown-item-badge {
-          font-size: 0.7rem;
-          font-weight: 700;
-          color: var(--color-primary);
-          background: rgba(140, 59, 16, 0.08);
-          padding: 3px 8px;
-          border-radius: var(--radius-full);
-          white-space: nowrap;
+        .sardar-helpline-phone {
+          font-size: 0.82rem;
+          font-weight: 800;
+          color: #14532d;
+          margin-top: 2px;
+          line-height: 1;
         }
 
-        .dropdown-footer-link {
-          margin-top: 14px;
-          padding-top: 10px;
-          border-top: 1px solid var(--color-border);
-        }
-        .dropdown-footer-link button {
-          color: var(--color-primary);
-          font-size: 0.82rem;
-          font-weight: 700;
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
+        /* Action Item Buttons */
+        .sardar-action-item {
           background: none;
           border: none;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 10px;
+          border-radius: 10px;
           cursor: pointer;
-          padding: 0;
-          transition: gap 0.2s ease;
-        }
-        .dropdown-footer-link button:hover {
-          text-decoration: underline;
-          gap: 9px;
-        }
-
-        /* Dropdown Spotlight Card */
-        .dropdown-spotlight-card {
+          color: #2b1810;
+          transition: all 0.15s ease;
           position: relative;
-          border-radius: var(--radius-md);
-          overflow: hidden;
-          background: var(--color-warm-dark);
-          color: #ffffff;
+        }
+        .sardar-action-item:hover {
+          background: #fbf5ef;
+          color: #b45309;
+        }
+        .sardar-action-icon-box {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .sardar-action-textbox {
           display: flex;
           flex-direction: column;
-          cursor: pointer;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
-          transition: transform 0.2s ease;
+          align-items: flex-start;
+          line-height: 1.15;
         }
-        .dropdown-spotlight-card:hover {
-          transform: translateY(-2px);
+        .sardar-action-micro {
+          font-size: 0.68rem;
+          color: #78716c;
+          font-weight: 600;
         }
-        .spotlight-badge {
+        .sardar-action-bold {
+          font-size: 0.82rem;
+          font-weight: 800;
+          color: inherit;
+        }
+
+        /* Count Badge Pills */
+        .sardar-count-pill {
           position: absolute;
-          top: 10px;
-          left: 10px;
-          background: #ea580c;
+          top: -7px;
+          right: -9px;
+          background: #b45309;
           color: #ffffff;
           font-size: 0.65rem;
           font-weight: 800;
-          padding: 2px 8px;
-          border-radius: 4px;
-          z-index: 2;
-          letter-spacing: 0.5px;
+          min-width: 17px;
+          height: 17px;
+          padding: 0 4px;
+          border-radius: 9999px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 2px solid #ffffff;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
-        .spotlight-img {
-          width: 100%;
-          height: 110px;
-          object-fit: cover;
-          transition: transform 0.4s ease;
+        .sardar-count-pill.cart-pill {
+          background: #dc2626;
         }
-        .dropdown-spotlight-card:hover .spotlight-img {
-          transform: scale(1.05);
+        .sardar-auth-indicator {
+          position: absolute;
+          bottom: -2px;
+          right: -5px;
+          background: #16a34a;
+          color: #ffffff;
+          width: 13px;
+          height: 13px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 1.5px solid #ffffff;
         }
-        .spotlight-body {
+
+        /* Popover Menu */
+        .sardar-account-dropdown-wrapper {
+          position: relative;
+        }
+        .sardar-account-popover {
+          position: absolute;
+          top: calc(100% + 8px);
+          right: 0;
+          width: 240px;
+          background: #ffffff;
+          border-radius: 14px;
+          box-shadow: 0 14px 35px rgba(42, 24, 16, 0.16);
+          border: 1.5px solid #ebd9cc;
           padding: 12px;
+          z-index: 1100;
+        }
+        .sardar-popover-header {
+          border-bottom: 1px solid #f1e4db;
+          padding-bottom: 10px;
+          margin-bottom: 8px;
+        }
+        .sardar-popover-greeting {
+          font-size: 0.7rem;
+          color: #a89487;
+          font-weight: 700;
+          text-transform: uppercase;
+          display: block;
+        }
+        .sardar-popover-user {
+          display: block;
+          font-size: 0.95rem;
+          color: #1e0d07;
+          font-weight: 800;
+          margin-top: 2px;
+        }
+        .sardar-popover-email {
+          display: block;
+          font-size: 0.78rem;
+          color: #78716c;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .sardar-popover-admin-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: #fef3c7;
+          color: #b45309;
+          font-size: 0.7rem;
+          font-weight: 800;
+          padding: 2px 7px;
+          border-radius: 4px;
+          margin-top: 5px;
+        }
+        .sardar-popover-links {
           display: flex;
           flex-direction: column;
           gap: 4px;
         }
-        .spotlight-body h4 {
-          font-size: 0.92rem;
-          font-weight: 700;
-          color: #fde047;
-          margin: 0;
-        }
-        .spotlight-body p {
-          font-size: 0.72rem;
-          color: #e5d5cc;
-          line-height: 1.35;
-          margin: 0;
-        }
-        .spotlight-action {
-          margin-top: 6px;
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: #ffffff;
-          text-decoration: underline;
-        }
-
-        /* Mobile Drawer Accordions */
-        .mobile-drawer-accordion {
-          border-bottom: 1px solid var(--color-border);
-          margin-bottom: 4px;
-        }
-        .drawer-accordion-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-        .drawer-accordion-header .drawer-link-btn {
-          border-bottom: none;
-          flex: 1;
-        }
-        .drawer-accordion-toggle {
-          width: 44px;
-          height: 44px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: transparent;
-          color: var(--color-text-main);
+        .sardar-popover-item {
+          background: none;
           border: none;
-          cursor: pointer;
-        }
-        .accordion-chevron {
-          transition: transform 0.25s ease;
-        }
-        .accordion-chevron.open {
-          transform: rotate(180deg);
-          color: var(--color-primary);
-        }
-        .drawer-accordion-body {
-          background: var(--color-warm-sand);
-          padding: 8px 12px 12px 14px;
-          border-radius: var(--radius-md);
-          margin: 0 10px 10px 10px;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-        .drawer-subcat-btn {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 8px 10px;
-          background: #ffffff;
-          border-radius: var(--radius-sm);
-          border: 1px solid rgba(140, 59, 16, 0.08);
+          text-align: left;
+          padding: 9px 12px;
+          border-radius: 8px;
           font-size: 0.85rem;
           font-weight: 600;
-          color: var(--color-text-main);
-          text-align: left;
+          color: #332018;
           cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          transition: background 0.15s ease;
         }
-        .drawer-subcat-btn:hover {
-          background: #fff7ed;
-          color: var(--color-primary);
+        .sardar-popover-item:hover {
+          background: #fbf5ef;
+          color: #b45309;
         }
-        .drawer-subcat-btn small {
-          color: var(--color-primary);
-          font-size: 0.72rem;
-          font-weight: 700;
-          background: rgba(140, 59, 16, 0.08);
-          padding: 2px 6px;
-          border-radius: 4px;
+        .sardar-popover-item.admin {
+          color: #b45309;
         }
-        .drawer-subcat-btn.view-all-subcat {
-          background: var(--color-primary);
-          color: #ffffff;
-          justify-content: center;
-          font-weight: 700;
+        .sardar-popover-item.signout {
+          color: #dc2626;
+          background: #fef2f2;
           margin-top: 4px;
         }
-        .drawer-subcat-btn.view-all-subcat:hover {
-          background: var(--color-primary-hover);
+        .sardar-popover-item.signout:hover {
+          background: #fee2e2;
         }
 
-        /* Mobile Search Row */
-        .mobile-search-row {
-          padding-top: 10px;
+        /* Mobile Trigger Buttons */
+        .sardar-mob-search-btn,
+        .sardar-mob-menu-btn {
+          display: none;
+          background: none;
+          border: none;
+          color: #1e0d07;
+          padding: 6px;
+          cursor: pointer;
+          border-radius: 8px;
         }
-        .mobile-search-form {
+        .sardar-mob-search-btn:hover,
+        .sardar-mob-menu-btn:hover {
+          background: #fbf5ef;
+        }
+
+        /* Mobile Expandable Search Form */
+        .sardar-mob-search-container {
+          padding-top: 8px;
+          padding-bottom: 8px;
+        }
+        .sardar-mob-search-form {
           display: flex;
-          border: 1.5px solid var(--color-primary);
-          border-radius: var(--radius-full);
-          overflow: hidden;
-          background: #ffffff;
+          align-items: center;
+          background: #f8fafc;
+          border: 1.5px solid #cbd5e1;
+          border-radius: 9999px;
+          padding: 4px 6px 4px 14px;
         }
-        .mobile-search-form input {
+        .sardar-mob-search-icon {
+          margin-right: 8px;
+          color: #64748b;
+        }
+        .sardar-mob-search-form input {
           flex: 1;
           border: none;
-          padding: 10px 16px;
+          background: transparent;
           outline: none;
           font-size: 0.9rem;
         }
-        .mobile-search-form button {
-          background: var(--color-primary);
-          color: #ffffff;
-          padding: 0 16px;
-        }
-
-        /* Luxury Mobile Drawer */
-        .mobile-drawer-backdrop {
-          position: fixed;
-          inset: 0;
-          background: rgba(18, 10, 6, 0.7);
-          backdrop-filter: blur(4px);
-          z-index: 1500;
-          display: flex;
-          animation: fadeIn 0.2s ease;
-        }
-        .mobile-drawer-panel {
-          width: 85%;
-          max-width: 340px;
-          height: 100%;
-          background: #ffffff;
-          display: flex;
-          flex-direction: column;
-          box-shadow: 4px 0 24px rgba(0,0,0,0.25);
-          animation: slideInRight 0.25s ease;
-        }
-        .drawer-top-brand {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 18px;
-          background: #faf6f1;
-          border-bottom: 1px solid var(--color-border);
-        }
-        .drawer-brand {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-        .drawer-close-btn {
-          color: var(--color-warm-dark);
-          padding: 6px;
-        }
-
-        .drawer-search-form {
-          margin: 14px 18px 6px;
-          display: flex;
-          align-items: center;
-          background: #f4eee5;
-          border-radius: var(--radius-md);
-          padding: 6px 12px;
-          border: 1px solid #ebdcd0;
-        }
-        .drawer-search-icon {
-          color: #8c766a;
-          margin-right: 8px;
-        }
-        .drawer-search-form input {
-          flex: 1;
-          border: none;
-          background: transparent;
-          outline: none;
-          font-size: 0.88rem;
-          color: var(--color-text-main);
-        }
-        .drawer-search-form button {
-          background: var(--color-primary);
+        .sardar-mob-search-form button {
+          background: #b45309;
           color: white;
-          font-size: 0.75rem;
+          border: none;
+          border-radius: 9999px;
+          padding: 7px 16px;
+          font-size: 0.82rem;
           font-weight: 700;
-          padding: 4px 10px;
-          border-radius: 4px;
         }
 
-        .drawer-links-scrollable {
-          flex: 1;
-          overflow-y: auto;
-          padding: 14px 18px;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
+        /* 3. PRIMARY CATEGORY NAVIGATION BAR */
+        .sardar-nav-bar {
+          background: #faf7f3;
+          border-bottom: 1.5px solid #eae0d5;
+          position: relative;
         }
-        .drawer-section-label {
-          font-size: 0.68rem;
-          font-weight: 800;
-          letter-spacing: 1.2px;
-          color: #a89487;
-          margin: 6px 0 2px 4px;
-        }
-        .drawer-link-btn {
+        .sardar-nav-content {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 12px 14px;
-          border-radius: var(--radius-md);
-          font-size: 0.92rem;
-          font-weight: 600;
-          color: var(--color-text-main);
-          text-align: left;
-          background: #ffffff;
-          transition: background var(--transition-fast);
         }
-        .drawer-link-btn:hover,
-        .drawer-link-btn.active {
-          background: #fff3ec;
-          color: var(--color-primary);
+        .sardar-nav-items {
+          display: flex;
+          align-items: center;
+          list-style: none;
+          margin: 0;
+          padding: 0;
+          gap: 4px;
+          white-space: nowrap;
         }
-        .drawer-offers-btn {
+        .sardar-nav-tab {
+          position: relative;
+        }
+        .sardar-nav-tab button {
+          background: none;
+          border: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 11px 16px;
+          font-size: 0.88rem;
+          font-weight: 700;
+          color: #3b281f;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          border-radius: 8px;
+          margin: 3px 0;
+        }
+        .sardar-nav-tab button:hover {
+          color: #b45309;
+          background: #f2e6dc;
+        }
+        .sardar-nav-tab.active button {
+          color: #b45309;
+          background: #ebd8cb;
+          font-weight: 800;
+        }
+        .tab-chevron {
+          transition: transform 0.2s ease;
+          color: #8c766b;
+        }
+        .tab-chevron.rotated {
+          transform: rotate(180deg);
+          color: #b45309;
+        }
+        .sardar-nav-tab.offers-tab button {
           color: #c2410c;
         }
-        .drawer-badge-red {
+        .sardar-flame-icon {
+          color: #ea580c;
+        }
+        .sardar-discount-tag {
           background: #fee2e2;
           color: #dc2626;
           font-size: 0.65rem;
           font-weight: 800;
           padding: 2px 6px;
-          border-radius: var(--radius-full);
+          border-radius: 9999px;
+          letter-spacing: 0.3px;
         }
 
-        .drawer-whatsapp-box {
-          margin-top: 18px;
-          background: #f0fdf4;
-          border: 1px solid #bbf7d0;
-          border-radius: var(--radius-lg);
-          padding: 14px;
-        }
-        .wa-box-header {
-          display: flex;
+        /* Right Timing Pill */
+        .sardar-nav-timing {
+          display: inline-flex;
           align-items: center;
-          gap: 8px;
-          font-size: 0.85rem;
-          color: #166534;
-          margin-bottom: 6px;
-        }
-        .drawer-whatsapp-box p {
+          gap: 7px;
           font-size: 0.78rem;
-          color: #14532d;
-          line-height: 1.4;
+          font-weight: 700;
+          color: #785e50;
+        }
+        .sardar-timing-dot {
+          width: 7px;
+          height: 7px;
+          background: #22c55e;
+          border-radius: 50%;
+        }
+
+        /* Mega Dropdown Menus */
+        .sardar-mega-dropdown {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          width: 620px;
+          background: #ffffff;
+          border-radius: 16px;
+          box-shadow: 0 16px 36px rgba(42, 24, 16, 0.18);
+          border: 1.5px solid #ebd9cc;
+          padding: 20px;
+          z-index: 1200;
+        }
+        .sardar-mega-grid {
+          display: grid;
+          grid-template-columns: 1.6fr 1fr;
+          gap: 20px;
+        }
+        .sardar-mega-header {
+          display: block;
+          font-size: 0.7rem;
+          font-weight: 800;
+          color: #8c766b;
+          letter-spacing: 1.2px;
           margin-bottom: 12px;
         }
+        .sardar-mega-list {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .sardar-mega-link {
+          background: none;
+          border: none;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 8px 10px;
+          border-radius: 10px;
+          text-align: left;
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        .sardar-mega-link:hover {
+          background: #fbf5ef;
+        }
+        .sardar-mega-emoji {
+          font-size: 1.3rem;
+          flex-shrink: 0;
+        }
+        .sardar-mega-link strong {
+          display: block;
+          font-size: 0.88rem;
+          color: #1e0d07;
+        }
+        .sardar-mega-link small {
+          display: block;
+          font-size: 0.74rem;
+          color: #64748b;
+        }
+        .sardar-mega-footer {
+          margin-top: 14px;
+          border-top: 1px solid #f1e4db;
+          padding-top: 10px;
+        }
+        .sardar-mega-footer button {
+          background: none;
+          border: none;
+          color: #b45309;
+          font-size: 0.82rem;
+          font-weight: 700;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .sardar-mega-footer button:hover {
+          text-decoration: underline;
+        }
 
-        /* Breakpoints */
+        .sardar-mega-banner {
+          background: linear-gradient(135deg, #2b170e 0%, #150904 100%);
+          color: #ffffff;
+          border-radius: 12px;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          cursor: pointer;
+        }
+        .sardar-mega-banner.elec {
+          background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+        .sardar-banner-chip {
+          background: #f59e0b;
+          color: #1e0d07;
+          font-size: 0.65rem;
+          font-weight: 800;
+          padding: 2px 7px;
+          border-radius: 4px;
+          align-self: flex-start;
+          margin-bottom: 10px;
+        }
+        .sardar-mega-banner h4 {
+          margin: 0 0 6px;
+          font-size: 1.05rem;
+          font-weight: 800;
+        }
+        .sardar-mega-banner p {
+          margin: 0 0 14px;
+          font-size: 0.78rem;
+          color: #cbd5e1;
+          line-height: 1.4;
+        }
+        .sardar-banner-cta {
+          color: #fde047;
+          font-size: 0.8rem;
+          font-weight: 700;
+        }
+
+        /* 4. MOBILE DRAWER */
+        .sardar-drawer-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(4px);
+          z-index: 2000;
+          display: flex;
+        }
+        .sardar-drawer-container {
+          width: 85%;
+          max-width: 360px;
+          height: 100%;
+          background: #ffffff;
+          box-shadow: 6px 0 25px rgba(0,0,0,0.25);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          animation: slideDrawer 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes slideDrawer {
+          from { transform: translateX(-100%); }
+          to { transform: translateX(0); }
+        }
+        .sardar-drawer-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 16px 20px;
+          background: #180f0a;
+          color: #ffffff;
+        }
+        .sardar-drawer-brand-wrap {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          cursor: pointer;
+        }
+        .sardar-drawer-logo {
+          height: 36px;
+          border-radius: 6px;
+        }
+        .sardar-drawer-brand-name {
+          margin: 0;
+          font-size: 1.15rem;
+          font-weight: 800;
+          color: #ffffff;
+        }
+        .sardar-drawer-brand-name span {
+          color: #fbbf24;
+        }
+        .sardar-drawer-head small {
+          font-size: 0.6rem;
+          color: #cbd5e1;
+          letter-spacing: 1px;
+        }
+        .sardar-drawer-close-btn {
+          background: none;
+          border: none;
+          color: #ffffff;
+          cursor: pointer;
+        }
+
+        .sardar-drawer-search {
+          display: flex;
+          align-items: center;
+          background: #f1f5f9;
+          margin: 14px 18px 6px;
+          padding: 8px 12px;
+          border-radius: 10px;
+          gap: 8px;
+        }
+        .sardar-drawer-search input {
+          flex: 1;
+          border: none;
+          background: transparent;
+          outline: none;
+          font-size: 0.88rem;
+        }
+        .sardar-drawer-search button {
+          background: #b45309;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          padding: 4px 10px;
+          font-size: 0.78rem;
+          font-weight: 700;
+        }
+
+        .sardar-drawer-body {
+          flex: 1;
+          overflow-y: auto;
+          padding: 14px 18px 30px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .sardar-drawer-label {
+          font-size: 0.68rem;
+          font-weight: 800;
+          color: #94a3b8;
+          letter-spacing: 1.2px;
+          margin: 6px 0 4px 4px;
+        }
+        .sardar-drawer-nav-item {
+          background: none;
+          border: none;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 11px 14px;
+          border-radius: 10px;
+          font-size: 0.92rem;
+          font-weight: 700;
+          color: #1e293b;
+          text-align: left;
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        .sardar-drawer-nav-item:hover,
+        .sardar-drawer-nav-item.active {
+          background: #fbf5ef;
+          color: #b45309;
+        }
+        .sardar-drawer-nav-item.offers-link {
+          color: #c2410c;
+        }
+
+        .sardar-drawer-accordion-block {
+          display: flex;
+          flex-direction: column;
+        }
+        .sardar-accordion-header-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .sardar-accordion-header-row .sardar-drawer-nav-item {
+          flex: 1;
+        }
+        .sardar-accordion-trigger {
+          background: none;
+          border: none;
+          padding: 10px 14px;
+          cursor: pointer;
+          color: #64748b;
+        }
+        .sardar-acc-icon {
+          transition: transform 0.2s ease;
+        }
+        .sardar-acc-icon.open {
+          transform: rotate(180deg);
+          color: #b45309;
+        }
+        .sardar-drawer-sublinks {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          background: #f8fafc;
+          border-radius: 10px;
+          padding: 8px 12px;
+          margin: 4px 0 8px 12px;
+        }
+        .sardar-drawer-sublinks button {
+          background: none;
+          border: none;
+          text-align: left;
+          padding: 8px 10px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #334155;
+          cursor: pointer;
+          border-radius: 6px;
+        }
+        .sardar-drawer-sublinks button:hover {
+          background: #f1f5f9;
+          color: #b45309;
+        }
+        .sardar-drawer-sublinks button.see-all {
+          color: #b45309;
+          font-weight: 700;
+        }
+
+        .sardar-drawer-card {
+          margin-top: 16px;
+          background: #f0fdf4;
+          border: 1px solid #bbf7d0;
+          border-radius: 12px;
+          padding: 14px;
+        }
+        .sardar-drawer-wa-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          background: #16a34a;
+          color: #ffffff;
+          padding: 9px;
+          border-radius: 8px;
+          text-decoration: none;
+          font-size: 0.85rem;
+          font-weight: 700;
+        }
+
+        /* ------------------------------------------- */
+        /* RESPONSIVE BREAKPOINTS                      */
+        /* ------------------------------------------- */
+
+        /* 1200px and below */
+        @media (max-width: 1200px) {
+          .sardar-nav-timing {
+            display: none;
+          }
+          .sardar-action-textbox {
+            display: none;
+          }
+          .sardar-action-item {
+            padding: 6px 8px;
+          }
+          .sardar-search-bar {
+            max-width: 480px;
+          }
+        }
+
+        /* 992px and below (Tablets & Mobile) */
         @media (max-width: 992px) {
-          .quick-whatsapp-btn {
+          .sardar-nav-bar {
             display: none;
           }
-          .desk-search {
+          .sardar-search-bar {
             display: none;
           }
-          .primary-nav {
+          .sardar-helpline-card {
             display: none;
           }
-          .mobile-toggle-btn {
-            display: block;
-          }
-          .mobile-search-toggle-btn {
-            display: block;
-          }
-          .icon-btn-label {
+          .sardar-top-links {
             display: none;
           }
-          .desk-only-flex {
-            display: none !important;
+          .sardar-mob-search-btn,
+          .sardar-mob-menu-btn {
+            display: flex;
+          }
+          .sardar-ticker {
+            justify-content: center;
+          }
+          .sardar-main-content {
+            padding: 0 16px;
+          }
+          .sardar-brand-primary {
+            font-size: 1.3rem;
           }
         }
 
-        @media (max-width: 768px) {
-          .announcement-slider-wrapper {
-            width: 100%;
-            justify-content: center;
-          }
-          .announcement-slide-track {
-            justify-content: center;
-          }
-          .slide-text {
-            font-size: 0.76rem;
-          }
-        }
-
-        @media (max-width: 500px) {
-          .slide-badge {
+        /* 600px and below (Phones) */
+        @media (max-width: 600px) {
+          .sardar-ticker-tag {
             display: none;
           }
-          .slider-dots {
-            display: none;
-          }
-          .top-announcement-bar {
-            padding: 5px 0;
-          }
-          .slide-text {
+          .sardar-ticker-text {
             font-size: 0.74rem;
           }
-          .brand-title {
-            font-size: 1.35rem;
+          .sardar-logo-img {
+            height: 38px;
           }
-          .brand-subtitle {
-            display: none;
-          }
-          .header-actions {
-            gap: 10px;
-          }
-        }
-
-        @media (max-width: 360px) {
-          .header-container {
-            padding: 0 8px;
-          }
-          .brand-title {
+          .sardar-brand-primary {
             font-size: 1.15rem;
           }
-          .logo-emblem {
-            width: 30px;
-            height: 30px;
+          .sardar-brand-secondary {
+            display: none;
           }
-          .logo-icon-seat {
-            font-size: 14px;
-          }
-          .header-actions {
+          .sardar-actions-bar {
             gap: 4px;
           }
-          .action-icon-btn, .mobile-search-toggle-btn, .mobile-toggle-btn {
-            padding: 2px;
-          }
-          .action-icon-btn svg, .mobile-search-toggle-btn svg, .mobile-toggle-btn svg {
-            width: 20px;
-            height: 20px;
-          }
-          .counter-badge {
-            width: 15px;
-            height: 15px;
-            font-size: 0.6rem;
-            top: -4px;
-            right: -6px;
+          .sardar-action-item {
+            padding: 6px 6px;
           }
         }
       `}</style>

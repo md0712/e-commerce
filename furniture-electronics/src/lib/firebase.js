@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 /**
  * Firebase Web Client Configuration
@@ -21,6 +22,17 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 // Firebase modular service instances
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
-export { app, auth, db, firebaseConfig };
+// Prevent storage network operations from hanging indefinitely
+if (storage) {
+  try {
+    storage.maxUploadRetryTime = 2500;
+    storage.maxOperationRetryTime = 2500;
+  } catch (e) {
+    // Ignore environment restrictions if any
+  }
+}
+
+export { app, auth, db, storage, firebaseConfig };
 export default app;

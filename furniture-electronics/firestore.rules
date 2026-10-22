@@ -129,6 +129,18 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------
+    // 8. Reviews & Feedback Collection: Customer reviews & contact feedback
+    // -------------------------------------------------------------
+    match /reviews/{reviewId} {
+      // Any customer or visitor can submit a review / feedback from the website
+      allow create: if true;
+      // Allow reading feedback and reviews
+      allow read: if true;
+      // Administrators can update status and delete reviews
+      allow update, delete: if isAdmin() || isSuperAdmin();
+    }
+
+    // -------------------------------------------------------------
     // Default Deny: All unknown collections and unauthorized paths
     // -------------------------------------------------------------
     match /{document=**} {

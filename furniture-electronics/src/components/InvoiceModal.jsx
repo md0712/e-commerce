@@ -75,10 +75,10 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
               </div>
               <p className="invoice-company-details">
                 Sardar Electricals and Furnitures Private Limited<br />
-                123, Main Commercial Road, Market Area<br />
-                Chennai, Tamil Nadu - 600001<br />
-                <strong>GSTIN:</strong> 33AAACH1234F1Z5 | <strong>Phone:</strong> +91 98765 43210<br />
-                <strong>Email:</strong> care@sardarelectricals.com | <strong>Web:</strong> www.sardarelectricals.com
+                No. 192, E.H Road, Cholan nagar, Vyasarpadi, Erukancheri<br />
+                Chennai, Tamil Nadu - 600039<br />
+                <strong>GSTIN:</strong> 33AAACH1234F1Z5 | <strong>Phone:</strong> +91 6383056338 / +91 9344623632<br />
+                <strong>Email:</strong> sardarmart64@gmail.com | <strong>Instagram:</strong> @sardar_mart_ch_39
               </p>
             </div>
 
@@ -127,7 +127,7 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
               <p className="customer-address">
                 {customer.address || 'Showroom In-Store Order'}<br />
                 {customer.city ? `${customer.city} - ${customer.pincode || ''}` : 'Chennai, Tamil Nadu'}<br />
-                <strong>Phone:</strong> {customer.phone || '+91 98765 43210'}
+                <strong>Phone:</strong> {customer.phone || '+91 6383056338'}
               </p>
             </div>
             <div className="party-box party-right">

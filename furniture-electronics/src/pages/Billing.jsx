@@ -36,8 +36,8 @@ export default function Billing({
     email: 'priya.sharma@example.com'
   });
 
-  // Catalog Picker state
-  const catalogList = (products && products.length > 0) ? products : initialProducts;
+  // Catalog Picker state (strictly from Firestore backend database)
+  const catalogList = products || [];
   const [catalogSearch, setCatalogSearch] = useState('');
   const [catalogCat, setCatalogCat] = useState('all');
 
@@ -496,17 +496,25 @@ export default function Billing({
               ))}
             </div>
 
-            {/* 6-Column Product Cards Grid matching the screenshot */}
             <div className="pos-products-6col-grid">
-              {catalogList
-                .filter(p => {
+              {(() => {
+                const filtered = catalogList.filter(p => {
                   const matchCat = catalogCat === 'all' || p.category === catalogCat;
                   const matchSearch = !catalogSearch.trim() || 
                     p.name.toLowerCase().includes(catalogSearch.toLowerCase()) ||
                     (p.category || '').toLowerCase().includes(catalogSearch.toLowerCase());
                   return matchCat && matchSearch;
-                })
-                .map(p => {
+                });
+                if (filtered.length === 0) {
+                  return (
+                    <div className="pos-no-products" style={{ gridColumn: '1 / -1', padding: '36px 16px', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
+                      <Package size={32} color="#94a3b8" style={{ margin: '0 auto 8px' }} />
+                      <p style={{ margin: 0, fontWeight: 700, color: '#475569' }}>No products found</p>
+                      <small style={{ color: '#64748b' }}>No items found in Firestore database matching this criteria.</small>
+                    </div>
+                  );
+                }
+                return filtered.map(p => {
                   const inBill = billItems.find(it => it.id === p.id);
                   return (
                     <div key={p.id} className={`pos-product-tile ${inBill ? 'tile-selected' : ''}`}>
@@ -534,7 +542,8 @@ export default function Billing({
                       </button>
                     </div>
                   );
-                })}
+                });
+              })()}
             </div>
           </div>
         </div>

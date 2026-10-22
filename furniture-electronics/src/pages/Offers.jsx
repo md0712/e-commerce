@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { 
   Sparkles, Tag, Percent, Copy, Check, 
-  ArrowRight, CreditCard, Calculator, Gift, HelpCircle 
+  ArrowRight, CreditCard, Calculator, Gift, HelpCircle, Package 
 } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-import { specialOffers, products } from '../data/products';
 
 export default function Offers({ 
   onSelectProduct, 
@@ -13,9 +12,11 @@ export default function Offers({
   onToggleWishlist,
   cart = [],
   onUpdateQuantity,
-  products: customProducts
+  products: customProducts,
+  promoCodes: customPromoCodes = []
 }) {
-  const allProducts = customProducts || products;
+  const allProducts = Array.isArray(customProducts) ? customProducts : (customProducts || []);
+  const activePromos = (customPromoCodes || []).filter(p => p.status !== 'inactive');
   const [copiedCode, setCopiedCode] = useState(null);
   const [emiAmount, setEmiAmount] = useState(45000);
   const [emiMonths, setEmiMonths] = useState(6);
@@ -55,41 +56,75 @@ export default function Offers({
       {/* 2. Active Coupons Strip */}
       <section className="coupons-section">
         <div className="container">
-          <h2 className="section-title">Claim Exclusive Discount Coupons</h2>
-          <div className="coupons-grid">
-            {specialOffers.map((offer) => (
-              <div key={offer.id} className="coupon-card">
-                <div className="coupon-left">
-                  <div className="coupon-tag-badge">
-                    <Tag size={14} /> {offer.subtitle}
-                  </div>
-                  <h3 className="coupon-title">{offer.title}</h3>
-                  <p className="coupon-desc">{offer.discountHighlight}</p>
-                  <span className="coupon-validity">{offer.validTill}</span>
-                </div>
-
-                <div className="coupon-right">
-                  <div className="coupon-code-box">
-                    <span className="code-text">{offer.code}</span>
-                  </div>
-                  <button 
-                    className={`copy-code-btn ${copiedCode === offer.code ? 'copied' : ''}`}
-                    onClick={() => handleCopyCode(offer.code)}
-                  >
-                    {copiedCode === offer.code ? (
-                      <>
-                        <Check size={14} /> Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy size={14} /> Copy Code
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            ))}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div>
+              <h2 className="section-title" style={{ margin: 0 }}>Claim Exclusive Discount Coupons</h2>
+              <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.9rem' }}>Use these verified promo codes during checkout to save instantly.</p>
+            </div>
+            {activePromos.length > 0 && (
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#b45309', background: '#fef3c7', padding: '4px 12px', borderRadius: '20px' }}>
+                {activePromos.length} Verified Codes Active
+              </span>
+            )}
           </div>
+
+          {activePromos.length > 0 ? (
+            <div className="coupons-grid">
+              {activePromos.map((offer) => (
+                <div key={offer.id} className="coupon-card">
+                  <div className="coupon-left">
+                    <div className="coupon-tag-badge">
+                      <Tag size={14} /> {offer.discountPercentage}% OFF
+                    </div>
+                    <h3 className="coupon-title">
+                      {offer.discountPercentage}% Instant Discount
+                    </h3>
+                    <p className="coupon-desc" style={{ color: '#166534', fontWeight: 600, fontSize: '0.88rem', margin: '4px 0' }}>
+                      ⚡ Offer limit: Upto ₹{Number(offer.maxDiscountAmount || 0).toLocaleString('en-IN')}
+                    </p>
+                    {offer.minOrderAmount > 0 && (
+                      <span style={{ fontSize: '0.78rem', color: '#64748b', display: 'block', marginBottom: '4px' }}>
+                        Min. Cart Value: ₹{Number(offer.minOrderAmount).toLocaleString('en-IN')}
+                      </span>
+                    )}
+                    {offer.description && (
+                      <p className="coupon-desc" style={{ fontSize: '0.82rem', color: '#475569', margin: '4px 0' }}>
+                        {offer.description}
+                      </p>
+                    )}
+                    <span className="coupon-validity">{offer.validTill || 'Valid until stocks last'}</span>
+                  </div>
+
+                  <div className="coupon-right">
+                    <div className="coupon-code-box">
+                      <span className="code-text">{offer.code}</span>
+                    </div>
+                    <button 
+                      className={`copy-code-btn ${copiedCode === offer.code ? 'copied' : ''}`}
+                      onClick={() => handleCopyCode(offer.code)}
+                      title={`Copy promo code ${offer.code}`}
+                    >
+                      {copiedCode === offer.code ? (
+                        <>
+                          <Check size={14} /> Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={14} /> Copy Code
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="no-products-box" style={{ textAlign: 'center', padding: '48px 20px', background: '#f8fafc', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+              <Tag size={40} style={{ color: '#94a3b8', margin: '0 auto 12px', display: 'block' }} />
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1e293b', marginBottom: '6px' }}>No promo codes found</h3>
+              <p style={{ color: '#64748b' }}>No active promo codes currently published from the store admin panel. Check back soon for seasonal discounts!</p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -102,20 +137,28 @@ export default function Offers({
             <p className="section-sub-heading">Buy paired furniture &amp; electronics together to save up to ₹25,000 on single invoice</p>
           </div>
 
-          <div className="combos-grid">
-            {comboProducts.map(combo => (
-              <ProductCard
-                key={combo.id}
-                product={combo}
-                onSelectProduct={onSelectProduct}
-                onAddToCart={onAddToCart}
-                isWishlisted={wishlist.some(item => item.id === combo.id)}
-                onToggleWishlist={onToggleWishlist}
-                cartQuantity={cart?.find(item => item.id === combo.id)?.quantity || 0}
-                onUpdateQuantity={onUpdateQuantity}
-              />
-            ))}
-          </div>
+          {comboProducts.length > 0 ? (
+            <div className="combos-grid">
+              {comboProducts.map(combo => (
+                <ProductCard
+                  key={combo.id}
+                  product={combo}
+                  onSelectProduct={onSelectProduct}
+                  onAddToCart={onAddToCart}
+                  isWishlisted={wishlist.some(item => item.id === combo.id)}
+                  onToggleWishlist={onToggleWishlist}
+                  cartQuantity={cart?.find(item => item.id === combo.id)?.quantity || 0}
+                  onUpdateQuantity={onUpdateQuantity}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="no-products-box" style={{ textAlign: 'center', padding: '48px 20px', background: '#f8fafc', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+              <Package size={44} style={{ color: '#94a3b8', margin: '0 auto 12px', display: 'block' }} />
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1e293b', marginBottom: '6px' }}>No products found</h3>
+              <p style={{ color: '#64748b' }}>No combo bundle packages currently configured in the store database.</p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -213,20 +256,28 @@ export default function Offers({
             <p className="section-sub-heading">Save flat 20% to 40% on these top rated bestsellers</p>
           </div>
 
-          <div className="combos-grid">
-            {highDiscountProducts.slice(0, 4).map(prod => (
-              <ProductCard
-                key={prod.id}
-                product={prod}
-                onSelectProduct={onSelectProduct}
-                onAddToCart={onAddToCart}
-                isWishlisted={wishlist.some(item => item.id === prod.id)}
-                onToggleWishlist={onToggleWishlist}
-                cartQuantity={cart?.find(item => item.id === prod.id)?.quantity || 0}
-                onUpdateQuantity={onUpdateQuantity}
-              />
-            ))}
-          </div>
+          {highDiscountProducts.length > 0 ? (
+            <div className="combos-grid">
+              {highDiscountProducts.slice(0, 4).map(prod => (
+                <ProductCard
+                  key={prod.id}
+                  product={prod}
+                  onSelectProduct={onSelectProduct}
+                  onAddToCart={onAddToCart}
+                  isWishlisted={wishlist.some(item => item.id === prod.id)}
+                  onToggleWishlist={onToggleWishlist}
+                  cartQuantity={cart?.find(item => item.id === prod.id)?.quantity || 0}
+                  onUpdateQuantity={onUpdateQuantity}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="no-products-box" style={{ textAlign: 'center', padding: '48px 20px', background: '#f8fafc', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+              <Package size={44} style={{ color: '#94a3b8', margin: '0 auto 12px', display: 'block' }} />
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1e293b', marginBottom: '6px' }}>No products found</h3>
+              <p style={{ color: '#64748b' }}>No special discount deals currently configured in the store database.</p>
+            </div>
+          )}
         </div>
       </section>
 
