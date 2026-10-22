@@ -68,12 +68,14 @@ export default function Appliances({
       </div>
 
       <div className="container main-catalog-container">
-        <div className="catalog-toolbar">
-          <div className="subcat-pills">
+        {/* Compact Short-Size Quick-Shortcut Toolbar */}
+        <div className="compact-catalog-toolbar">
+          {/* Row 1: Subcategory Shortcut Pills */}
+          <div className="subcat-shortcut-strip">
             {subcategories.map(sub => (
               <button
                 key={sub.id}
-                className={`pill-btn ${selectedSubcat === sub.id ? 'active' : ''}`}
+                className={`shortcut-pill-btn ${selectedSubcat === sub.id ? 'active' : ''}`}
                 onClick={() => setSelectedSubcat(sub.id)}
               >
                 {sub.label}
@@ -81,9 +83,77 @@ export default function Appliances({
             ))}
           </div>
 
-          <div className="toolbar-controls">
-            <div className="price-slider-control">
-              <span className="price-label">Max: ₹{maxPrice.toLocaleString('en-IN')}</span>
+          {/* Row 2: 1-Tap Sort & Price Shortcuts (Short & Easy) */}
+          <div className="quick-filter-shortcuts-row">
+            <span className="shortcuts-label">
+              <Sparkles size={13} className="sparkle-shortcut-icon" /> Shortcuts:
+            </span>
+
+            {/* Quick Sort Shortcuts */}
+            <button 
+              type="button"
+              className={`filter-shortcut-chip ${sortBy === 'popular' ? 'active' : ''}`}
+              onClick={() => setSortBy('popular')}
+            >
+              Popular
+            </button>
+            <button 
+              type="button"
+              className={`filter-shortcut-chip ${sortBy === 'price-low' ? 'active' : ''}`}
+              onClick={() => setSortBy('price-low')}
+            >
+              ↓ Price: Low-High
+            </button>
+            <button 
+              type="button"
+              className={`filter-shortcut-chip ${sortBy === 'price-high' ? 'active' : ''}`}
+              onClick={() => setSortBy('price-high')}
+            >
+              ↑ Price: High-Low
+            </button>
+            <button 
+              type="button"
+              className={`filter-shortcut-chip ${sortBy === 'discount' ? 'active' : ''}`}
+              onClick={() => setSortBy('discount')}
+            >
+              % Offers
+            </button>
+            <button 
+              type="button"
+              className={`filter-shortcut-chip ${sortBy === 'rating' ? 'active' : ''}`}
+              onClick={() => setSortBy('rating')}
+            >
+              ★ Top Rated
+            </button>
+
+            <span className="shortcut-divider">|</span>
+
+            {/* Quick Price Shortcuts */}
+            <button 
+              type="button"
+              className={`filter-shortcut-chip ${maxPrice >= 20000 ? 'active' : ''}`}
+              onClick={() => setMaxPrice(20000)}
+            >
+              All Prices
+            </button>
+            <button 
+              type="button"
+              className={`filter-shortcut-chip ${maxPrice === 6000 ? 'active' : ''}`}
+              onClick={() => setMaxPrice(6000)}
+            >
+              &lt; ₹6K
+            </button>
+            <button 
+              type="button"
+              className={`filter-shortcut-chip ${maxPrice === 12000 ? 'active' : ''}`}
+              onClick={() => setMaxPrice(12000)}
+            >
+              &lt; ₹12K
+            </button>
+
+            {/* Compact inline slider if custom price needed */}
+            <div className="compact-price-slider">
+              <span className="compact-price-text">Max: ₹{maxPrice.toLocaleString('en-IN')}</span>
               <input 
                 type="range" 
                 min="2000" 
@@ -91,23 +161,9 @@ export default function Appliances({
                 step="1000"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="range-input"
+                className="compact-range-slider"
+                aria-label="Filter maximum price"
               />
-            </div>
-
-            <div className="sort-select-wrapper">
-              <ArrowUpDown size={14} className="sort-icon" />
-              <select 
-                value={sortBy} 
-                onChange={(e) => setSortBy(e.target.value)}
-                className="sort-dropdown"
-              >
-                <option value="popular">Sort: Popularity</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="discount">Highest Discount</option>
-                <option value="rating">Top Rated</option>
-              </select>
             </div>
           </div>
         </div>
