@@ -213,34 +213,7 @@ export default function CartDrawer({
                   ))}
                 </div>
 
-                {/* Coupon Code Section */}
-                <div className="coupon-section">
-                  <form onSubmit={handleApplyCoupon} className="coupon-form">
-                    <div className="coupon-input-box">
-                      <Tag size={16} className="tag-icon" />
-                      <input 
-                        id="cart-coupon-input"
-                        name="couponCode"
-                        type="text" 
-                        autoComplete="off"
-                        aria-label="Enter coupon discount code"
-                        placeholder="Enter Coupon (e.g. COMBOBEST, FESTIVE50)"
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value)}
-                        className="coupon-input"
-                      />
-                    </div>
-                    <button type="submit" className="coupon-apply-btn">Apply</button>
-                  </form>
-                  {appliedCoupon && (
-                    <div className="applied-tag">
-                      <Check size={14} /> Coupon <strong>{appliedCoupon}</strong> applied successfully!
-                    </div>
-                  )}
-                  {couponError && (
-                    <div className="coupon-err">{couponError}</div>
-                  )}
-                </div>
+
               </div>
             ) : (
               <div className="empty-cart-state">
