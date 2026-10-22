@@ -1,0 +1,108 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------
+    // Helper Functions for Strict Role & Identity Enforcement
+    // -------------------------------------------------------------
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // -------------------------------------------------------------
+    // 1. Users Collection: Private customer profile data
+    // -------------------------------------------------------------
+    match /users/{userId} {
+      // Customers can read their own profile; admins can read any profile
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Customer can create their own profile upon registration
+      // Cannot self-assign admin claims or roles
+      allow create: if isOwner(userId)
+                    && (!('role' in request.resource.data) || request.resource.data.role != 'admin')
+                    && (!('admin' in request.resource.data) || request.resource.data.admin != true);
+
+      // Customer can update profile fields, but CANNOT modify privileged role fields
+      allow update: if (isOwner(userId) 
+                        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'admin', 'isAdmin'])
+                       ) || isAdmin();
+
+      // Only administrators can delete user records
+      allow delete: if isAdmin();
+    }
+
+    // -------------------------------------------------------------
+    // 2. Products Collection: Public catalog data
+    // -------------------------------------------------------------
+    match /products/{productId} {
+      // Storefront visitors & customers can browse all products
+      allow read: if true;
+
+      // Only verified administrators can create, edit, or delete catalog products
+      allow write: if isAdmin();
+    }
+
+    // -------------------------------------------------------------
+    // 3. Categories Collection: Public catalog categorization
+    // -------------------------------------------------------------
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // -------------------------------------------------------------
+    // 4. Orders Collection: Customer billing & order records
+    // -------------------------------------------------------------
+    match /orders/{orderId} {
+      // Verified admins can view all orders. Customers can only view their own orders.
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.customerUid == request.auth.uid);
+
+      // Authenticated customers can place orders with their UID; guest checkout supported with guest tag
+      allow create: if (isAuthenticated() && request.resource.data.customerUid == request.auth.uid)
+                    || (request.resource.data.customerUid == 'guest')
+                    || isAdmin();
+
+      // Customers CANNOT modify placed orders (protects status, paymentStatus, totals).
+      // Only administrators can update status or edit orders.
+      allow update: if isAdmin();
+
+      // Only administrators can delete order records
+      allow delete: if isAdmin();
+    }
+
+    // -------------------------------------------------------------
+    // 5. Enquiries Collection: Customer queries & lead capture
+    // -------------------------------------------------------------
+    match /enquiries/{enquiryId} {
+      // Any visitor can submit an inquiry
+      allow create: if true;
+
+      // Only verified administrators can inspect, reply to, or delete enquiries
+      allow read, update, delete: if isAdmin();
+    }
+
+    // -------------------------------------------------------------
+    // 6. Settings Collection: Store configuration & content CMS
+    // -------------------------------------------------------------
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // -------------------------------------------------------------
+    // Default Deny: All unknown collections and unauthorized paths
+    // -------------------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

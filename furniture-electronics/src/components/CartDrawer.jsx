@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, ShoppingBag, Trash2, ArrowRight, MessageCircle, 
   CreditCard, Check, Tag, ShieldCheck, Truck, ArrowLeft, 
   FileText, Package, MapPin, Phone, User 
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function CartDrawer({ 
   isOpen, 
@@ -16,6 +17,7 @@ export default function CartDrawer({
   onOpenTrackOrder,
   onViewInvoice 
 }) {
+  const { currentUser, userProfile } = useAuth();
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
@@ -31,6 +33,17 @@ export default function CartDrawer({
     pincode: '600001',
     paymentMethod: 'UPI (GPay / PhonePe)'
   });
+
+  // Pre-fill authenticated customer details
+  useEffect(() => {
+    if (currentUser) {
+      setBillingForm((prev) => ({
+        ...prev,
+        name: prev.name || userProfile?.name || currentUser.displayName || '',
+        phone: prev.phone || userProfile?.phone || ''
+      }));
+    }
+  }, [currentUser, userProfile]);
 
   if (!isOpen) return null;
 
@@ -114,6 +127,8 @@ export default function CartDrawer({
     const newOrder = {
       id: orderId,
       date: formattedDate,
+      customerUid: currentUser?.uid || 'guest',
+      customerEmail: currentUser?.email || '',
       customer: {
         name: billingForm.name,
         phone: billingForm.phone,

@@ -5,8 +5,11 @@ import {
   LogOut, Search, Bell, Calendar, ChevronDown, Plus, Eye, EyeOff, 
   Edit3, Trash2, Printer, CheckCircle, Clock, Truck, Home, 
   FileText, ArrowRight, ArrowLeft, Mail, Lock, Check, AlertCircle,
-  Menu, X, IndianRupee, Phone, ExternalLink, RefreshCw, Sparkles, Filter, MessageCircle
+  Menu, X, IndianRupee, Phone, ExternalLink, RefreshCw, Sparkles, Filter, MessageCircle,
+  ShieldAlert, Loader2
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { seedProductsToFirestore } from '../services/productService';
 
 export default function AdminPanel({
   products = [],
@@ -19,22 +22,20 @@ export default function AdminPanel({
   onEditOrder,
   onDeleteOrder,
   onViewInvoice,
-  onBackToStore
+  onBackToStore,
+  onSeedCatalog
 }) {
-  // Authentication State
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    try {
-      return localStorage.getItem('hk_admin_auth') === 'true';
-    } catch {
-      return false;
-    }
-  });
+  // Real Firebase Authentication and ID token custom claim verification
+  const { currentUser, isAdmin, login, logout, resetPassword, refreshClaims, loading: authLoading } = useAuth();
+  const isAuthenticated = Boolean(currentUser && isAdmin);
 
-  const [loginEmail, setLoginEmail] = useState('admin@homekart.com');
-  const [loginPassword, setLoginPassword] = useState('admin123');
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loginError, setLoginError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSeeding, setIsSeeding] = useState(false);
 
   // Active Admin Tab (defaults to initialTab, e.g. 'settings' or 'dashboard')
   const [activeTab, setActiveTab] = useState(initialTab || 'dashboard');
@@ -231,69 +232,100 @@ export default function AdminPanel({
     setTimeout(() => setToast(''), 3000);
   };
 
-  // Sync state to local storage
-  useEffect(() => {
-    try {
-      localStorage.setItem('hk_admin_auth', isAuthenticated ? 'true' : 'false');
-    } catch {}
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('hk_enquiries', JSON.stringify(enquiries));
-    } catch {}
-  }, [enquiries]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('hk_site_content', JSON.stringify(siteContent));
-    } catch {}
-  }, [siteContent]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('hk_admin_settings', JSON.stringify(storeSettings));
-    } catch {}
-  }, [storeSettings]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('hk_admin_profile', JSON.stringify(adminProfile));
-    } catch {}
-  }, [adminProfile]);
-
-  // Handle Login
-  const handleLogin = (e) => {
+  // Handlers for Firebase Admin Authentication
+  const handleLogin = async (e) => {
     if (e) e.preventDefault();
     if (!loginEmail.trim() || !loginPassword.trim()) {
-      setLoginError('Please enter both Email and Password');
+      setLoginError('Please enter both Administrator Email and Password');
       return;
     }
 
-    // Default credential check or 1-click test login
-    if (
-      (loginEmail.toLowerCase() === 'admin@homekart.com' && loginPassword === 'admin123') ||
-      loginEmail.includes('admin')
-    ) {
-      setIsAuthenticated(true);
-      setLoginError('');
-      showToast('Welcome back, Administrator!');
-    } else {
-      setLoginError('Invalid credentials. Use demo: admin@homekart.com / admin123');
+    setIsSubmitting(true);
+    setLoginError('');
+
+    try {
+      const result = await login(loginEmail, loginPassword);
+      if (!result.isAdmin) {
+        setLoginError(
+          'Unauthorized: Your credentials were authenticated by Firebase, but this account does NOT have verified administrator privileges (custom claim "admin: true"). Ordinary customers cannot access this admin panel. Run "npm run set-admin <email>" to grant admin rights.'
+        );
+        await logout();
+      } else {
+        showToast('Welcome back, Administrator!');
+      }
+    } catch (err) {
+      const code = err.code || err.message || '';
+      if (code.includes('invalid-credential') || code.includes('wrong-password') || code.includes('user-not-found')) {
+        setLoginError('Invalid administrator email or password.');
+      } else if (code.includes('too-many-requests')) {
+        setLoginError('Access temporarily blocked due to repeated failed attempts. Please try again later.');
+      } else {
+        setLoginError(err.message || 'Authentication failed. Please verify connection.');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleQuickDemoLogin = () => {
-    setLoginEmail('admin@homekart.com');
-    setLoginPassword('admin123');
-    setIsAuthenticated(true);
-    setLoginError('');
-    showToast('Logged in as Administrator (Demo)');
+  const handleForgotPassword = async () => {
+    if (!loginEmail.trim()) {
+      setLoginError('Please enter your administrator email above to receive password reset instructions.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await resetPassword(loginEmail);
+      showToast(`Password reset link sent to ${loginEmail}`);
+      setLoginError('');
+    } catch (err) {
+      setLoginError(err.message || 'Failed to send password reset email.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    showToast('Logged out of Admin Panel');
+  const handleRefreshClaims = async () => {
+    setIsSubmitting(true);
+    try {
+      const hasAdmin = await refreshClaims();
+      if (hasAdmin) {
+        showToast('Administrator privileges verified successfully!');
+        setLoginError('');
+      } else {
+        setLoginError('No administrator claim found on this account yet. Ensure "npm run set-admin" was run successfully.');
+      }
+    } catch (err) {
+      setLoginError(err.message || 'Claim verification failed.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      showToast('Logged out of Admin Panel');
+    } catch (err) {
+      console.warn('Logout error:', err);
+    }
+  };
+
+  const handleSeedCatalogClick = async () => {
+    if (window.confirm('Sync and seed the catalog into Cloud Firestore? This will populate the Firestore products collection with the store products.')) {
+      setIsSeeding(true);
+      try {
+        if (onSeedCatalog) {
+          await onSeedCatalog();
+        } else {
+          await seedProductsToFirestore();
+        }
+        showToast('Firestore catalog synced successfully!');
+      } catch (err) {
+        showToast('Seeding error: ' + err.message);
+      } finally {
+        setIsSeeding(false);
+      }
+    }
   };
 
   // Calculations for KPI Cards
@@ -309,6 +341,26 @@ export default function AdminPanel({
       maximumFractionDigits: 0
     }).format(val || 0);
   };
+
+  // Loading state while checking Firebase ID token custom claims
+  if (authLoading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#f8fafc',
+        gap: '14px',
+        color: '#4a2818',
+        fontWeight: 700
+      }}>
+        <Loader2 size={36} className="animate-spin" style={{ color: '#d97706' }} />
+        <p>Verifying Staff Authorization...</p>
+      </div>
+    );
+  }
 
   // -------------------------------------------------------------
   // VIEW 1: LOGIN & ACCESS SCREEN (Matches Screenshot Part 1)
@@ -434,15 +486,80 @@ export default function AdminPanel({
                 <button
                   type="button"
                   className="forgot-pass-btn"
-                  onClick={() => showToast('Password reset link sent to registered email')}
+                  onClick={handleForgotPassword}
+                  disabled={isSubmitting}
                 >
                   Forgot password?
                 </button>
               </div>
 
-              <button type="submit" className="login-primary-btn">
-                Login
+              <button type="submit" className="login-primary-btn" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    <Loader2 size={16} className="animate-spin" /> Authenticating...
+                  </span>
+                ) : (
+                  'Login to Staff Portal'
+                )}
               </button>
+
+              {currentUser && !isAdmin && (
+                <div style={{
+                  marginTop: '16px',
+                  padding: '12px 14px',
+                  background: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: '10px',
+                  fontSize: '0.82rem',
+                  color: '#991b1b',
+                  lineHeight: 1.5
+                }}>
+                  <div style={{ fontWeight: 700, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <ShieldAlert size={16} /> Non-Admin Account Detected
+                  </div>
+                  <div>Signed in as: <strong>{currentUser.email}</strong></div>
+                  <div style={{ margin: '6px 0 10px 0', color: '#7f1d1d' }}>
+                    This account lacks verified <code>admin: true</code> custom claims.
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={handleRefreshClaims}
+                      disabled={isSubmitting}
+                      style={{
+                        flex: 1,
+                        padding: '6px 10px',
+                        background: '#2b170e',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontWeight: 700,
+                        fontSize: '0.78rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {isSubmitting ? 'Checking...' : 'Refresh Claims'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      style={{
+                        flex: 1,
+                        padding: '6px 10px',
+                        background: '#dc2626',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontWeight: 700,
+                        fontSize: '0.78rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className="login-or-divider">
                 <span>or</span>
@@ -450,28 +567,16 @@ export default function AdminPanel({
 
               <button
                 type="button"
-                className="google-login-btn"
-                onClick={handleQuickDemoLogin}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" className="google-icon">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                </svg>
-                <span>Login with Google</span>
-              </button>
-
-              <button
-                type="button"
                 className="demo-instant-btn"
-                onClick={handleQuickDemoLogin}
+                onClick={handleRefreshClaims}
+                disabled={isSubmitting}
+                title="Force refresh Firebase ID token to verify new custom claims assigned via CLI"
               >
-                <Sparkles size={16} /> 1-Click Instant Demo Login
+                <RefreshCw size={16} className={isSubmitting ? 'animate-spin' : ''} /> Check / Refresh Admin Claims
               </button>
 
-              <div className="login-footer-note">
-                Don't have an account? <span className="contact-link">Contact Admin</span>
+              <div className="login-footer-note" style={{ fontSize: '0.78rem', color: '#78716c' }}>
+                Protected Staff Portal • Requires verified Firebase Admin custom claims.
               </div>
 
               <div className="back-store-wrap">
@@ -1372,12 +1477,23 @@ export default function AdminPanel({
                 <h3>Products Management</h3>
                 <p>Manage product catalog inventory, pricing, discounts, and badges.</p>
               </div>
-              <button 
-                className="add-quick-product-btn"
-                onClick={() => setIsAddProductModalOpen(true)}
-              >
-                <Plus size={16} /> Add New Product
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  className="add-quick-product-btn"
+                  onClick={handleSeedCatalogClick}
+                  disabled={isSeeding}
+                  style={{ background: '#78350f' }}
+                  title="Upload / Sync default catalog items directly into Cloud Firestore"
+                >
+                  <RefreshCw size={16} className={isSeeding ? 'animate-spin' : ''} /> {isSeeding ? 'Syncing...' : 'Sync to Firestore'}
+                </button>
+                <button 
+                  className="add-quick-product-btn"
+                  onClick={() => setIsAddProductModalOpen(true)}
+                >
+                  <Plus size={16} /> Add New Product
+                </button>
+              </div>
             </div>
 
             {/* Filter and Search Bar */}

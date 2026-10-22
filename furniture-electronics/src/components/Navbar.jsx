@@ -5,6 +5,7 @@ import {
   ShieldCheck, Truck, User, PlusCircle, ArrowRight, Package,
   Tv, Armchair, Refrigerator, CookingPot, Layers
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Navbar({ 
   currentPage, 
@@ -13,6 +14,7 @@ export default function Navbar({
   wishlistCount = 0,
   onOpenCart,
   onOpenWishlist,
+  onOpenAuth,
   onSearch,
   searchQuery,
   setSearchQuery,
@@ -22,6 +24,8 @@ export default function Navbar({
   onOpenTrackOrder,
   onNavigateSubcategory
 }) {
+  const { currentUser, userProfile, logout, isAdmin } = useAuth();
+  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchVisible, setMobileSearchVisible] = useState(false);
   const [announcementIndex, setAnnouncementIndex] = useState(0);
@@ -253,6 +257,134 @@ export default function Navbar({
             >
               <Search size={22} />
             </button>
+
+            {/* Customer Account / Sign In */}
+            <div className="account-menu-wrapper" style={{ position: 'relative' }}>
+              <button 
+                className="action-icon-btn" 
+                onClick={currentUser ? () => setIsAccountDropdownOpen(!isAccountDropdownOpen) : onOpenAuth}
+                title={currentUser ? `Signed in as ${userProfile?.name || currentUser.displayName || currentUser.email}` : "Customer Sign In / Register"}
+                aria-label="Account"
+              >
+                <div className="icon-with-badge">
+                  <User size={22} />
+                  {currentUser && (
+                    <span className="counter-badge" style={{ background: '#16a34a', minWidth: '16px', height: '16px', fontSize: '0.65rem' }}>
+                      ✓
+                    </span>
+                  )}
+                </div>
+                <span className="icon-btn-label">
+                  {currentUser ? (userProfile?.name?.split(' ')[0] || currentUser.displayName?.split(' ')[0] || 'Account') : 'Sign In'}
+                </span>
+              </button>
+
+              {currentUser && isAccountDropdownOpen && (
+                <div 
+                  className="account-dropdown-menu" 
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 8px)',
+                    right: 0,
+                    width: '230px',
+                    background: '#ffffff',
+                    borderRadius: '12px',
+                    boxShadow: '0 10px 25px rgba(42, 24, 16, 0.18)',
+                    border: '1px solid #ebd9cc',
+                    padding: '12px',
+                    zIndex: 1000,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px'
+                  }}
+                >
+                  <div style={{ borderBottom: '1px solid #f3e8e2', paddingBottom: '8px' }}>
+                    <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#2b170e' }}>
+                      {userProfile?.name || currentUser.displayName || 'Customer'}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: '#78716c', wordBreak: 'break-all' }}>
+                      {currentUser.email}
+                    </div>
+                    {isAdmin && (
+                      <span style={{
+                        display: 'inline-block',
+                        background: '#fef3c7',
+                        color: '#b45309',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        fontSize: '0.68rem',
+                        fontWeight: 800,
+                        marginTop: '4px'
+                      }}>
+                        Admin Privileges
+                      </span>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => { setIsAccountDropdownOpen(false); onOpenTrackOrder(); }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      textAlign: 'left',
+                      padding: '8px',
+                      borderRadius: '6px',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      color: '#44403c',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    <Package size={16} /> Track My Orders
+                  </button>
+
+                  {isAdmin && (
+                    <button
+                      onClick={() => { setIsAccountDropdownOpen(false); onOpenAdmin(); }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        textAlign: 'left',
+                        padding: '8px',
+                        borderRadius: '6px',
+                        fontSize: '0.85rem',
+                        fontWeight: 600,
+                        color: '#b45309',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <ShieldCheck size={16} /> Admin Portal
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => { setIsAccountDropdownOpen(false); logout(); }}
+                    style={{
+                      background: '#fef2f2',
+                      border: 'none',
+                      textAlign: 'left',
+                      padding: '8px',
+                      borderRadius: '6px',
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                      color: '#dc2626',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    <X size={16} /> Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Wishlist */}
             <button 
@@ -820,6 +952,78 @@ export default function Navbar({
                 <span>📍 Showroom Locations &amp; Map</span>
                 <ArrowRight size={16} />
               </button>
+
+              {/* Mobile Drawer Account Section */}
+              {currentUser ? (
+                <div style={{
+                  padding: '12px 14px',
+                  background: '#fbf7f4',
+                  borderRadius: '10px',
+                  border: '1px solid #ebd9cc',
+                  marginBottom: '8px'
+                }}>
+                  <div style={{ fontWeight: 800, color: '#2b170e', fontSize: '0.9rem' }}>
+                    {userProfile?.name || currentUser.displayName || 'Customer Account'}
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: '#78716c', marginBottom: '8px' }}>
+                    {currentUser.email}
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {isAdmin && (
+                      <button
+                        onClick={() => { setMobileMenuOpen(false); onOpenAdmin(); }}
+                        style={{
+                          flex: 1,
+                          padding: '6px 10px',
+                          background: '#fef3c7',
+                          color: '#b45309',
+                          border: '1px solid #fde68a',
+                          borderRadius: '6px',
+                          fontWeight: 700,
+                          fontSize: '0.78rem',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Admin Portal
+                      </button>
+                    )}
+                    <button
+                      onClick={() => { setMobileMenuOpen(false); logout(); }}
+                      style={{
+                        flex: 1,
+                        padding: '6px 10px',
+                        background: '#fee2e2',
+                        color: '#dc2626',
+                        border: '1px solid #fecaca',
+                        borderRadius: '6px',
+                        fontWeight: 700,
+                        fontSize: '0.78rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  className="drawer-link-btn"
+                  onClick={() => { setMobileMenuOpen(false); if (onOpenAuth) onOpenAuth(); }}
+                  style={{
+                    background: 'linear-gradient(135deg, #2b170e 0%, #4a2818 100%)',
+                    color: '#ffffff',
+                    borderRadius: '10px',
+                    padding: '12px 16px',
+                    marginBottom: '8px',
+                    fontWeight: 700
+                  }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <User size={18} /> Customer Sign In / Register
+                  </span>
+                  <ArrowRight size={16} />
+                </button>
+              )}
 
               <button 
                 className="drawer-link-btn"

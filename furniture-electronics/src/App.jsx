@@ -8,6 +8,7 @@ import TrackOrderModal from './components/TrackOrderModal';
 import InvoiceModal from './components/InvoiceModal';
 import MobileBottomNav from './components/MobileBottomNav';
 import IntroLoader from './components/IntroLoader';
+import AuthModal from './components/AuthModal';
 
 import Home from './pages/Home';
 import Furniture from './pages/Furniture';
@@ -18,6 +19,22 @@ import Offers from './pages/Offers';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import AdminPanel from './pages/AdminPanel';
+
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { 
+  getProducts, 
+  createProduct, 
+  updateProduct, 
+  deleteProduct, 
+  seedProductsToFirestore 
+} from './services/productService';
+import { 
+  createOrder, 
+  updateOrderStatus, 
+  editOrder, 
+  deleteOrder, 
+  subscribeToOrdersAdmin 
+} from './services/orderService';
 
 import { products as initialProducts } from './data/products';
 import { MessageCircle, ArrowUp } from 'lucide-react';
@@ -93,9 +110,19 @@ const defaultOrders = [
   }
 ];
 
-export default function App() {
+function AppContent() {
+  const { currentUser, isAdmin } = useAuth();
   const [currentPage, setCurrentPage] = useState('home');
   const [selectedProduct, setSelectedProduct] = useState(null);
+
+  // Customer Auth Modal State
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState('login');
+
+  const handleOpenAuth = (mode = 'login') => {
+    setAuthModalMode(mode);
+    setIsAuthModalOpen(true);
+  };
 
   // Intro Loading Animation: Furniture appears one by one, fades away, electronics appear one by one, then transitions to homepage
   const [showIntro, setShowIntro] = useState(() => {
@@ -106,7 +133,7 @@ export default function App() {
     }
   });
 
-  // Dynamic Catalog State (persisted so admin changes remain live)
+  // Dynamic Catalog State (persisted with Firestore sync)
   const [catalogProducts, setCatalogProducts] = useState(() => {
     try {
       const saved = localStorage.getItem('hk_catalog_products');
@@ -115,6 +142,33 @@ export default function App() {
       return initialProducts;
     }
   });
+
+  // Fetch live products from Firestore on initial mount
+  useEffect(() => {
+    let isMounted = true;
+    async function loadCatalog() {
+      try {
+        const live = await getProducts();
+        if (isMounted && live && live.length > 0) {
+          setCatalogProducts(live);
+        }
+      } catch (err) {
+        console.warn('Could not load Firestore catalog, using initial catalog:', err);
+      }
+    }
+    loadCatalog();
+    return () => { isMounted = false; };
+  }, []);
+
+  // Real-time listener for orders in Firestore
+  useEffect(() => {
+    const unsubscribe = subscribeToOrdersAdmin((liveOrders) => {
+      if (liveOrders && liveOrders.length > 0) {
+        setOrders(liveOrders);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   // Orders & Billing State (persisted)
   const [orders, setOrders] = useState(() => {
@@ -276,47 +330,93 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Order Handlers (Billing & Tracking)
-  const handlePlaceOrder = (newOrder) => {
+  // Order Handlers (Billing & Tracking with Firestore persistence)
+  const handlePlaceOrder = async (newOrder) => {
     setOrders((prev) => [newOrder, ...prev]);
     showToast(`Order #${newOrder.id} placed successfully!`);
+    try {
+      await createOrder(newOrder, currentUser?.uid || 'guest');
+    } catch (err) {
+      console.warn('Could not persist order to Firestore:', err);
+    }
   };
 
-  const handleUpdateOrderStatus = (orderId, newStatus) => {
+  const handleUpdateOrderStatus = async (orderId, newStatus) => {
     setOrders((prev) =>
       prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
     );
     showToast(`Updated Order #${orderId} status to "${newStatus}"`);
+    try {
+      await updateOrderStatus(orderId, newStatus);
+    } catch (err) {
+      console.warn('Could not update order status in Firestore:', err);
+    }
   };
 
-  const handleEditOrder = (orderId, updatedOrder) => {
+  const handleEditOrder = async (orderId, updatedOrder) => {
     setOrders((prev) =>
       prev.map((o) => (o.id === orderId ? { ...o, ...updatedOrder } : o))
     );
     showToast(`Order #${orderId} details updated`);
+    try {
+      await editOrder(orderId, updatedOrder);
+    } catch (err) {
+      console.warn('Could not edit order details in Firestore:', err);
+    }
   };
 
-  const handleDeleteOrder = (orderId) => {
+  const handleDeleteOrder = async (orderId) => {
     setOrders((prev) => prev.filter((o) => o.id !== orderId));
     showToast(`Order #${orderId} deleted from records`);
+    try {
+      await deleteOrder(orderId);
+    } catch (err) {
+      console.warn('Could not delete order in Firestore:', err);
+    }
   };
 
-  // Catalog Handlers (Admin Edit & Remove)
-  const handleAddProductAdmin = (newProduct) => {
+  // Catalog Handlers (Admin Edit & Remove with Firestore persistence)
+  const handleAddProductAdmin = async (newProduct) => {
     setCatalogProducts((prev) => [newProduct, ...prev]);
     showToast(`Added "${newProduct.name}" to live catalog!`);
+    try {
+      const saved = await createProduct(newProduct);
+      setCatalogProducts((prev) =>
+        prev.map((p) => (p.name === newProduct.name ? { ...p, id: saved.id } : p))
+      );
+    } catch (err) {
+      console.warn('Could not save product to Firestore:', err);
+    }
   };
 
-  const handleEditProductAdmin = (productId, updatedProduct) => {
+  const handleEditProductAdmin = async (productId, updatedProduct) => {
     setCatalogProducts((prev) =>
       prev.map((p) => (p.id === productId ? { ...p, ...updatedProduct } : p))
     );
     showToast(`Updated "${updatedProduct.name}"`);
+    try {
+      await updateProduct(productId, updatedProduct);
+    } catch (err) {
+      console.warn('Could not update product in Firestore:', err);
+    }
   };
 
-  const handleDeleteProductAdmin = (productId) => {
+  const handleDeleteProductAdmin = async (productId) => {
     setCatalogProducts((prev) => prev.filter((p) => p.id !== productId));
     showToast(`Product removed from catalog`);
+    try {
+      await deleteProduct(productId);
+    } catch (err) {
+      console.warn('Could not delete product from Firestore:', err);
+    }
+  };
+
+  // Seed default catalog to Firestore (Admin action)
+  const handleSeedCatalog = async () => {
+    const count = await seedProductsToFirestore(initialProducts);
+    const refreshed = await getProducts();
+    setCatalogProducts(refreshed);
+    return count;
   };
 
   // Track Order & Invoice openers
@@ -353,6 +453,7 @@ export default function App() {
           onDeleteOrder={handleDeleteOrder}
           onViewInvoice={handleViewInvoice}
           onBackToStore={() => handleNavigate('home')}
+          onSeedCatalog={handleSeedCatalog}
         />
 
         {/* Printable Tax Invoice Modal */}
@@ -387,6 +488,7 @@ export default function App() {
         wishlistCount={wishlist.length}
         onOpenCart={() => setIsCartOpen(true)}
         onOpenWishlist={() => setIsWishlistOpen(true)}
+        onOpenAuth={handleOpenAuth}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         selectedCategory={selectedCategory}
@@ -562,6 +664,16 @@ export default function App() {
         order={activeInvoiceOrder}
       />
 
+      {/* Customer Authentication Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        initialMode={authModalMode}
+        onSuccess={(mode) => {
+          showToast(mode === 'register' ? 'Account created! Welcome to HomeKart.' : 'Signed in successfully!');
+        }}
+      />
+
       {/* Mobile Sticky Bottom Navigation */}
       <MobileBottomNav
         currentPage={currentPage}
@@ -687,5 +799,13 @@ export default function App() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
