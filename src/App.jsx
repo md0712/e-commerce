@@ -659,6 +659,9 @@ export default function App() {
             isWishlisted={wishlist.some((item) => item.id === selectedProduct?.id)}
             onToggleWishlist={handleToggleWishlist}
             cartItem={cart.find((item) => item.id === selectedProduct?.id)}
+            cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
+            cart={cart}
+            wishlist={wishlist}
             onUpdateQuantity={handleUpdateQuantity}
             onRemoveFromCart={handleRemoveFromCart}
             onOpenCart={() => setIsCartOpen(true)}
