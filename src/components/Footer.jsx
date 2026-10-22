@@ -22,7 +22,7 @@ export default function Footer({ onNavigate, onOpenAdmin, onOpenTrackOrder, stor
   const instagram = siteContent?.instagramUrl || 'https://instagram.com';
   const facebook = siteContent?.facebookUrl || 'https://facebook.com';
   const youtube = siteContent?.youtubeUrl || 'https://youtube.com';
-  const whatsappPhone = (siteContent?.phone || '+91 98765 43210').replace(/\D/g, '');
+  const whatsappPhone = (siteContent?.phone || '+91 63830 56338').replace(/\D/g, '');
 
   return (
     <footer className="site-footer">
@@ -140,14 +140,14 @@ export default function Footer({ onNavigate, onOpenAdmin, onOpenTrackOrder, stor
                   <Phone size={18} className="contact-icon" />
                   <div>
                     <strong>Direct Helpline:</strong>
-                    <a href="tel:+919876543210">+91 98765 43210</a>
+                    <a href="tel:+916383056338">+91 63830 56338</a>
                   </div>
                 </li>
                 <li>
                   <MessageCircle size={18} className="contact-icon wa-color" />
                   <div>
                     <strong>WhatsApp Direct:</strong>
-                    <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer">+91 98765 43210</a>
+                    <a href="https://wa.me/916383056338" target="_blank" rel="noreferrer">+91 63830 56338</a>
                   </div>
                 </li>
                 <li>

@@ -211,7 +211,7 @@ export default function About({ onNavigate, storeSettings }) {
                 View Full Map &amp; Directions
               </button>
               <a 
-                href="https://wa.me/919876543210?text=Hi%20Sardar%20Mart%2C%20I%20would%20like%20to%20visit%20your%20Chennai%20showroom"
+                href="https://wa.me/916383056338?text=Hi%20Sardar%20Mart%2C%20I%20would%20like%20to%20visit%20your%20Chennai%20showroom"
                 target="_blank"
                 rel="noreferrer"
                 className="btn-whatsapp"

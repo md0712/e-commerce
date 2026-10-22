@@ -76,9 +76,9 @@ export default function Navbar({
     {
       id: 4,
       icon: <MessageCircle size={14} className="inline-icon text-wa" />,
-      text: "Instant WhatsApp Showroom Help: +91 98765 43210",
+      text: "Instant WhatsApp Showroom Help: +91 63830 56338",
       badge: "WhatsApp Help",
-      action: () => window.open('https://wa.me/919876543210', '_blank')
+      action: () => window.open('https://wa.me/916383056338', '_blank')
     }
   ];
 
@@ -163,7 +163,7 @@ export default function Navbar({
               <MapPin size={13} /> Find Showrooms
             </button>
             <span className="bar-separator">|</span>
-            <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" className="top-link top-whatsapp">
+            <a href="https://wa.me/916383056338" target="_blank" rel="noreferrer" className="top-link top-whatsapp">
               <MessageCircle size={13} /> WhatsApp Help
             </a>
           </div>
@@ -227,7 +227,7 @@ export default function Navbar({
           <div className="header-actions">
             {/* WhatsApp Quick Dial (Desktop) */}
             <a 
-              href="https://wa.me/919876543210?text=Hi%20Sardar%20Mart%2C%20I%20would%20like%20to%20enquire%20about%20your%20products"
+              href="https://wa.me/916383056338?text=Hi%20Sardar%20Mart%2C%20I%20would%20like%20to%20enquire%20about%20your%20products"
               target="_blank" 
               rel="noreferrer"
               className="quick-whatsapp-btn"
@@ -238,7 +238,7 @@ export default function Navbar({
               </div>
               <div className="wa-text-block">
                 <span className="wa-label">Enquiry Helpline</span>
-                <span className="wa-number">+91 98765 43210</span>
+                <span className="wa-number">+91 63830 56338</span>
               </div>
             </a>
 
@@ -891,13 +891,13 @@ export default function Navbar({
                 </div>
                 <p>Chat directly with our Chennai showroom managers on WhatsApp.</p>
                 <a 
-                  href="https://wa.me/919876543210?text=Hi%20Sardar%20Mart%2C%20I%20need%20assistance%20with%20products" 
+                  href="https://wa.me/916383056338?text=Hi%20Sardar%20Mart%2C%20I%20need%20assistance%20with%20products" 
                   target="_blank" 
                   rel="noreferrer"
                   className="btn-whatsapp"
                   style={{ width: '100%', justifyContent: 'center' }}
                 >
-                  <MessageCircle size={18} /> Chat: +91 98765 43210
+                  <MessageCircle size={18} /> Chat: +91 63830 56338
                 </a>
               </div>
             </div>

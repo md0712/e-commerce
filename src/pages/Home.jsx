@@ -393,7 +393,7 @@ export default function Home({
                   <MapPin size={18} /> Get Showroom Directions
                 </button>
                 <a 
-                  href="https://wa.me/919876543210?text=Hi%20Sardar%20Mart%2C%20I%20would%20like%20to%20book%20a%20showroom%20visit" 
+                  href="https://wa.me/916383056338?text=Hi%20Sardar%20Mart%2C%20I%20would%20like%20to%20book%20a%20showroom%20visit" 
                   target="_blank" 
                   rel="noreferrer"
                   className="btn-whatsapp"

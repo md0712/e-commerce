@@ -167,7 +167,7 @@ export default function AdminPanel({
       const saved = localStorage.getItem('hk_site_content');
       const defaultContent = {
         storeName: 'Sardar Mart Furniture & Electronics',
-        phone: '+91 98765 43210',
+        phone: '+91 63830 56338',
         email: 'care@sardarmart.com',
         address: '190, Erukkenchery High Rd, Anbalagan Colony, Vyasarpadi, Chennai, Tamil Nadu 600039',
         timing: '10:00 AM – 09:30 PM (All 7 Days)',
@@ -177,13 +177,13 @@ export default function AdminPanel({
         instagramUrl: 'https://instagram.com',
         facebookUrl: 'https://facebook.com',
         youtubeUrl: 'https://youtube.com',
-        whatsappNumber: '+91 98765 43210'
+        whatsappNumber: '+91 63830 56338'
       };
       return saved ? { ...defaultContent, ...JSON.parse(saved) } : defaultContent;
     } catch {
       return {
         storeName: 'Sardar Mart Furniture & Electronics',
-        phone: '+91 98765 43210',
+        phone: '+91 63830 56338',
         email: 'care@sardarmart.com',
         address: '190, Erukkenchery High Rd, Anbalagan Colony, Vyasarpadi, Chennai, Tamil Nadu 600039',
         timing: '10:00 AM – 09:30 PM (All 7 Days)',
@@ -193,7 +193,7 @@ export default function AdminPanel({
         instagramUrl: 'https://instagram.com',
         facebookUrl: 'https://facebook.com',
         youtubeUrl: 'https://youtube.com',
-        whatsappNumber: '+91 98765 43210'
+        whatsappNumber: '+91 63830 56338'
       };
     }
   });
@@ -274,14 +274,14 @@ export default function AdminPanel({
         name: 'Rahim Baig',
         email: 'admin@sardarmart.com',
         role: 'Super Admin / Owner',
-        phone: '+91 98765 43210'
+        phone: '+91 63830 56338'
       };
     } catch {
       return {
         name: 'Rahim Baig',
         email: 'admin@sardarmart.com',
         role: 'Super Admin / Owner',
-        phone: '+91 98765 43210'
+        phone: '+91 63830 56338'
       };
     }
   });

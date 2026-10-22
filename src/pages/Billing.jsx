@@ -353,7 +353,7 @@ export default function Billing({
       `Hello Sardar Mart Team!%0A%0AI have placed an order:%0A*Order Bill No:* #${order.id}%0A*Customer Name:* ${order.customer.name}%0A*Phone:* ${order.customer.phone}%0A*Delivery City:* ${order.customer.city} (${order.customer.pincode})%0A%0A*Items:*%0A${itemsList}%0A%0A*Grand Total:* ${formatPrice(order.total)}%0A*Payment Mode:* ${order.paymentMethod}%0A${storeSettings?.showGstinBadge ? `*GSTIN:* ${storeSettings?.gstNumber || '33DVKPR2334L1Z9'}%0A` : ''}%0APlease confirm my delivery schedule and dispatch timing!`
     );
 
-    window.open(`https://wa.me/919876543210?text=${msg}`, '_blank');
+    window.open(`https://wa.me/916383056338?text=${msg}`, '_blank');
   };
 
   // Download Official Tax Invoice File (Instant HTML/PDF Download + Print Modal)
@@ -416,7 +416,7 @@ export default function Billing({
         <div class="brand-sub">FURNITURE &amp; ELECTRONICS</div>
         <div class="brand-addr">
           190, Erukkenchery High Rd, Anbalagan Colony, Vyasarpadi, Chennai, Tamil Nadu 600039<br>
-          ${storeSettings?.showGstinBadge ? `GSTIN: <strong>${storeSettings?.gstNumber || '33DVKPR2334L1Z9'}</strong> • ` : ''}Contact: +91 98765 43210
+          ${storeSettings?.showGstinBadge ? `GSTIN: <strong>${storeSettings?.gstNumber || '33DVKPR2334L1Z9'}</strong> • ` : ''}Contact: +91 63830 56338
         </div>
       </div>
       <div class="invoice-right">

@@ -90,7 +90,7 @@ export default function CartDrawer({
       `Hello Sardar Mart, I want to confirm my order enquiry:%0A%0A${itemsList}%0A%0ASubtotal: ${formatPrice(subtotal)}%0ADiscount: ${formatPrice(discountAmount)}%0ANet Total: ${formatPrice(finalTotal)}%0A%0APlease provide delivery schedule and invoice confirmation.`
     );
 
-    window.open(`https://wa.me/919876543210?text=${message}`, '_blank');
+    window.open(`https://wa.me/916383056338?text=${message}`, '_blank');
   };
 
   const handleProceedToBilling = () => {

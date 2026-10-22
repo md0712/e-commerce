@@ -270,7 +270,7 @@ export default function ProductCard({
     const message = encodeURIComponent(
       `Hello Sardar Mart, I'm interested in inquiring about "${name}" (SKU: ${id}) priced at ${formatPrice(price)}. Is it available for immediate delivery?`
     );
-    window.open(`https://wa.me/919876543210?text=${message}`, '_blank');
+    window.open(`https://wa.me/916383056338?text=${message}`, '_blank');
   };
 
   const handlePrimaryClick = (e) => {

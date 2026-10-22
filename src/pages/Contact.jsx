@@ -23,8 +23,8 @@ export default function Contact({ storeSettings }) {
       name: 'Flagship Mega Showroom (Vyasarpadi)',
       city: 'Chennai North',
       address: '190, Erukkenchery High Rd, Anbalagan Colony, Vyasarpadi, Chennai, Tamil Nadu 600039',
-      phone: '+91 98765 43210',
-      whatsapp: '919876543210',
+      phone: '+91 63830 56338',
+      whatsapp: '916383056338',
       email: 'chennai.central@sardarmart.com',
       timing: '9:30 AM – 9:30 PM (All 7 Days Open)',
       // Google Maps embed URL for Chennai Vyasarpadi / Erukkenchery High Rd
@@ -125,18 +125,18 @@ export default function Contact({ storeSettings }) {
 
               {/* Quick Communication Cards */}
               <div className="quick-channels-grid">
-                <a href="tel:+919876543210" className="channel-card">
+                <a href="tel:+916383056338" className="channel-card">
                   <div className="channel-icon-circle">
                     <Phone size={20} />
                   </div>
                   <div>
                     <span className="channel-label">Call Showroom</span>
-                    <strong>+91 98765 43210</strong>
+                    <strong>+91 63830 56338</strong>
                   </div>
                 </a>
 
                 <a 
-                  href="https://wa.me/919876543210" 
+                  href="https://wa.me/916383056338" 
                   target="_blank" 
                   rel="noreferrer" 
                   className="channel-card wa-channel"

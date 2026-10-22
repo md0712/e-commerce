@@ -746,8 +746,8 @@ export const storeInfo = {
   tagline: 'Your Home, Our Priority',
   adminName: 'Rahim Baig',
   gstNumber: '33DVKPR2334L1Z9',
-  phone: '+91 98765 43210',
-  whatsapp: '919876543210',
+  phone: '+91 63830 56338',
+  whatsapp: '916383056338',
   email: 'care@sardarmart.com',
   address: '190, Erukkenchery High Rd, Anbalagan Colony, Vyasarpadi, Chennai, Tamil Nadu 600039',
   hours: 'Monday – Sunday: 09:30 AM – 09:30 PM',
@@ -755,7 +755,7 @@ export const storeInfo = {
     {
       name: 'Flagship Showroom (Vyasarpadi, Chennai)',
       address: '190, Erukkenchery High Rd, Anbalagan Colony, Vyasarpadi, Chennai, Tamil Nadu 600039',
-      phone: '+91 98765 43210',
+      phone: '+91 63830 56338',
       timing: '9:30 AM - 9:30 PM (All 7 Days)'
     },
     {

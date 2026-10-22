@@ -105,7 +105,7 @@ export default function ProductDetails({
     const msg = encodeURIComponent(
       `Hello Sardar Mart Team! I am looking at "${name}" (ID: ${id}) priced at ${formatPrice(price)}. Can you please share showroom availability, fabric swatches / color options, and delivery timeline?`
     );
-    window.open(`https://wa.me/919876543210?text=${msg}`, '_blank');
+    window.open(`https://wa.me/916383056338?text=${msg}`, '_blank');
   };
 
   const handleShare = () => {

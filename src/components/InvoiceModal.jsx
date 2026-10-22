@@ -98,7 +98,7 @@ export default function InvoiceModal({ isOpen, onClose, order, storeSettings: pr
                 190, Erukkenchery High Rd, Anbalagan Colony, Vyasarpadi, Chennai, Tamil Nadu 600039<br />
                 {storeSettings?.showGstinBadge && (
                   <><strong>GSTIN:</strong> {storeSettings?.gstNumber || '33DVKPR2334L1Z9'} | </>
-                )}<strong>Phone:</strong> +91 98765 43210<br />
+                )}<strong>Phone:</strong> +91 63830 56338<br />
                 <strong>Email:</strong> care@sardarmart.com | <strong>Web:</strong> www.sardarmart.com
               </p>
             </div>
@@ -148,7 +148,7 @@ export default function InvoiceModal({ isOpen, onClose, order, storeSettings: pr
               <p className="customer-address">
                 {customer.address || 'Showroom In-Store Order'}<br />
                 {customer.city ? `${customer.city} - ${customer.pincode || ''}` : 'Chennai, Tamil Nadu'}<br />
-                <strong>Phone:</strong> {customer.phone || '+91 98765 43210'}
+                <strong>Phone:</strong> {customer.phone || '+91 63830 56338'}
               </p>
             </div>
             <div className="party-box party-right">

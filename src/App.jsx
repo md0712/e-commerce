@@ -786,7 +786,7 @@ export default function App() {
       {/* Floating WhatsApp Quick Action Button */}
       {storeSettings?.showWhatsAppButton !== false && (
         <a
-          href="https://wa.me/919876543210?text=Hi%20Sardar%20Mart%2C%20I%20am%20browsing%20your%20website%20and%20would%20like%20to%20enquire%20about%20your%20products"
+          href="https://wa.me/916383056338?text=Hi%20Sardar%20Mart%2C%20I%20am%20browsing%20your%20website%20and%20would%20like%20to%20enquire%20about%20your%20products"
           target="_blank"
           rel="noreferrer"
           className={`floating-wa-btn pulse-glow ${isBottomNavVisible ? 'nav-visible' : 'nav-hidden'}`}
