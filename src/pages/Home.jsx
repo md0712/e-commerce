@@ -295,12 +295,6 @@ export default function Home({
               >
                 Electronics
               </button>
-              <button 
-                className={`tab-btn ${activeTab === 'appliances' ? 'active' : ''}`}
-                onClick={() => setActiveTab('appliances')}
-              >
-                Home Appliances
-              </button>
             </div>
 
             <button 

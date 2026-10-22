@@ -43,7 +43,7 @@ export default function MobileBottomNav({
       {/* 2. Browse / Categories */}
       <button 
         type="button"
-        className={`mob-nav-btn ${currentPage === 'furniture' || currentPage === 'electronics' || currentPage === 'appliances' ? 'active' : ''}`}
+        className={`mob-nav-btn ${currentPage === 'furniture' || currentPage === 'electronics' ? 'active' : ''}`}
         onClick={() => {
           if (onOpenCategories) {
             onOpenCategories();
@@ -56,7 +56,7 @@ export default function MobileBottomNav({
       >
         <Grid size={19} />
         <span>Browse</span>
-        {(currentPage === 'furniture' || currentPage === 'electronics' || currentPage === 'appliances') && (
+        {(currentPage === 'furniture' || currentPage === 'electronics') && (
           <span className="active-pill-dot" />
         )}
       </button>

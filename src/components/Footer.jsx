@@ -114,7 +114,6 @@ export default function Footer({ onNavigate, onOpenAdmin, onOpenTrackOrder, stor
                 <li><button onClick={() => handleLink('about')}>About Us &amp; Story</button></li>
                 <li><button onClick={() => handleLink('furniture')}>Living &amp; Bedroom Furniture</button></li>
                 <li><button onClick={() => handleLink('electronics')}>Smart TVs &amp; Electronics</button></li>
-                <li><button onClick={() => handleLink('appliances')}>Kitchen &amp; Home Appliances</button></li>
                 <li><button onClick={() => handleLink('offers')}>Festival Offers &amp; Combos</button></li>
                 <li><button onClick={() => handleLink('contact')}>Our Flagship Showrooms</button></li>
               </ul>

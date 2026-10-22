@@ -279,7 +279,6 @@ export default function Contact({ storeSettings }) {
                             <option>Bedroom Suites &amp; Mattresses</option>
                             <option>Smart TVs &amp; Home Audio</option>
                             <option>Refrigerators &amp; Washers</option>
-                            <option>Kitchen &amp; Home Appliances</option>
                             <option>Complete Home Combo Bundles</option>
                             <option>Bulk / Commercial Showroom Orders</option>
                           </select>

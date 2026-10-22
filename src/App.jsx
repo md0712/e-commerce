@@ -12,7 +12,6 @@ import IntroLoader from './components/IntroLoader';
 import Home from './pages/Home';
 import Furniture from './pages/Furniture';
 import Electronics from './pages/Electronics';
-import Appliances from './pages/Appliances';
 import ProductDetails from './pages/ProductDetails';
 import Offers from './pages/Offers';
 import About from './pages/About';
@@ -106,9 +105,9 @@ export default function App() {
       if (savedPage === 'admin') {
         return 'admin';
       }
-      const validPages = ['furniture', 'electronics', 'appliances', 'offers', 'about', 'contact', 'billing'];
+      const validPages = ['furniture', 'electronics', 'offers', 'about', 'contact', 'billing'];
       if (validPages.includes(path)) return path;
-      return savedPage || 'home';
+      return (savedPage === 'appliances' ? 'home' : savedPage) || 'home';
     } catch {
       return 'home';
     }
@@ -426,6 +425,9 @@ export default function App() {
   };
 
   const handleNavigate = (page, subcat = 'all') => {
+    if (page === 'appliances') {
+      page = 'home';
+    }
     try {
       localStorage.setItem('hk_current_page', page);
       if (page === 'admin') {
@@ -581,7 +583,7 @@ export default function App() {
         }}
         onSearch={(query) => {
           setSearchQuery(query);
-          if (currentPage !== 'furniture' && currentPage !== 'electronics' && currentPage !== 'appliances') {
+          if (currentPage !== 'furniture' && currentPage !== 'electronics') {
             handleNavigate('furniture');
           }
         }}
@@ -622,21 +624,6 @@ export default function App() {
 
         {currentPage === 'electronics' && (
           <Electronics
-            onSelectProduct={handleSelectProduct}
-            onAddToCart={handleAddToCart}
-            wishlist={wishlist}
-            onToggleWishlist={handleToggleWishlist}
-            cart={cart}
-            onUpdateQuantity={handleUpdateQuantity}
-            searchQuery={searchQuery}
-            selectedSubcategory={selectedSubcategory}
-            setSelectedSubcategory={setSelectedSubcategory}
-            products={catalogProducts}
-          />
-        )}
-
-        {currentPage === 'appliances' && (
-          <Appliances
             onSelectProduct={handleSelectProduct}
             onAddToCart={handleAddToCart}
             wishlist={wishlist}

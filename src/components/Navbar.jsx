@@ -30,8 +30,7 @@ export default function Navbar({
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [mobileExpandedCat, setMobileExpandedCat] = useState({
     furniture: false,
-    electronics: false,
-    appliances: false
+    electronics: false
   });
 
   const handleNavClick = (page) => {
@@ -109,7 +108,7 @@ export default function Navbar({
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      if (currentPage !== 'furniture' && currentPage !== 'electronics' && currentPage !== 'appliances') {
+      if (currentPage !== 'furniture' && currentPage !== 'electronics') {
         setCurrentPage('furniture');
       }
       if (onSearch) onSearch(searchQuery);
@@ -201,7 +200,6 @@ export default function Navbar({
                 <option value="all">All Categories</option>
                 <option value="furniture">Furniture</option>
                 <option value="electronics">Electronics</option>
-                <option value="appliances">Home Appliances</option>
               </select>
               <ChevronDown size={14} className="dropdown-arrow" />
             </div>
@@ -516,91 +514,6 @@ export default function Navbar({
                 </div>
               </div>
             </li>
-            <li className="nav-divider" aria-hidden="true" />
-
-            {/* 3. Home Appliances with Drop List */}
-            <li 
-              className={`nav-item-dropdown dropdown-appliances ${currentPage === 'appliances' ? 'active' : ''}`}
-              onMouseEnter={() => setActiveDropdown('appliances')}
-              onMouseLeave={() => setActiveDropdown(null)}
-            >
-              <button 
-                onClick={() => handleNavClick('appliances')}
-                className="nav-btn-with-dropdown"
-                aria-expanded={activeDropdown === 'appliances'}
-                aria-haspopup="true"
-              >
-                <span>Home Appliances</span>
-                <span 
-                  className="nav-chevron-wrap"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActiveDropdown(activeDropdown === 'appliances' ? null : 'appliances');
-                  }}
-                  title="Toggle Home Appliances menu"
-                >
-                  <ChevronDown size={14} className={`nav-chevron ${activeDropdown === 'appliances' ? 'open' : ''}`} />
-                </span>
-              </button>
-
-              {/* Appliances Drop List Menu */}
-              <div className={`nav-dropdown-menu ${activeDropdown === 'appliances' ? 'show' : ''}`}>
-                <div className="dropdown-grid">
-                  <div className="dropdown-links-col">
-                    <span className="dropdown-col-heading">KITCHEN &amp; HOME ESSENTIALS</span>
-                    <div className="dropdown-links-list">
-                      <button onClick={(e) => { e.stopPropagation(); handleSubcatClick('appliances', 'mixers'); }} className="dropdown-item-link">
-                        <span className="dropdown-item-icon">🍲</span>
-                        <div className="dropdown-item-content">
-                          <strong className="dropdown-item-title">Mixer Grinders &amp; Blenders</strong>
-                          <span className="dropdown-item-desc">1000W Heavy Duty Copper Motor, 4 Jars</span>
-                        </div>
-                        <span className="dropdown-item-badge">8+ Models</span>
-                      </button>
-
-                      <button onClick={(e) => { e.stopPropagation(); handleSubcatClick('appliances', 'kitchen'); }} className="dropdown-item-link">
-                        <span className="dropdown-item-icon">🍳</span>
-                        <div className="dropdown-item-content">
-                          <strong className="dropdown-item-title">Air Fryers &amp; Microwaves</strong>
-                          <span className="dropdown-item-desc">Digital Air Fryers &amp; Convection OTGs</span>
-                        </div>
-                        <span className="dropdown-item-badge">10+ Models</span>
-                      </button>
-
-                      <button onClick={(e) => { e.stopPropagation(); handleSubcatClick('appliances', 'home'); }} className="dropdown-item-link">
-                        <span className="dropdown-item-icon">💧</span>
-                        <div className="dropdown-item-content">
-                          <strong className="dropdown-item-title">RO Water Purifiers</strong>
-                          <span className="dropdown-item-desc">Active Copper + Mineralizer + UV Tech</span>
-                        </div>
-                        <span className="dropdown-item-badge">6+ Models</span>
-                      </button>
-                    </div>
-
-                    <div className="dropdown-footer-link">
-                      <button onClick={() => { setActiveDropdown(null); handleNavClick('appliances'); }}>
-                        View Full Appliances Collection <ArrowRight size={14} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Dropdown Spotlight Card */}
-                  <div className="dropdown-spotlight-card" onClick={() => { setActiveDropdown(null); handleNavClick('offers'); }}>
-                    <div className="spotlight-badge">COMBO OFFER</div>
-                    <img 
-                      src="https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=600&q=80" 
-                      alt="Kitchen Essentials" 
-                      className="spotlight-img"
-                    />
-                    <div className="spotlight-body">
-                      <h4>Smart Kitchen Trio</h4>
-                      <p>Buy Chimney + Cooktop + Mixer &amp; Save Flat ₹5,000.</p>
-                      <span className="spotlight-action">View Appliance Bundles →</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </li>
 
             <li className="nav-divider" aria-hidden="true" />
             <li className={currentPage === 'offers' ? 'active offers-nav-item' : 'offers-nav-item'}>
@@ -753,44 +666,6 @@ export default function Navbar({
                     </button>
                     <button onClick={() => handleSubcatClick('electronics', 'all')} className="drawer-subcat-btn view-all-subcat">
                       <span>Explore All Electronics →</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Mobile Appliances Accordion Drop List */}
-              <div className="mobile-drawer-accordion">
-                <div className="drawer-accordion-header">
-                  <button 
-                    className={`drawer-link-btn ${currentPage === 'appliances' ? 'active' : ''}`}
-                    onClick={() => handleNavClick('appliances')}
-                  >
-                    <span>🍳 Home Appliances</span>
-                  </button>
-                  <button 
-                    className="drawer-accordion-toggle"
-                    onClick={() => setMobileExpandedCat(prev => ({ ...prev, appliances: !prev.appliances }))}
-                    aria-label="Expand Appliances subcategories"
-                  >
-                    <ChevronDown size={18} className={`accordion-chevron ${mobileExpandedCat.appliances ? 'open' : ''}`} />
-                  </button>
-                </div>
-                {mobileExpandedCat.appliances && (
-                  <div className="drawer-accordion-body animate-fade-in">
-                    <button onClick={() => handleSubcatClick('appliances', 'mixers')} className="drawer-subcat-btn">
-                      <span>🍲 Mixer Grinders</span>
-                      <small>8+ Models</small>
-                    </button>
-                    <button onClick={() => handleSubcatClick('appliances', 'kitchen')} className="drawer-subcat-btn">
-                      <span>🍳 Air Fryers &amp; Microwaves</span>
-                      <small>10+ Models</small>
-                    </button>
-                    <button onClick={() => handleSubcatClick('appliances', 'home')} className="drawer-subcat-btn">
-                      <span>💧 RO Water Purifiers</span>
-                      <small>6+ Models</small>
-                    </button>
-                    <button onClick={() => handleSubcatClick('appliances', 'all')} className="drawer-subcat-btn view-all-subcat">
-                      <span>Explore All Appliances →</span>
                     </button>
                   </div>
                 )}
