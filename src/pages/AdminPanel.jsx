@@ -1845,17 +1845,6 @@ export default function AdminPanel({
           </div>
 
           <div className="header-right-group">
-            {/* Quick Showroom Billing button in Admin Top Navbar */}
-            <button
-              type="button"
-              className={`admin-header-nav-pill ${activeTab === 'create-billing' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('create-billing'); setMobileSidebarOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              title="Open Showroom Billing & Invoicing"
-            >
-              <ReceiptIndianRupee size={15} />
-              <span>Billing</span>
-            </button>
-
             {/* Date Range Picker */}
             <div className="date-range-badge">
               <Calendar size={15} />
@@ -6009,7 +5998,7 @@ export default function AdminPanel({
           background: #f1f5f9;
           font-family: inherit;
           color: #1e293b;
-          overflow-x: hidden;
+          overflow-x: clip;
         }
 
         /* Toast */
@@ -6184,7 +6173,7 @@ export default function AdminPanel({
           width: 100%;
           max-width: 100vw;
           min-width: 0;
-          overflow-x: hidden;
+          overflow-x: clip;
           box-sizing: border-box;
         }
 
@@ -6201,12 +6190,11 @@ export default function AdminPanel({
           justify-content: space-between;
           position: sticky;
           top: 0;
-          z-index: 950;
+          z-index: 1000;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
           width: 100%;
           max-width: 100%;
           box-sizing: border-box;
-          overflow: hidden;
         }
         .header-left-group {
           display: flex;
@@ -9716,7 +9704,7 @@ export default function AdminPanel({
             height: 56px;
             position: sticky;
             top: 0;
-            z-index: 950;
+            z-index: 1000;
             background: rgba(255, 255, 255, 0.98);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             gap: 8px;
