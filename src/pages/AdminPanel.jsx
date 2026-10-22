@@ -2960,7 +2960,7 @@ export default function AdminPanel({
 
                   {/* Customer Details Inputs (editable preview) */}
                   <div className="pos-customer-compact-grid">
-                    <div className="pos-form-field">
+                    <div className="pos-form-field pos-field-name">
                       <label>Customer Full Name *</label>
                       <input
                         type="text"
@@ -2970,7 +2970,7 @@ export default function AdminPanel({
                         onChange={(e) => setBillingCustomer(prev => ({ ...prev, name: e.target.value }))}
                       />
                     </div>
-                    <div className="pos-form-field">
+                    <div className="pos-form-field pos-field-phone">
                       <label>Phone Number *</label>
                       <input
                         type="tel"
@@ -2980,7 +2980,7 @@ export default function AdminPanel({
                         onChange={(e) => setBillingCustomer(prev => ({ ...prev, phone: e.target.value }))}
                       />
                     </div>
-                    <div className="pos-form-field">
+                    <div className="pos-form-field pos-field-address">
                       <label>Billing &amp; Delivery Address</label>
                       <input
                         type="text"
@@ -2990,32 +2990,31 @@ export default function AdminPanel({
                         onChange={(e) => setBillingCustomer(prev => ({ ...prev, address: e.target.value }))}
                       />
                     </div>
-                    <div className="pos-form-field">
-                      <label>City &amp; Pincode</label>
-                      <div style={{ display: 'flex', gap: '4px' }}>
-                        <input
-                          type="text"
-                          className="pos-compact-small-input"
-                          placeholder="Chennai"
-                          value={billingCustomer.city}
-                          onChange={(e) => setBillingCustomer(prev => ({ ...prev, city: e.target.value }))}
-                          style={{ flex: 1.2 }}
-                        />
-                        <input
-                          type="text"
-                          className="pos-compact-small-input"
-                          placeholder="600001"
-                          value={billingCustomer.pincode}
-                          onChange={(e) => setBillingCustomer(prev => ({ ...prev, pincode: e.target.value }))}
-                          style={{ flex: 1 }}
-                        />
-                      </div>
+                    <div className="pos-form-field pos-field-city">
+                      <label>City</label>
+                      <input
+                        type="text"
+                        className="pos-compact-small-input"
+                        placeholder="Chennai"
+                        value={billingCustomer.city}
+                        onChange={(e) => setBillingCustomer(prev => ({ ...prev, city: e.target.value }))}
+                      />
+                    </div>
+                    <div className="pos-form-field pos-field-pincode">
+                      <label>Pincode</label>
+                      <input
+                        type="text"
+                        className="pos-compact-small-input"
+                        placeholder="600001"
+                        value={billingCustomer.pincode}
+                        onChange={(e) => setBillingCustomer(prev => ({ ...prev, pincode: e.target.value }))}
+                      />
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="pos-customer-compact-grid">
-                  <div className="pos-form-field">
+                  <div className="pos-form-field pos-field-name">
                     <label>Customer Full Name *</label>
                     <input
                       type="text"
@@ -3026,7 +3025,7 @@ export default function AdminPanel({
                       required
                     />
                   </div>
-                  <div className="pos-form-field">
+                  <div className="pos-form-field pos-field-phone">
                     <label>Phone Number *</label>
                     <input
                       type="tel"
@@ -3037,7 +3036,7 @@ export default function AdminPanel({
                       required
                     />
                   </div>
-                  <div className="pos-form-field">
+                  <div className="pos-form-field pos-field-address">
                     <label>Billing &amp; Delivery Address</label>
                     <input
                       type="text"
@@ -3047,26 +3046,25 @@ export default function AdminPanel({
                       onChange={(e) => setBillingCustomer(prev => ({ ...prev, address: e.target.value }))}
                     />
                   </div>
-                  <div className="pos-form-field">
-                    <label>City &amp; Pincode</label>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      <input
-                        type="text"
-                        className="pos-compact-small-input"
-                        placeholder="Chennai"
-                        value={billingCustomer.city}
-                        onChange={(e) => setBillingCustomer(prev => ({ ...prev, city: e.target.value }))}
-                        style={{ flex: 1.2 }}
-                      />
-                      <input
-                        type="text"
-                        className="pos-compact-small-input"
-                        placeholder="600044"
-                        value={billingCustomer.pincode}
-                        onChange={(e) => setBillingCustomer(prev => ({ ...prev, pincode: e.target.value }))}
-                        style={{ flex: 1 }}
-                      />
-                    </div>
+                  <div className="pos-form-field pos-field-city">
+                    <label>City</label>
+                    <input
+                      type="text"
+                      className="pos-compact-small-input"
+                      placeholder="Chennai"
+                      value={billingCustomer.city}
+                      onChange={(e) => setBillingCustomer(prev => ({ ...prev, city: e.target.value }))}
+                    />
+                  </div>
+                  <div className="pos-form-field pos-field-pincode">
+                    <label>Pincode</label>
+                    <input
+                      type="text"
+                      className="pos-compact-small-input"
+                      placeholder="600044"
+                      value={billingCustomer.pincode}
+                      onChange={(e) => setBillingCustomer(prev => ({ ...prev, pincode: e.target.value }))}
+                    />
                   </div>
                 </div>
               )}
@@ -9812,8 +9810,8 @@ export default function AdminPanel({
 
         .pos-customer-compact-grid {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 8px;
+          grid-template-columns: 1.2fr 1fr 2fr 1fr 0.8fr;
+          gap: 10px;
           align-items: end;
         }
 
@@ -9888,14 +9886,16 @@ export default function AdminPanel({
 
         .pos-input-select {
           width: 100%;
-          padding: 10px 14px;
-          border: 1.5px solid #cbd5e1;
-          border-radius: 8px;
-          font-size: 0.88rem;
+          padding: 6px 12px;
+          height: 34px;
+          border: 1px solid #cbd5e1;
+          border-radius: 6px;
+          font-size: 0.82rem;
           font-weight: 600;
           color: #0f172a;
           outline: none;
           background: #f8fafc;
+          box-sizing: border-box;
         }
 
         .pos-input-select:focus {
@@ -9912,7 +9912,8 @@ export default function AdminPanel({
         .pos-form-field {
           display: flex;
           flex-direction: column;
-          gap: 2px;
+          gap: 3px;
+          min-width: 0;
         }
 
         .pos-form-field.full {
@@ -9925,15 +9926,21 @@ export default function AdminPanel({
           color: #475569;
           letter-spacing: 0.15px;
           text-transform: uppercase;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .pos-form-field input,
         .pos-compact-small-input {
-          padding: 3px 8px !important;
-          height: 28px !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          min-width: 0 !important;
+          padding: 4px 8px !important;
+          height: 30px !important;
           border: 1px solid #cbd5e1 !important;
-          border-radius: 5px !important;
-          font-size: 0.76rem !important;
+          border-radius: 6px !important;
+          font-size: 0.78rem !important;
           outline: none;
           background: #ffffff !important;
           color: #0f172a !important;
@@ -10410,7 +10417,11 @@ export default function AdminPanel({
             position: static;
           }
           .pos-customer-compact-grid {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px 10px !important;
+          }
+          .pos-field-address {
+            grid-column: 1 / -1 !important;
           }
           .pos-payment-methods-grid {
             grid-template-columns: repeat(2, 1fr);
@@ -10419,8 +10430,8 @@ export default function AdminPanel({
 
         @media (max-width: 640px) {
           .pos-billing-screen {
-            padding: 12px 8px;
-            margin: 6px 4px;
+            padding: 10px 8px;
+            margin: 4px;
             border-radius: 12px;
           }
           .pos-card-box {
@@ -10428,22 +10439,36 @@ export default function AdminPanel({
             margin-bottom: 12px;
             border-radius: 10px;
           }
+          .pos-customer-top-card {
+            padding: 10px 10px;
+          }
           .pos-customer-compact-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 5px 8px !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 6px 8px !important;
+          }
+          .pos-field-address {
+            grid-column: 1 / -1 !important;
           }
           .pos-form-field {
-            gap: 1px !important;
+            gap: 2px !important;
+            min-width: 0 !important;
           }
           .pos-form-field label {
-            font-size: 0.64rem !important;
+            font-size: 0.65rem !important;
           }
           .pos-form-field input,
           .pos-compact-small-input {
-            padding: 2px 6px !important;
-            height: 26px !important;
-            font-size: 0.73rem !important;
-            border-radius: 4px !important;
+            padding: 4px 7px !important;
+            height: 29px !important;
+            font-size: 0.75rem !important;
+            border-radius: 5px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+          }
+          .pos-input-select {
+            height: 30px !important;
+            padding: 4px 8px !important;
+            font-size: 0.78rem !important;
           }
           .pos-form-two-col {
             grid-template-columns: 1fr;
