@@ -161,7 +161,7 @@ export default function Footer({ onNavigate, onOpenAdmin, onOpenTrackOrder, stor
                   <MapPin size={18} className="contact-icon" />
                   <div>
                     <strong>Experience Store:</strong>
-                    <span>123, Market Street, Thousand Lights, Chennai, Tamil Nadu - 600001</span>
+                    <span>190, Erukkenchery High Rd, Anbalagan Colony, Vyasarpadi, Chennai, Tamil Nadu 600039</span>
                   </div>
                 </li>
                 <li>

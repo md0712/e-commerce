@@ -749,12 +749,12 @@ export const storeInfo = {
   phone: '+91 98765 43210',
   whatsapp: '919876543210',
   email: 'care@sardarmart.com',
-  address: '123, Market Street, Thousand Lights, Chennai, Tamil Nadu - 600001',
+  address: '190, Erukkenchery High Rd, Anbalagan Colony, Vyasarpadi, Chennai, Tamil Nadu 600039',
   hours: 'Monday – Sunday: 09:30 AM – 09:30 PM',
   branches: [
     {
-      name: 'Flagship Showroom (Chennai Central)',
-      address: '123, Market Street, Thousand Lights, Chennai - 600001',
+      name: 'Flagship Showroom (Vyasarpadi, Chennai)',
+      address: '190, Erukkenchery High Rd, Anbalagan Colony, Vyasarpadi, Chennai, Tamil Nadu 600039',
       phone: '+91 98765 43210',
       timing: '9:30 AM - 9:30 PM (All 7 Days)'
     },

@@ -415,7 +415,7 @@ export default function Billing({
         <h1 class="brand-h1">Sardar Mart</h1>
         <div class="brand-sub">FURNITURE &amp; ELECTRONICS</div>
         <div class="brand-addr">
-          42, Grand Southern Trunk Rd, Chromepet, Chennai, Tamil Nadu 600044<br>
+          190, Erukkenchery High Rd, Anbalagan Colony, Vyasarpadi, Chennai, Tamil Nadu 600039<br>
           ${storeSettings?.showGstinBadge ? `GSTIN: <strong>${storeSettings?.gstNumber || '33DVKPR2334L1Z9'}</strong> • ` : ''}Contact: +91 98765 43210
         </div>
       </div>
@@ -1570,7 +1570,7 @@ export default function Billing({
                         {storeSettings?.showGstinBadge && (
                           <span>GSTIN: 33DVKPR2334L1Z9 • Authorized Signatory: Rahim Baig</span>
                         )}
-                        <small>Flagship Showroom: Thousand Lights, Chennai - 600001</small>
+                        <small>Flagship Showroom: 190, Erukkenchery High Rd, Vyasarpadi, Chennai - 600039</small>
                       </div>
                     </div>
                   </div>

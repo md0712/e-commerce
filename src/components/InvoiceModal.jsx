@@ -95,7 +95,7 @@ export default function InvoiceModal({ isOpen, onClose, order, storeSettings: pr
               <p className="invoice-brand-sub">FURNITURE &amp; ELECTRONICS SHOWROOM</p>
               <p className="invoice-company-details">
                 Sardar Mart Retail Private Limited<br />
-                123, Market Street, Thousand Lights, Anna Salai<br />
+                190, Erukkenchery High Rd, Anbalagan Colony, Vyasarpadi, Chennai, Tamil Nadu 600039<br />
                 {storeSettings?.showGstinBadge && (
                   <><strong>GSTIN:</strong> {storeSettings?.gstNumber || '33DVKPR2334L1Z9'} | </>
                 )}<strong>Phone:</strong> +91 98765 43210<br />
