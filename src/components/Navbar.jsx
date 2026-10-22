@@ -878,9 +878,10 @@ export default function Navbar({
         .navbar-wrapper {
           position: sticky;
           top: 0;
-          z-index: 900;
+          z-index: 1000;
           background: #ffffff;
-          box-shadow: 0 4px 20px rgba(42, 24, 16, 0.08);
+          box-shadow: 0 2px 12px rgba(42, 24, 16, 0.08);
+          width: 100%;
         }
 
         /* Top Sliding Announcement Bar */
@@ -1887,22 +1888,26 @@ export default function Navbar({
         /* Breakpoints */
         @media (max-width: 992px) {
           .quick-whatsapp-btn {
-            display: none;
+            display: none !important;
           }
           .desk-search {
-            display: none;
+            display: none !important;
           }
           .primary-nav {
-            display: none;
+            display: none !important;
           }
           .mobile-toggle-btn {
-            display: block;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
           }
           .mobile-search-toggle-btn {
-            display: block;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
           }
           .icon-btn-label {
-            display: none;
+            display: none !important;
           }
           .desk-only-flex {
             display: none !important;
@@ -1910,69 +1915,128 @@ export default function Navbar({
         }
 
         @media (max-width: 768px) {
+          .navbar-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            width: 100%;
+            background: #ffffff;
+            box-shadow: 0 2px 10px rgba(42, 24, 16, 0.08);
+          }
+          .top-announcement-bar {
+            padding: 4px 0;
+            font-size: 0.74rem;
+          }
           .announcement-slider-wrapper {
             width: 100%;
             justify-content: center;
+            min-height: 22px;
           }
           .announcement-slide-track {
             justify-content: center;
           }
           .slide-text {
-            font-size: 0.76rem;
+            font-size: 0.74rem;
+          }
+          .main-header {
+            padding: 8px 0;
+          }
+          .header-container {
+            padding: 0 12px;
+            gap: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+          }
+          .brand-logo {
+            gap: 8px;
+            flex-shrink: 0;
+          }
+          .logo-emblem {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+          }
+          .brand-title {
+            font-size: 1.25rem;
+            line-height: 1.1;
+          }
+          .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+          }
+          .action-icon-btn, .mobile-search-toggle-btn, .mobile-toggle-btn {
+            padding: 6px;
+            min-width: 36px;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            color: var(--color-warm-dark);
           }
         }
 
         @media (max-width: 500px) {
           .header-container {
             padding: 0 10px;
-            gap: 8px;
+            gap: 6px;
           }
           .slide-badge {
-            display: none;
+            display: none !important;
           }
           .slider-dots {
-            display: none;
+            display: none !important;
           }
           .top-announcement-bar {
-            padding: 5px 0;
+            padding: 4px 0;
           }
           .slide-text {
-            font-size: 0.74rem;
+            font-size: 0.72rem;
           }
           .brand-logo {
-            gap: 8px;
+            gap: 6px;
           }
           .logo-emblem {
-            width: 36px;
-            height: 36px;
+            width: 34px;
+            height: 34px;
           }
           .logo-icon-seat {
-            font-size: 16px;
+            font-size: 15px;
           }
           .brand-title {
-            font-size: 1.25rem;
+            font-size: 1.18rem;
           }
           .brand-subtitle {
-            display: none;
+            display: none !important;
           }
           .header-actions {
-            gap: 6px;
+            gap: 3px;
           }
           .action-icon-btn, .mobile-search-toggle-btn, .mobile-toggle-btn {
             padding: 4px;
+            min-width: 34px;
+            min-height: 34px;
+          }
+          .action-icon-btn svg, .mobile-search-toggle-btn svg, .mobile-toggle-btn svg {
+            width: 20px;
+            height: 20px;
           }
         }
 
         @media (max-width: 380px) {
           .header-container {
             padding: 0 6px;
-            gap: 6px;
+            gap: 4px;
           }
           .brand-logo {
-            gap: 6px;
+            gap: 5px;
           }
           .brand-title {
-            font-size: 1.12rem;
+            font-size: 1.1rem;
             letter-spacing: -0.3px;
           }
           .logo-emblem {
@@ -1980,17 +2044,19 @@ export default function Navbar({
             height: 30px;
           }
           .logo-icon-seat {
-            font-size: 14px;
+            font-size: 13px;
           }
           .header-actions {
-            gap: 3px;
+            gap: 2px;
           }
           .action-icon-btn, .mobile-search-toggle-btn, .mobile-toggle-btn {
-            padding: 2px;
+            padding: 3px;
+            min-width: 32px;
+            min-height: 32px;
           }
           .action-icon-btn svg, .mobile-search-toggle-btn svg, .mobile-toggle-btn svg {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
           }
           .counter-badge {
             width: 15px;
