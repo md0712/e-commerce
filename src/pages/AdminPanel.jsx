@@ -418,6 +418,42 @@ export default function AdminPanel({
   };
 
   // -------------------------------------------------------------
+  // OFFERS & COUPONS STATE (Active / Inactive Disabled Toggle)
+  // -------------------------------------------------------------
+  const [coupons, setCoupons] = useState(() => {
+    const defaultCoupons = [
+      { code: 'FESTIVE50', desc: 'Flat ₹5,000 OFF on orders above ₹40,000', discount: 'Flat ₹5,000', status: 'Active' },
+      { code: 'COMBOBEST', desc: '10% OFF on all Living Room & Dining Combos', discount: '10% OFF', status: 'Active' },
+      { code: 'HOME5', desc: '5% Instant Savings for Showroom Pickups', discount: '5% OFF', status: 'Active' }
+    ];
+    try {
+      const saved = localStorage.getItem('hk_admin_coupons');
+      return saved ? JSON.parse(saved) : defaultCoupons;
+    } catch {
+      return defaultCoupons;
+    }
+  });
+
+  const toggleCouponStatus = (code) => {
+    setCoupons(prev => {
+      const updated = prev.map(c => {
+        if (c.code === code) {
+          const nextStatus = c.status === 'Active' ? 'Inactive' : 'Active';
+          return { ...c, status: nextStatus };
+        }
+        return c;
+      });
+      try {
+        localStorage.setItem('hk_admin_coupons', JSON.stringify(updated));
+        window.dispatchEvent(new CustomEvent('hk_coupons_changed', { detail: updated }));
+      } catch {}
+      const target = updated.find(c => c.code === code);
+      showToast(`Coupon ${code} is now ${target.status === 'Active' ? 'Active' : 'Disabled (Inactive)'}`);
+      return updated;
+    });
+  };
+
+  // -------------------------------------------------------------
   // CUSTOMER DIRECTORY & CRM STATE
   // -------------------------------------------------------------
   const [customerSearch, setCustomerSearch] = useState('');
@@ -4112,20 +4148,28 @@ export default function AdminPanel({
             </div>
 
             <div className="coupons-admin-grid">
-              {[
-                { code: 'FESTIVE50', desc: 'Flat ₹5,000 OFF on orders above ₹40,000', discount: 'Flat ₹5,000', status: 'Active' },
-                { code: 'COMBOBEST', desc: '10% OFF on all Living Room & Dining Combos', discount: '10% OFF', status: 'Active' },
-                { code: 'HOME5', desc: '5% Instant Savings for Showroom Pickups', discount: '5% OFF', status: 'Active' }
-              ].map((c, idx) => (
-                <div key={idx} className="coupon-admin-card">
-                  <div className="coupon-code-pill">🏷️ {c.code}</div>
-                  <p>{c.desc}</p>
-                  <div className="coupon-card-footer">
-                    <strong>{c.discount}</strong>
-                    <span className="active-tag">{c.status}</span>
+              {coupons.map((c) => {
+                const isActive = c.status === 'Active';
+                return (
+                  <div key={c.code} className={`coupon-admin-card ${!isActive ? 'coupon-disabled' : ''}`}>
+                    <div className="coupon-code-pill">🏷️ {c.code}</div>
+                    <p>{c.desc}</p>
+                    <div className="coupon-card-footer">
+                      <strong className="coupon-discount-val">{c.discount}</strong>
+                      <button 
+                        type="button"
+                        onClick={() => toggleCouponStatus(c.code)}
+                        className={`coupon-toggle-btn ${isActive ? 'btn-active' : 'btn-disabled'}`}
+                        title={isActive ? "Click to Disable (make Inactive)" : "Click to Enable (make Active)"}
+                        aria-label={`Toggle ${c.code} status`}
+                      >
+                        <span className={`status-indicator-dot ${isActive ? 'dot-active' : 'dot-disabled'}`}></span>
+                        <span>{isActive ? 'Active' : 'Inactive'}</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -8867,11 +8911,36 @@ export default function AdminPanel({
             padding: 14px 12px;
           }
         }
+        .coupon-admin-card {
+          background: #ffffff;
+          border: 1.5px dashed #cbd5e1;
+          border-radius: 10px;
+          padding: 16px;
+          transition: all 0.2s ease;
+          position: relative;
+        }
+        .coupon-admin-card:hover {
+          border-color: #94a3b8;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+        .coupon-admin-card.coupon-disabled {
+          background: #f8fafc;
+          border-style: solid;
+          border-color: #e2e8f0;
+          opacity: 0.78;
+        }
         .coupon-code-pill {
           font-size: 1rem;
           font-weight: 800;
           color: #854d0e;
           margin-bottom: 6px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .coupon-admin-card.coupon-disabled .coupon-code-pill {
+          color: #94a3b8;
+          text-decoration: line-through;
         }
         .coupon-admin-card p {
           font-size: 0.82rem;
@@ -8882,14 +8951,61 @@ export default function AdminPanel({
           display: flex;
           justify-content: space-between;
           align-items: center;
+          gap: 8px;
         }
-        .active-tag {
+        .coupon-discount-val {
+          font-size: 0.95rem;
+          font-weight: 800;
+          color: #1e293b;
+        }
+        .coupon-admin-card.coupon-disabled .coupon-discount-val {
+          color: #94a3b8;
+        }
+        .coupon-toggle-btn {
+          border: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 3px 9px;
+          border-radius: 20px;
+          font-size: 0.74rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.18s ease;
+          user-select: none;
+          outline: none;
+        }
+        .coupon-toggle-btn.btn-active {
           background: #dcfce7;
           color: #166534;
-          font-size: 0.72rem;
-          font-weight: 700;
-          padding: 2px 6px;
-          border-radius: 4px;
+          border: 1px solid #bbf7d0;
+        }
+        .coupon-toggle-btn.btn-active:hover {
+          background: #bbf7d0;
+          transform: scale(1.04);
+        }
+        .coupon-toggle-btn.btn-disabled {
+          background: #fee2e2;
+          color: #991b1b;
+          border: 1px solid #fecaca;
+        }
+        .coupon-toggle-btn.btn-disabled:hover {
+          background: #fecaca;
+          transform: scale(1.04);
+        }
+        .status-indicator-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          display: inline-block;
+        }
+        .status-indicator-dot.dot-active {
+          background: #16a34a;
+          box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.25);
+        }
+        .status-indicator-dot.dot-disabled {
+          background: #dc2626;
+          box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
         }
 
         /* Dialogs / Modals */

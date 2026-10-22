@@ -68,6 +68,20 @@ export default function CartDrawer({
     const clean = couponCode.trim().toUpperCase();
     if (!clean) return;
 
+    // Check if coupon is disabled in Admin Panel
+    try {
+      const saved = localStorage.getItem('hk_admin_coupons');
+      if (saved) {
+        const adminCoupons = JSON.parse(saved);
+        const match = adminCoupons.find(c => c.code === clean);
+        if (match && match.status === 'Inactive') {
+          setCouponError(`Coupon code "${clean}" is currently disabled / inactive`);
+          setAppliedCoupon(null);
+          return;
+        }
+      }
+    } catch {}
+
     if (clean === 'FESTIVE50') {
       if (subtotal < 40000) {
         setCouponError('FESTIVE50 requires minimum cart value of ₹40,000');
