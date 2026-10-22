@@ -61,21 +61,7 @@ export default function MobileBottomNav({
         )}
       </button>
 
-      {/* 3. Showroom Billing & Tax Invoice */}
-      <button 
-        type="button"
-        className={`mob-nav-btn ${currentPage === 'billing' ? 'active' : ''}`}
-        onClick={() => {
-          onNavigate('billing');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-        aria-label="Showroom Billing & Tax Invoice"
-        title="Billing"
-      >
-        <ReceiptIndianRupee size={19} />
-        <span>Billing</span>
-        {currentPage === 'billing' && <span className="active-pill-dot" />}
-      </button>
+
 
       {/* 4. Offers */}
       <button 

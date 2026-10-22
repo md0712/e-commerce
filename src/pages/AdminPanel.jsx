@@ -1809,6 +1809,17 @@ export default function AdminPanel({
           </div>
 
           <div className="header-right-group">
+            {/* Quick Showroom Billing button in Admin Top Navbar */}
+            <button
+              type="button"
+              className={`admin-header-nav-pill ${activeTab === 'create-billing' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('create-billing'); setMobileSidebarOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              title="Open Showroom Billing & Invoicing"
+            >
+              <ReceiptIndianRupee size={15} />
+              <span>Billing</span>
+            </button>
+
             {/* Date Range Picker */}
             <div className="date-range-badge">
               <Calendar size={15} />

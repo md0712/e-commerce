@@ -156,7 +156,7 @@ export default function App() {
       storeLegalName: 'Sardar Mart',
       gstNumber: '33DVKPR2334L1Z9',
       showGstinBadge: false,   // Default OFF: Removes GST number across website
-      showBillingPage: true,   // Default ON: Enables Billing & Tax Invoice on website
+      showBillingPage: false,   // Default OFF: Only available in Admin Panel
       showWhatsAppButton: true,
       showOrderTracking: true,
       showWishlist: true,
@@ -194,7 +194,7 @@ export default function App() {
         return {
           ...defaultSettings,
           ...parsed,
-          showBillingPage: parsed.showBillingPage !== undefined ? parsed.showBillingPage : true
+          showBillingPage: parsed.showBillingPage !== undefined ? parsed.showBillingPage : false
         };
       }
       return defaultSettings;

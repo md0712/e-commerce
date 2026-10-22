@@ -601,16 +601,7 @@ export default function Navbar({
                 </div>
               </div>
             </li>
-            {storeSettings?.showBillingPage !== false && (
-              <>
-                <li className="nav-divider" aria-hidden="true" />
-                <li className={currentPage === 'billing' ? 'active billing-nav-item' : 'billing-nav-item'}>
-                  <button onClick={() => handleNavClick('billing')} title="Tax Billing & Invoice Invoicing">
-                    <FileText size={14} className="billing-nav-icon" /> Billing &amp; Tax Invoice
-                  </button>
-                </li>
-              </>
-            )}
+
             <li className="nav-divider" aria-hidden="true" />
             <li className={currentPage === 'offers' ? 'active offers-nav-item' : 'offers-nav-item'}>
               <button onClick={() => handleNavClick('offers')}>
@@ -805,15 +796,7 @@ export default function Navbar({
                 )}
               </div>
 
-              {storeSettings?.showBillingPage !== false && (
-                <button 
-                  className={`drawer-link-btn ${currentPage === 'billing' ? 'active' : ''}`}
-                  onClick={() => handleNavClick('billing')}
-                >
-                  <span>🧾 Billing &amp; Tax Invoice</span>
-                  <ArrowRight size={16} />
-                </button>
-              )}
+
 
 
 
