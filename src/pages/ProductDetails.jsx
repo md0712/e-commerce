@@ -513,21 +513,7 @@ export default function ProductDetails({
         </div>
       </main>
 
-      {/* 5. FLOATING PROMO / UNLOCK PILL (Positioned right above sticky bottom bar) */}
-      <div className="qk-promo-sticky-wrapper">
-        <div className="qk-promo-unlock-pill">
-          <div className="qk-promo-left-meta">
-            <div className="qk-promo-badge-circle">
-              <Percent size={13} color="#059669" strokeWidth={3} />
-            </div>
-            <div className="qk-promo-copy">
-              <strong>Pick 2 products</strong>
-              <span>₹9 store unlocked • Free Delivery!</span>
-            </div>
-          </div>
-          <ChevronRight size={18} className="qk-promo-chevron" />
-        </div>
-      </div>
+
 
       {/* 6. STICKY BOTTOM BAR (Exact Basket & Quantity Pill from screenshot) */}
       <footer className="qk-sticky-bottom-bar">

@@ -1269,47 +1269,7 @@ export default function Billing({
             </div>
 
             <h1 className="billing-headline">Showroom POS Billing &amp; Tax Invoicing</h1>
-            <p className="billing-sub">
-              Create instant showroom bills, browse and add catalog products, calculate GST breakdown, and issue official printable Tax Invoices.
-            </p>
 
-            {/* Quick Showroom Actions Bar */}
-            <div className="header-quick-actions-row">
-              <button
-                type="button"
-                className="btn-header-quick-action"
-                onClick={handleAutofillDemoClient}
-                title="Autofill realistic customer contact & address"
-              >
-                <User size={14} /> ⚡ 1-Click Demo Client
-              </button>
-              <button
-                type="button"
-                className="btn-header-quick-action"
-                onClick={handleAddSampleItems}
-                title="Add 2 sample demo items to bill"
-              >
-                <Sparkles size={14} /> + Add 2 Demo Items
-              </button>
-              <button
-                type="button"
-                className="btn-header-quick-action"
-                onClick={handleAddCustomLineItem}
-                title="Add custom carpentry, delivery, or warranty charge"
-              >
-                <Plus size={14} /> + Custom Item / Charge
-              </button>
-              {billItems.length > 0 && (
-                <button
-                  type="button"
-                  className="btn-header-quick-action action-danger"
-                  onClick={handleClearAllBillItems}
-                  title="Clear all bill items"
-                >
-                  <Trash2 size={14} /> Clear Bill
-                </button>
-              )}
-            </div>
 
             {/* 4-Step Visual Progress Stepper */}
             <div className="checkout-stepper-bar">
@@ -1953,46 +1913,7 @@ export default function Billing({
                     )}
                   </div>
 
-                  {/* Coupon Box */}
-                  <div className="billing-coupon-card">
-                    <div className="coupon-form-wrap">
-                      <div className="input-wrap">
-                        <Tag size={16} className="tag-icon" />
-                        <input 
-                          type="text" 
-                          placeholder="Coupon (e.g. SARDAR5000)" 
-                          value={couponCode}
-                          onChange={(e) => setCouponCode(e.target.value)}
-                        />
-                      </div>
-                      <button 
-                        type="button" 
-                        className="btn-apply-coupon"
-                        onClick={handleApplyCoupon}
-                      >
-                        Apply
-                      </button>
-                    </div>
 
-                    {appliedCoupon && (
-                      <div className="applied-coupon-pill animate-fade-in">
-                        <Check size={14} /> Coupon <strong>{appliedCoupon}</strong> Applied! (-{formatPrice(discountAmount)})
-                        <button type="button" onClick={handleRemoveCoupon} className="btn-remove-coupon">×</button>
-                      </div>
-                    )}
-                    {couponError && (
-                      <div className="coupon-error-pill animate-fade-in">
-                        <AlertCircle size={14} /> {couponError}
-                      </div>
-                    )}
-
-                    <div className="suggested-coupons">
-                      <span>Available: </span>
-                      <button type="button" onClick={() => { setCouponCode('SARDAR5000'); }}>SARDAR5000</button>
-                      <button type="button" onClick={() => { setCouponCode('FESTIVE10'); }}>FESTIVE10</button>
-                      <button type="button" onClick={() => { setCouponCode('WELCOME'); }}>WELCOME</button>
-                    </div>
-                  </div>
 
                   {/* Comprehensive GST Calculation Breakdown */}
                   <div className="billing-calculation-sheet">
