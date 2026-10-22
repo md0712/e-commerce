@@ -68,13 +68,13 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
                 />
                 <div>
                   <div className="invoice-brand-title" style={{ fontSize: '1.4rem' }}>
-                    Sardar <span>Electricals &amp; Furnitures</span>
+                    Sardar <span>Mart</span>
                   </div>
-                  <p className="invoice-brand-sub" style={{ margin: 0 }}>PREMIUM SHOWROOM &amp; ELECTRONICS DESTINATION</p>
+                  <p className="invoice-brand-sub" style={{ margin: 0 }}>ELECTRICALS AND FURNITURES • CHENNAI</p>
                 </div>
               </div>
               <p className="invoice-company-details">
-                Sardar Electricals and Furnitures Private Limited<br />
+                Sardar Mart Private Limited (Electricals &amp; Furnitures)<br />
                 No. 192, E.H Road, Cholan nagar, Vyasarpadi, Erukancheri<br />
                 Chennai, Tamil Nadu - 600039<br />
                 <strong>GSTIN:</strong> 33AAACH1234F1Z5 | <strong>Phone:</strong> +91 6383056338 / +91 9344623632<br />
@@ -235,12 +235,12 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
                 <div className="seal-badge">SARDAR<br />VERIFIED</div>
               </div>
               <p>Authorized Signatory</p>
-              <small>Sardar Electricals and Furnitures Pvt. Ltd.</small>
+              <small>Sardar Mart Private Limited</small>
             </div>
           </div>
 
           <div className="invoice-footer-note">
-            *** This is a computer generated legal tax invoice issued by Sardar Electricals and Furnitures Private Limited ***
+            *** This is a computer generated legal tax invoice issued by Sardar Mart (Electricals and Furnitures Private Limited) ***
           </div>
         </div>
       </div>

@@ -176,10 +176,10 @@ export default function Navbar({
             />
             <div className="sardar-brand-titles">
               <div className="sardar-brand-primary">
-                Sardar <span className="sardar-gold">Electricals</span>
+                Sardar <span className="sardar-gold">Mart</span>
               </div>
               <div className="sardar-brand-secondary">
-                &amp; FURNITURES <span className="sardar-sub-dot">•</span> CHENNAI
+                ELECTRICALS AND FURNITURES <span className="sardar-sub-dot">•</span> CHENNAI
               </div>
             </div>
           </div>
@@ -590,8 +590,8 @@ export default function Navbar({
               <div className="sardar-drawer-brand-wrap" onClick={() => handleNavClick('home')}>
                 <img src="/logo.png" alt="Sardar Logo" className="sardar-drawer-logo" />
                 <div>
-                  <h3 className="sardar-drawer-brand-name">Sardar <span>Electricals</span></h3>
-                  <small>&amp; FURNITURES • CHENNAI</small>
+                  <h3 className="sardar-drawer-brand-name">Sardar <span>Mart</span></h3>
+                  <small>ELECTRICALS AND FURNITURES • CHENNAI</small>
                 </div>
               </div>
               <button 
@@ -885,11 +885,12 @@ export default function Navbar({
           color: #b45309;
         }
         .sardar-brand-secondary {
-          font-size: 0.62rem;
+          font-size: 0.58rem;
           font-weight: 800;
-          letter-spacing: 2px;
+          letter-spacing: 1.2px;
           color: #8c766b;
           margin-top: 2px;
+          white-space: nowrap;
         }
         .sardar-sub-dot {
           color: #b45309;

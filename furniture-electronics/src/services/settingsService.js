@@ -12,7 +12,7 @@ const STORE_CONFIG_DOC = 'store_config';
 
 export const DEFAULT_STORE_CONFIG = {
   // Store Branding & Contact
-  storeName: 'Sardar Electricals & Furnitures',
+  storeName: 'Sardar Mart',
   phone: '+91 6383056338',
   secondaryPhone: '+91 9344623632',
   email: 'sardarmart64@gmail.com',

@@ -456,6 +456,33 @@ export default function AdminModal({
                         </select>
                       </div>
                       <div className="form-group">
+                        <label>Payment / COD Status</label>
+                        <select 
+                          value={editingOrder.paymentStatus || 'Pending'}
+                          onChange={(e) => setEditingOrder(prev => ({ ...prev, paymentStatus: e.target.value }))}
+                        >
+                          <option value="Paid">✓ Paid (Settled / Collected)</option>
+                          <option value="Pending">⏱ Pending (COD / Unpaid)</option>
+                          <option value="Partially Paid">⏳ Partially Paid</option>
+                          <option value="Failed">✕ Failed</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="form-grid-2">
+                      <div className="form-group">
+                        <label>Payment Method</label>
+                        <select 
+                          value={editingOrder.paymentMethod || 'Cash on Delivery (COD)'}
+                          onChange={(e) => setEditingOrder(prev => ({ ...prev, paymentMethod: e.target.value }))}
+                        >
+                          <option value="Cash on Delivery (COD)">Cash on Delivery (COD)</option>
+                          <option value="Cash at Counter">Cash at Counter</option>
+                          <option value="UPI / QR Code">UPI / QR Code</option>
+                          <option value="Card (POS / Online)">Card (POS / Online)</option>
+                        </select>
+                      </div>
+                      <div className="form-group">
                         <label>Assigned Delivery Fleet</label>
                         <input 
                           type="text" 

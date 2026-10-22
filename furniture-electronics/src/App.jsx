@@ -47,8 +47,11 @@ import { MessageCircle, ArrowUp } from 'lucide-react';
 function AppContent() {
   const { currentUser, isAdmin } = useAuth();
   const [currentPage, setCurrentPage] = useState(() => {
-    if (typeof window !== 'undefined' && window.location.hash === '#admin') {
-      return 'admin';
+    if (typeof window !== 'undefined') {
+      const savedPage = localStorage.getItem('sef_current_page');
+      if (window.location.hash === '#admin' || savedPage === 'admin') {
+        return 'admin';
+      }
     }
     return 'home';
   });
@@ -58,11 +61,33 @@ function AppContent() {
     const handleHash = () => {
       if (window.location.hash === '#admin') {
         setCurrentPage('admin');
+        localStorage.setItem('sef_current_page', 'admin');
+      } else if (currentPage === 'admin' && window.location.hash !== '#admin') {
+        // If hash was removed externally
+        const saved = localStorage.getItem('sef_current_page');
+        if (saved !== 'admin') {
+          setCurrentPage('home');
+        }
       }
     };
     window.addEventListener('hashchange', handleHash);
     return () => window.removeEventListener('hashchange', handleHash);
-  }, []);
+  }, [currentPage]);
+
+  // Ensure URL hash and localStorage reflect admin view when active
+  useEffect(() => {
+    if (currentPage === 'admin') {
+      localStorage.setItem('sef_current_page', 'admin');
+      if (window.location.hash !== '#admin') {
+        window.history.replaceState(null, '', '#admin');
+      }
+    } else {
+      localStorage.removeItem('sef_current_page');
+      if (window.location.hash === '#admin') {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    }
+  }, [currentPage]);
 
   // Customer Auth Modal State
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -415,7 +440,16 @@ function AppContent() {
           onViewInvoice={handleViewInvoice}
           onPlaceOrder={handlePlaceOrder}
           storeSettings={storeSettings}
-          onBackToStore={() => handleNavigate('home')}
+          onBackToStore={() => {
+            localStorage.removeItem('sef_current_page');
+            setCurrentPage('home');
+            window.location.hash = '';
+          }}
+          onLogoutAdmin={() => {
+            localStorage.removeItem('sef_current_page');
+            setCurrentPage('home');
+            window.location.hash = '';
+          }}
           onSeedCatalog={handleSeedCatalog}
         />
 
@@ -572,6 +606,7 @@ function AppContent() {
         onNavigate={handleNavigate} 
         onOpenAdmin={handleOpenAdminPanel}
         onOpenTrackOrder={handleOpenTrackOrder}
+        storeSettings={storeSettings}
       />
 
       {/* Cart & Billing Drawer */}

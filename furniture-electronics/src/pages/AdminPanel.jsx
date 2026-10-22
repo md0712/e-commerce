@@ -6,7 +6,7 @@ import {
   Edit3, Trash2, Printer, CheckCircle, Clock, Truck, Home, 
   FileText, ArrowRight, ArrowLeft, Mail, Lock, Check, AlertCircle,
   Menu, X, IndianRupee, Phone, ExternalLink, RefreshCw, Sparkles, Filter, MessageCircle,
-  ShieldAlert, Loader2, CreditCard, ShoppingBag, TrendingUp
+  ShieldAlert, Loader2, CreditCard, ShoppingBag, TrendingUp, Copy, MapPin
 } from 'lucide-react';
 import Billing from './Billing';
 import { createOrder } from '../services/orderService';
@@ -61,6 +61,7 @@ export default function AdminPanel({
   onViewInvoice,
   onPlaceOrder,
   onBackToStore,
+  onLogoutAdmin,
   onSeedCatalog,
   storeSettings: propStoreSettings
 }) {
@@ -114,6 +115,7 @@ export default function AdminPanel({
   const [customerSearch, setCustomerSearch] = useState('');
 
   const [editingOrder, setEditingOrder] = useState(null);
+  const [copiedOrderId, setCopiedOrderId] = useState(null);
 
   // Sales Chart Period
   const [salesPeriod, setSalesPeriod] = useState('This Week');
@@ -333,6 +335,11 @@ export default function AdminPanel({
     try {
       await logout();
       showToast('Logged out of Admin Panel');
+      if (onLogoutAdmin) {
+        onLogoutAdmin();
+      } else if (onBackToStore) {
+        onBackToStore();
+      }
     } catch (err) {
       console.warn('Logout error:', err);
     }
@@ -588,30 +595,102 @@ export default function AdminPanel({
   const electronicsPct = Math.round((electronicsProducts.length / totalCategoryItems) * 100);
   const appliancesPct = Math.max(0, 100 - furniturePct - electronicsPct);
 
-  // Dynamic daily sales breakdown from live Firestore orders
-  const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const dailySalesMap = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
-  orders.forEach((o) => {
-    let d = new Date();
-    if (o.createdAt?.toDate) {
-      d = o.createdAt.toDate();
-    } else if (o.date) {
-      d = new Date(o.date);
-    }
-    const dayName = isNaN(d.getTime()) ? null : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()];
-    if (dayName && dailySalesMap[dayName] !== undefined) {
-      dailySalesMap[dayName] += Number(o.total) || 0;
-    }
-  });
-  const maxDailySale = Math.max(...Object.values(dailySalesMap), 1000);
-  const salesOverviewBars = daysOfWeek.map((day) => {
-    const amt = dailySalesMap[day] || 0;
-    return {
-      day,
-      amount: amt > 0 ? (amt >= 1000 ? `₹${Math.round(amt / 1000)}K` : `₹${amt}`) : '₹0',
-      fillHeight: amt > 0 ? Math.max(Math.round((amt / maxDailySale) * 75), 12) : 6
-    };
-  });
+  // Dynamic sales breakdown based on selected period: 'This Week', 'This Month', or 'This Year'
+  let salesOverviewBars = [];
+
+  if (salesPeriod === 'This Month') {
+    // Show 12 months: Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlySalesMap = {};
+    monthNames.forEach((m) => { monthlySalesMap[m] = 0; });
+
+    orders.forEach((o) => {
+      let d = new Date();
+      if (o.createdAt?.toDate) {
+        d = o.createdAt.toDate();
+      } else if (o.date) {
+        d = new Date(o.date);
+      }
+      if (!isNaN(d.getTime())) {
+        const mName = monthNames[d.getMonth()];
+        if (monthlySalesMap[mName] !== undefined) {
+          monthlySalesMap[mName] += Number(o.total) || 0;
+        }
+      }
+    });
+
+    const maxMonthlySale = Math.max(...Object.values(monthlySalesMap), 1000);
+    salesOverviewBars = monthNames.map((month) => {
+      const amt = monthlySalesMap[month] || 0;
+      return {
+        day: month,
+        amount: amt > 0 ? (amt >= 1000 ? `₹${Math.round(amt / 1000)}K` : `₹${amt}`) : '₹0',
+        fillHeight: amt > 0 ? Math.max(Math.round((amt / maxMonthlySale) * 95), 14) : 6
+      };
+    });
+  } else if (salesPeriod === 'This Year') {
+    // Show years: 2024, 2025, 2026, 2027, 2028
+    const currentYear = new Date().getFullYear();
+    const yearList = [
+      String(currentYear - 2),
+      String(currentYear - 1),
+      String(currentYear),
+      String(currentYear + 1),
+      String(currentYear + 2)
+    ];
+    const yearSalesMap = {};
+    yearList.forEach((yr) => { yearSalesMap[yr] = 0; });
+
+    orders.forEach((o) => {
+      let d = new Date();
+      if (o.createdAt?.toDate) {
+        d = o.createdAt.toDate();
+      } else if (o.date) {
+        d = new Date(o.date);
+      }
+      if (!isNaN(d.getTime())) {
+        const yrStr = String(d.getFullYear());
+        if (yearSalesMap[yrStr] !== undefined) {
+          yearSalesMap[yrStr] += Number(o.total) || 0;
+        }
+      }
+    });
+
+    const maxYearSale = Math.max(...Object.values(yearSalesMap), 1000);
+    salesOverviewBars = yearList.map((yr) => {
+      const amt = yearSalesMap[yr] || 0;
+      return {
+        day: yr,
+        amount: amt > 0 ? (amt >= 1000 ? `₹${Math.round(amt / 1000)}K` : `₹${amt}`) : '₹0',
+        fillHeight: amt > 0 ? Math.max(Math.round((amt / maxYearSale) * 95), 14) : 6
+      };
+    });
+  } else {
+    // Default: 'This Week' (Mon, Tue, Wed, Thu, Fri, Sat, Sun)
+    const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const dailySalesMap = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+    orders.forEach((o) => {
+      let d = new Date();
+      if (o.createdAt?.toDate) {
+        d = o.createdAt.toDate();
+      } else if (o.date) {
+        d = new Date(o.date);
+      }
+      const dayName = isNaN(d.getTime()) ? null : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()];
+      if (dayName && dailySalesMap[dayName] !== undefined) {
+        dailySalesMap[dayName] += Number(o.total) || 0;
+      }
+    });
+    const maxDailySale = Math.max(...Object.values(dailySalesMap), 1000);
+    salesOverviewBars = daysOfWeek.map((day) => {
+      const amt = dailySalesMap[day] || 0;
+      return {
+        day,
+        amount: amt > 0 ? (amt >= 1000 ? `₹${Math.round(amt / 1000)}K` : `₹${amt}`) : '₹0',
+        fillHeight: amt > 0 ? Math.max(Math.round((amt / maxDailySale) * 95), 14) : 6
+      };
+    });
+  }
 
   // Dynamic Customer Aggregation from live Firestore orders
   const customerList = [];
@@ -694,8 +773,8 @@ export default function AdminPanel({
                 <Sparkles size={28} />
               </div>
               <div className="brand-text">
-                <h1>{siteContent.storeName || 'Sardar Electricals & Furnitures'}</h1>
-                <span>FURNITURE &amp; ELECTRONICS</span>
+                <h1>Sardar Mart</h1>
+                <span>ELECTRICALS AND FURNITURES</span>
               </div>
             </div>
 
@@ -1296,8 +1375,8 @@ export default function AdminPanel({
           </div>
           {!sidebarCollapsed && (
             <div className="sidebar-brand-title">
-              <h3>{siteContent.storeName || 'Sardar Electricals'}</h3>
-              <small>FURNITURE &amp; ELECTRONICS</small>
+              <h3>Sardar Mart</h3>
+              <small>ELECTRICALS AND FURNITURES</small>
             </div>
           )}
           <button 
@@ -1619,9 +1698,9 @@ export default function AdminPanel({
                       value={salesPeriod} 
                       onChange={(e) => setSalesPeriod(e.target.value)}
                     >
-                      <option value="This Week">This Week</option>
-                      <option value="This Month">This Month</option>
-                      <option value="This Quarter">This Quarter</option>
+                      <option value="This Week">This Week (Days)</option>
+                      <option value="This Month">This Month (Jan - Dec)</option>
+                      <option value="This Year">This Year (2024 - 2028)</option>
                     </select>
                   </div>
                 </div>
@@ -1980,173 +2059,518 @@ export default function AdminPanel({
 
         {/* TAB 3: ORDERS & BILLING MANAGEMENT */}
         {(activeTab === 'orders' || activeTab === 'invoices') && (
-          <div className="admin-subpage-card animate-fade-in">
-            <div className="subpage-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-              <div>
-                <h3>Order &amp; Billing Management</h3>
-                <p>Track customer orders, update live delivery status, and print tax invoices.</p>
+          <div className="admin-subpage-card animate-fade-in orders-subpage-root">
+            {/* Header Section */}
+            <div className="orders-header-hero">
+              <div className="orders-header-title-block">
+                <div className="orders-header-badge">
+                  <ShoppingBag size={14} /> Live Orders &amp; Counter Sales
+                </div>
+                <h3>Orders &amp; Invoices</h3>
+                <p>Manage customer orders, update real-time fulfillment stages, and print GST tax invoices.</p>
               </div>
-              <button 
-                type="button" 
-                className="btn-primary-action"
-                onClick={() => setActiveTab('billing')}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#8c3b10', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '8px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
-              >
-                <CreditCard size={16} /> + New POS Counter Bill
-              </button>
+              <div className="orders-header-actions">
+                <button 
+                  type="button" 
+                  className="btn-pos-counter-bill"
+                  onClick={() => setActiveTab('billing')}
+                >
+                  <CreditCard size={16} /> + New POS Counter Bill
+                </button>
+              </div>
             </div>
 
-            {/* Filter and Search Bar */}
-            <div className="subpage-filters-bar">
-              <div className="filter-search-box">
-                <Search size={16} />
+            {/* Executive KPI Quick-Filter Strip */}
+            {(() => {
+              const totalOrdersCount = orders.length;
+              const inProgressCount = orders.filter(o => ['Order Placed', 'Confirmed', 'Packed', 'Out for Delivery'].includes(o.status)).length;
+              const deliveredCount = orders.filter(o => o.status === 'Delivered').length;
+              const codPendingCount = orders.filter(o => !o.paymentStatus?.toLowerCase().includes('paid')).length;
+              const totalRevenueSum = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+
+              return (
+                <div className="orders-kpi-filter-strip">
+                  <button
+                    type="button"
+                    className={`order-kpi-pill ${orderStatusFilter === 'all' ? 'active' : ''}`}
+                    onClick={() => setOrderStatusFilter('all')}
+                  >
+                    <span className="kpi-label">All Orders</span>
+                    <span className="kpi-count">{totalOrdersCount}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`order-kpi-pill kpi-in-progress ${orderStatusFilter === 'in_progress' ? 'active' : ''}`}
+                    onClick={() => setOrderStatusFilter(orderStatusFilter === 'in_progress' ? 'all' : 'in_progress')}
+                  >
+                    <span className="kpi-dot in-progress"></span>
+                    <span className="kpi-label">In Progress</span>
+                    <span className="kpi-count">{inProgressCount}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`order-kpi-pill kpi-delivered ${orderStatusFilter === 'Delivered' ? 'active' : ''}`}
+                    onClick={() => setOrderStatusFilter(orderStatusFilter === 'Delivered' ? 'all' : 'Delivered')}
+                  >
+                    <span className="kpi-dot delivered"></span>
+                    <span className="kpi-label">Delivered</span>
+                    <span className="kpi-count">{deliveredCount}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`order-kpi-pill kpi-cod-pending ${orderStatusFilter === 'cod_pending' ? 'active' : ''}`}
+                    onClick={() => setOrderStatusFilter(orderStatusFilter === 'cod_pending' ? 'all' : 'cod_pending')}
+                  >
+                    <span className="kpi-dot cod-pending"></span>
+                    <span className="kpi-label">COD / Pending</span>
+                    <span className="kpi-count">{codPendingCount}</span>
+                  </button>
+
+                  <div className="order-kpi-revenue-box">
+                    <span className="kpi-revenue-label">Order Volume</span>
+                    <strong className="kpi-revenue-val">{formatPrice(totalRevenueSum)}</strong>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Search and Secondary Filter Row */}
+            <div className="orders-search-filter-row">
+              <div className="orders-search-input-wrap">
+                <Search size={16} className="search-icon" />
                 <input
                   type="text"
-                  placeholder="Search by Order ID, Customer Name, or Phone..."
+                  placeholder="Search by Order ID, Customer Name, Phone, or City..."
                   value={orderSearch}
                   onChange={(e) => setOrderSearch(e.target.value)}
                 />
+                {orderSearch && (
+                  <button 
+                    type="button" 
+                    className="search-clear-btn" 
+                    onClick={() => setOrderSearch('')}
+                    title="Clear search"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
               </div>
 
-              <div className="filter-dropdown-wrap">
-                <Filter size={16} />
+              <div className="orders-filter-select-wrap">
+                <Filter size={15} />
                 <select
                   value={orderStatusFilter}
                   onChange={(e) => setOrderStatusFilter(e.target.value)}
                 >
-                  <option value="all">All Statuses</option>
-                  <option value="Order Placed">Order Placed</option>
-                  <option value="Confirmed">Confirmed</option>
-                  <option value="Packed">Packed</option>
-                  <option value="Out for Delivery">Out for Delivery</option>
-                  <option value="Delivered">Delivered</option>
-                  <option value="Cancelled">Cancelled</option>
+                  <option value="all">Status: All Statuses</option>
+                  <option value="in_progress">Status: In Progress</option>
+                  <option value="Order Placed">Status: Order Placed</option>
+                  <option value="Confirmed">Status: Confirmed</option>
+                  <option value="Packed">Status: Packed</option>
+                  <option value="Out for Delivery">Status: Out for Delivery</option>
+                  <option value="Delivered">Status: Delivered</option>
+                  <option value="cod_pending">Payment: COD / Pending</option>
+                  <option value="Cancelled">Status: Cancelled</option>
                 </select>
               </div>
             </div>
 
-            {/* Orders Table */}
-            <div className="admin-table-wrap">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Order ID</th>
-                    <th>Customer Details</th>
-                    <th>Items</th>
-                    <th>Total Amount</th>
-                    <th>Payment</th>
-                    <th>Live Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders
-                    .filter((ord) => {
-                      const matchStatus = orderStatusFilter === 'all' || ord.status === orderStatusFilter;
-                      const term = orderSearch.toLowerCase();
-                      const matchSearch = orderSearch === '' ||
-                        ord.id.toLowerCase().includes(term) ||
-                        (ord.customer?.name || '').toLowerCase().includes(term) ||
-                        (ord.customer?.phone || '').includes(term);
-                      return matchStatus && matchSearch;
-                    }).length === 0 ? (
-                      <tr>
-                        <td colSpan="7" style={{ textAlign: 'center', padding: '36px', color: '#64748b' }}>
-                          {orders.length === 0
-                            ? 'No customer orders in Firebase yet. Real orders placed by customers or staff will appear here.'
-                            : 'No orders matching your search or status filter.'}
-                        </td>
-                      </tr>
-                    ) : (
-                      orders
-                        .filter((ord) => {
-                          const matchStatus = orderStatusFilter === 'all' || ord.status === orderStatusFilter;
-                          const term = orderSearch.toLowerCase();
-                          const matchSearch = orderSearch === '' ||
-                            ord.id.toLowerCase().includes(term) ||
-                            (ord.customer?.name || '').toLowerCase().includes(term) ||
-                            (ord.customer?.phone || '').includes(term);
-                          return matchStatus && matchSearch;
-                        })
-                        .map((ord) => (
-                          <tr key={ord.id}>
-                            <td>
-                              <strong>#{ord.id}</strong>
-                              <small className="d-block text-muted">{ord.date?.split(',')[0]}</small>
-                            </td>
-                            <td>
-                              <div className="customer-cell-info">
-                                <strong>{ord.customer?.name}</strong>
-                                <small>{ord.customer?.phone}</small>
-                                <small className="address-text">{ord.customer?.city}</small>
-                              </div>
-                            </td>
-                            <td>
-                              <div className="order-items-preview">
-                                {ord.items?.map((it, idx) => (
-                                  <div key={idx} className="order-mini-item">
-                                    {it.name} (×{it.quantity})
-                                  </div>
-                                ))}
-                              </div>
-                            </td>
-                            <td>
-                              <strong className="order-total-price">{formatPrice(ord.total)}</strong>
-                            </td>
-                            <td>
-                              <span className="pay-method-badge">{ord.paymentMethod}</span>
-                              <small className="pay-status-text">{ord.paymentStatus}</small>
-                            </td>
-                            <td>
-                              <select
-                                className={`status-selector-input ${ord.status.toLowerCase().replace(/\s+/g, '-')}`}
-                                value={ord.status}
-                                onChange={(e) => onUpdateOrderStatus && onUpdateOrderStatus(ord.id, e.target.value)}
-                              >
-                                <option value="Order Placed">Order Placed</option>
-                                <option value="Confirmed">Confirmed</option>
-                                <option value="Packed">Packed</option>
-                                <option value="Out for Delivery">Out for Delivery</option>
-                                <option value="Delivered">Delivered</option>
-                                <option value="Cancelled">Cancelled</option>
-                              </select>
-                            </td>
-                            <td>
-                              <div className="table-actions-group">
-                                <button
-                                  className="table-action-icon-btn invoice"
-                                  onClick={() => onViewInvoice && onViewInvoice(ord)}
-                                  title="Print Tax Invoice"
-                                >
-                                  <Printer size={15} />
-                                </button>
-                                <button
-                                  className="table-action-icon-btn edit"
-                                  onClick={() => setEditingOrder(ord)}
-                                  title="Edit Customer Details"
-                                >
-                                  <Edit3 size={15} />
-                                </button>
-                                <button
-                                  className="table-action-icon-btn delete"
-                                  onClick={() => {
-                                    if (window.confirm(`Delete order #${ord.id}?`)) {
-                                      onDeleteOrder && onDeleteOrder(ord.id);
-                                      showToast(`Order #${ord.id} deleted`);
-                                    }
-                                  }}
-                                  title="Delete Order"
-                                >
-                                  <Trash2 size={15} />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
+            {(() => {
+              const filteredOrders = orders.filter((ord) => {
+                let matchStatus = true;
+                if (orderStatusFilter === 'all') {
+                  matchStatus = true;
+                } else if (orderStatusFilter === 'in_progress') {
+                  matchStatus = ['Order Placed', 'Confirmed', 'Packed', 'Out for Delivery'].includes(ord.status);
+                } else if (orderStatusFilter === 'cod_pending') {
+                  matchStatus = !ord.paymentStatus?.toLowerCase().includes('paid');
+                } else {
+                  matchStatus = ord.status === orderStatusFilter;
+                }
+
+                const term = orderSearch.toLowerCase().trim();
+                const matchSearch = term === '' ||
+                  ord.id.toLowerCase().includes(term) ||
+                  (ord.customer?.name || '').toLowerCase().includes(term) ||
+                  (ord.customer?.phone || '').includes(term) ||
+                  (ord.customer?.city || '').toLowerCase().includes(term) ||
+                  (ord.items || []).some(it => (it.name || '').toLowerCase().includes(term));
+
+                return matchStatus && matchSearch;
+              });
+
+              if (filteredOrders.length === 0) {
+                return (
+                  <div className="orders-empty-state modern">
+                    <div className="empty-icon-halo">
+                      <ShoppingCart size={32} />
+                    </div>
+                    <h4>No Orders Found</h4>
+                    <p>
+                      {orders.length === 0
+                        ? 'No orders recorded yet. Orders placed online or created via Counter Billing will be listed here.'
+                        : 'No orders matched your active search or filter criteria. Try resetting filters.'}
+                    </p>
+                    {(orderSearch || orderStatusFilter !== 'all') && (
+                      <button
+                        type="button"
+                        className="btn-reset-filters"
+                        onClick={() => {
+                          setOrderSearch('');
+                          setOrderStatusFilter('all');
+                        }}
+                      >
+                        Reset All Filters
+                      </button>
                     )}
-                </tbody>
-              </table>
-            </div>
+                  </div>
+                );
+              }
+
+              return (
+                <>
+                  {/* ========================================================= */}
+                  {/* 1. DESKTOP & LAPTOP SENIOR-DESIGNER TABLE (> 820px)      */}
+                  {/* ========================================================= */}
+                  <div className="admin-table-wrap orders-desktop-table">
+                    <table className="admin-table orders-table modern-ui">
+                      <thead>
+                        <tr>
+                          <th style={{ width: '190px' }}>Order ID &amp; Placed On</th>
+                          <th style={{ width: '220px' }}>Customer Info</th>
+                          <th>Purchased Items</th>
+                          <th style={{ width: '140px' }}>Order Total</th>
+                          <th style={{ width: '175px' }}>Payment Mode</th>
+                          <th style={{ width: '170px' }}>Fulfillment Status</th>
+                          <th style={{ width: '135px', textAlign: 'center' }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredOrders.map((ord) => {
+                          const isCopied = copiedOrderId === ord.id;
+                          const custName = ord.customer?.name || 'Customer';
+                          const custInitial = custName.charAt(0).toUpperCase();
+                          const itemsCount = ord.items?.reduce((sum, i) => sum + (Number(i.quantity) || 1), 0) || 1;
+                          const isPaid = ord.paymentStatus?.toLowerCase().includes('paid');
+
+                          return (
+                            <tr key={ord.id} className="order-table-row modern">
+                              {/* Order ID & Placed Date */}
+                              <td className="order-id-cell">
+                                <div className="order-id-pill-row">
+                                  <span className="order-id-pill">#{ord.id}</span>
+                                  <button
+                                    type="button"
+                                    className={`btn-copy-order-id ${isCopied ? 'copied' : ''}`}
+                                    title={isCopied ? 'Copied!' : 'Copy Order ID'}
+                                    onClick={() => {
+                                      navigator.clipboard?.writeText(ord.id);
+                                      setCopiedOrderId(ord.id);
+                                      setTimeout(() => setCopiedOrderId(null), 1800);
+                                    }}
+                                  >
+                                    {isCopied ? <Check size={11} color="#16a34a" /> : <Copy size={11} />}
+                                  </button>
+                                </div>
+                                <div className="order-timestamp">
+                                  <Clock size={12} />
+                                  <span>{ord.date || 'Recent'}</span>
+                                </div>
+                              </td>
+
+                              {/* Customer Avatar & Details */}
+                              <td className="customer-details-cell modern">
+                                <div className="customer-avatar-row">
+                                  <div className="customer-monogram" title={custName}>
+                                    {custInitial}
+                                  </div>
+                                  <div className="customer-meta-col">
+                                    <strong className="customer-name">{custName}</strong>
+                                    {ord.customer?.phone && (
+                                      <a href={`tel:${ord.customer.phone}`} className="customer-phone" title="Call Customer">
+                                        <Phone size={11} /> {ord.customer.phone}
+                                      </a>
+                                    )}
+                                    {ord.customer?.city && (
+                                      <span className="customer-city-tag">
+                                        <MapPin size={10} /> {ord.customer.city}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+
+                              {/* Items Ordered List */}
+                              <td className="order-items-cell">
+                                <div className="order-items-list modern">
+                                  {ord.items?.map((it, idx) => (
+                                    <div key={idx} className="order-item-badge modern">
+                                      <span className="item-name" title={it.name}>{it.name}</span>
+                                      <span className="item-qty">×{it.quantity || 1}</span>
+                                      {it.price && (
+                                        <span className="item-price">{formatPrice(it.price * (it.quantity || 1))}</span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </td>
+
+                              {/* Total Amount */}
+                              <td className="order-amount-cell">
+                                <div className="order-amount-val">{formatPrice(ord.total)}</div>
+                                <span className="order-items-count">
+                                  {itemsCount} {itemsCount === 1 ? 'item' : 'items'}
+                                </span>
+                              </td>
+
+                              {/* Payment Mode & Settlement Badge */}
+                              <td className="payment-details-cell">
+                                <div className="payment-method-row">
+                                  <CreditCard size={13} />
+                                  <span>{ord.paymentMethod || 'Online'}</span>
+                                </div>
+                                <span className={`payment-status-badge ${isPaid ? 'paid' : 'pending'}`}>
+                                  {isPaid ? (
+                                    <><Check size={11} /> Paid</>
+                                  ) : (
+                                    <><Clock size={11} /> Pending (COD)</>
+                                  )}
+                                </span>
+                              </td>
+
+                              {/* Live Status Selector */}
+                              <td className="live-status-cell">
+                                <div className="status-dropdown-wrapper">
+                                  <span className={`status-indicator-dot ${ord.status?.toLowerCase().replace(/\s+/g, '-')}`}></span>
+                                  <select
+                                    className={`status-selector-input executive ${ord.status?.toLowerCase().replace(/\s+/g, '-')}`}
+                                    value={ord.status}
+                                    onChange={(e) => onUpdateOrderStatus && onUpdateOrderStatus(ord.id, e.target.value)}
+                                  >
+                                    <option value="Order Placed">Order Placed</option>
+                                    <option value="Confirmed">Confirmed</option>
+                                    <option value="Packed">Packed</option>
+                                    <option value="Out for Delivery">Out for Delivery</option>
+                                    <option value="Delivered">Delivered</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                  </select>
+                                </div>
+                              </td>
+
+                              {/* Actions */}
+                              <td className="order-actions-cell" style={{ textAlign: 'center' }}>
+                                <div className="table-actions-group modern-actions">
+                                  <button
+                                    type="button"
+                                    className="table-action-icon-btn invoice pulse-hover"
+                                    onClick={() => onViewInvoice && onViewInvoice(ord)}
+                                    title="View &amp; Print Tax Invoice"
+                                  >
+                                    <Printer size={15} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="table-action-icon-btn edit"
+                                    onClick={() => setEditingOrder(ord)}
+                                    title="Edit Order / Customer"
+                                  >
+                                    <Edit3 size={15} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="table-action-icon-btn delete"
+                                    onClick={() => {
+                                      if (window.confirm(`Delete order #${ord.id}?`)) {
+                                        onDeleteOrder && onDeleteOrder(ord.id);
+                                        showToast(`Order #${ord.id} deleted`);
+                                      }
+                                    }}
+                                    title="Delete Order Record"
+                                  >
+                                    <Trash2 size={15} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* ========================================================= */}
+                  {/* 2. MOBILE RESPONSIVE ORDER CARDS (<= 820px)               */}
+                  {/* ========================================================= */}
+                  <div className="orders-mobile-cards-list modern">
+                    {/* Mobile Specific Floating / Sticky Filter Bar */}
+                    <div className="mobile-orders-filter-toolbar">
+                      <div className="mobile-filter-dropdown-pill">
+                        <Filter size={14} className="filter-icon" />
+                        <select
+                          className="mobile-filter-select"
+                          value={orderStatusFilter}
+                          onChange={(e) => setOrderStatusFilter(e.target.value)}
+                          aria-label="Filter Orders by Status"
+                        >
+                          <option value="all">⚡ All Orders ({orders.length})</option>
+                          <option value="in_progress">🚚 In Progress</option>
+                          <option value="Order Placed">🟡 Order Placed</option>
+                          <option value="Confirmed">🟣 Confirmed</option>
+                          <option value="Packed">📦 Packed</option>
+                          <option value="Out for Delivery">🚀 Out for Delivery</option>
+                          <option value="Delivered">🟢 Delivered</option>
+                          <option value="cod_pending">💵 COD / Pending Payment</option>
+                          <option value="Cancelled">🔴 Cancelled</option>
+                        </select>
+                        <ChevronDown size={14} className="select-chevron" />
+                      </div>
+
+                      <div className="mobile-orders-count-badge">
+                        Showing <strong>{filteredOrders.length}</strong> of {orders.length}
+                      </div>
+                    </div>
+
+                    {filteredOrders.map((ord) => {
+                      const isCopied = copiedOrderId === ord.id;
+                      const custName = ord.customer?.name || 'Customer';
+                      const custInitial = custName.charAt(0).toUpperCase();
+                      const isPaid = ord.paymentStatus?.toLowerCase().includes('paid');
+
+                      return (
+                        <div key={ord.id} className="order-mobile-card modern">
+                          {/* Card Header: ID + Time + Status Selector */}
+                          <div className="order-card-header-bar">
+                            <div className="order-card-id-group">
+                              <div className="order-id-pill-row">
+                                <span className="order-id-pill">#{ord.id}</span>
+                                <button
+                                  type="button"
+                                  className={`btn-copy-order-id ${isCopied ? 'copied' : ''}`}
+                                  title="Copy Order ID"
+                                  onClick={() => {
+                                    navigator.clipboard?.writeText(ord.id);
+                                    setCopiedOrderId(ord.id);
+                                    setTimeout(() => setCopiedOrderId(null), 1800);
+                                  }}
+                                >
+                                  {isCopied ? <Check size={11} color="#16a34a" /> : <Copy size={11} />}
+                                </button>
+                              </div>
+                              <span className="order-card-date">
+                                <Clock size={11} /> {ord.date || 'Recent'}
+                              </span>
+                            </div>
+
+                            <select
+                              className={`status-selector-input executive mini ${ord.status?.toLowerCase().replace(/\s+/g, '-')}`}
+                              value={ord.status}
+                              onChange={(e) => onUpdateOrderStatus && onUpdateOrderStatus(ord.id, e.target.value)}
+                            >
+                              <option value="Order Placed">Order Placed</option>
+                              <option value="Confirmed">Confirmed</option>
+                              <option value="Packed">Packed</option>
+                              <option value="Out for Delivery">Out for Delivery</option>
+                              <option value="Delivered">Delivered</option>
+                              <option value="Cancelled">Cancelled</option>
+                            </select>
+                          </div>
+
+                          {/* Customer Row */}
+                          <div className="order-card-customer-row">
+                            <div className="customer-monogram mobile">
+                              {custInitial}
+                            </div>
+                            <div className="customer-info-col">
+                              <strong className="customer-name">{custName}</strong>
+                              <div className="customer-contact-meta">
+                                {ord.customer?.phone && (
+                                  <a href={`tel:${ord.customer.phone}`} className="customer-phone-chip">
+                                    <Phone size={11} /> {ord.customer.phone}
+                                  </a>
+                                )}
+                                {ord.customer?.city && (
+                                  <span className="customer-city-chip">
+                                    <MapPin size={10} /> {ord.customer.city}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Items Ordered List Preview */}
+                          <div className="order-card-items-block">
+                            <span className="items-block-label">Items Ordered ({ord.items?.length || 0})</span>
+                            <div className="items-tags-wrap">
+                              {ord.items?.map((it, idx) => (
+                                <div key={idx} className="order-item-badge modern">
+                                  <span className="item-name">{it.name}</span>
+                                  <span className="item-qty">×{it.quantity || 1}</span>
+                                  {it.price && (
+                                    <span className="item-price">{formatPrice(it.price * (it.quantity || 1))}</span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Summary Row: Total & Payment */}
+                          <div className="order-card-summary-row">
+                            <div className="total-amount-meta">
+                              <span className="meta-label">Total Amount</span>
+                              <strong className="order-amount-val">{formatPrice(ord.total)}</strong>
+                            </div>
+
+                            <div className="payment-badges-stack">
+                              <span className="payment-method-chip">
+                                <CreditCard size={11} /> {ord.paymentMethod || 'Online'}
+                              </span>
+                              <span className={`payment-status-badge ${isPaid ? 'paid' : 'pending'}`}>
+                                {isPaid ? <><Check size={11} /> Paid</> : <><Clock size={11} /> COD Pending</>}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Action Buttons Row */}
+                          <div className="order-card-actions-footer">
+                            <button
+                              type="button"
+                              className="btn-card-tax-invoice"
+                              onClick={() => onViewInvoice && onViewInvoice(ord)}
+                            >
+                              <Printer size={15} /> Tax Invoice
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-card-icon-action"
+                              onClick={() => setEditingOrder(ord)}
+                              title="Edit Customer Details"
+                            >
+                              <Edit3 size={15} />
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-card-icon-action delete"
+                              onClick={() => {
+                                if (window.confirm(`Delete order #${ord.id}?`)) {
+                                  onDeleteOrder && onDeleteOrder(ord.id);
+                                  showToast(`Order #${ord.id} deleted`);
+                                }
+                              }}
+                              title="Delete Order"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              );
+            })()}
           </div>
         )}
 
@@ -4469,6 +4893,73 @@ export default function AdminPanel({
                     })}
                   />
                 </div>
+
+                {/* COD & Payment Status Updation Section */}
+                <div className="form-field-group full-width order-payment-edit-card">
+                  <div className="payment-edit-header">
+                    <div>
+                      <strong style={{ display: 'block', fontSize: '0.88rem', color: '#0f172a' }}>
+                        Payment Settlement &amp; COD Status
+                      </strong>
+                      <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                        Update payment collection status once customer pays via COD, Cash, UPI, or Card.
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-mark-paid-quick"
+                      onClick={() => setEditingOrder({
+                        ...editingOrder,
+                        paymentStatus: 'Paid',
+                        paymentReceivedAt: new Date().toISOString()
+                      })}
+                      title="Mark as Paid immediately"
+                    >
+                      <Check size={13} /> Mark Paid Now
+                    </button>
+                  </div>
+
+                  <div className="dialog-grid" style={{ marginTop: '10px' }}>
+                    <div className="form-field-group">
+                      <label>Payment Status</label>
+                      <select
+                        value={editingOrder.paymentStatus || 'Pending'}
+                        onChange={(e) => setEditingOrder({
+                          ...editingOrder,
+                          paymentStatus: e.target.value
+                        })}
+                        style={{
+                          fontWeight: 700,
+                          color: (editingOrder.paymentStatus?.toLowerCase().includes('paid')) ? '#15803d' : '#b45309',
+                          background: (editingOrder.paymentStatus?.toLowerCase().includes('paid')) ? '#dcfce7' : '#fffbeb'
+                        }}
+                      >
+                        <option value="Paid">✓ Paid (Settled / Collected)</option>
+                        <option value="Pending">⏱ Pending (COD / Unpaid)</option>
+                        <option value="Partially Paid">⏳ Partially Paid</option>
+                        <option value="Failed">✕ Failed</option>
+                        <option value="Refunded">↩ Refunded</option>
+                      </select>
+                    </div>
+
+                    <div className="form-field-group">
+                      <label>Payment Method Mode</label>
+                      <select
+                        value={editingOrder.paymentMethod || 'Cash on Delivery (COD)'}
+                        onChange={(e) => setEditingOrder({
+                          ...editingOrder,
+                          paymentMethod: e.target.value
+                        })}
+                      >
+                        <option value="Cash on Delivery (COD)">Cash on Delivery (COD)</option>
+                        <option value="Cash at Counter">Cash at Counter</option>
+                        <option value="UPI / QR Code">UPI / QR Code (GPay / PhonePe / Paytm)</option>
+                        <option value="Card (POS / Online)">Credit / Debit Card</option>
+                        <option value="Net Banking">Net Banking</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="dialog-footer-actions">
@@ -5401,9 +5892,11 @@ export default function AdminPanel({
           display: flex;
           align-items: flex-end;
           justify-content: space-between;
-          height: 160px;
-          padding: 10px 10px 0;
+          height: 170px;
+          padding: 10px 6px 0;
           border-bottom: 1px solid #e2e8f0;
+          gap: 4px;
+          overflow-x: auto;
         }
         .bar-column-wrap {
           display: flex;
@@ -5411,25 +5904,34 @@ export default function AdminPanel({
           align-items: center;
           gap: 8px;
           flex: 1;
+          min-width: 18px;
         }
         .bar-track {
-          height: 120px;
+          height: 125px;
+          width: 100%;
           display: flex;
           align-items: flex-end;
+          justify-content: center;
         }
         .bar-fill {
-          width: 26px;
-          background: #854d0e;
+          width: 100%;
+          max-width: 28px;
+          min-width: 8px;
+          background: linear-gradient(180deg, #b45309 0%, #854d0e 100%);
           border-radius: 4px 4px 0 0;
-          transition: height 0.4s ease;
+          transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          cursor: pointer;
         }
         .bar-fill:hover {
-          background: #b45309;
+          background: linear-gradient(180deg, #d97706 0%, #b45309 100%);
+          transform: scaleY(1.03);
         }
         .bar-day-label {
-          font-size: 0.75rem;
+          font-size: 0.70rem;
           color: #64748b;
-          font-weight: 600;
+          font-weight: 700;
+          text-align: center;
+          white-space: nowrap;
         }
 
         /* Donut Chart Visual */
@@ -5790,6 +6292,993 @@ export default function AdminPanel({
         .status-selector-input.order-placed {
           background: #fef3c7;
           color: #854d0e;
+        }
+
+        /* ------------------------------------------------------------- */
+        /* ORDERS MANAGEMENT EXECUTIVE SENIOR-UI STYLING                 */
+        /* ------------------------------------------------------------- */
+        .orders-subpage-root {
+          padding: 24px;
+        }
+
+        /* Hero Header */
+        .orders-header-hero {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          flex-wrap: wrap;
+          gap: 16px;
+          margin-bottom: 20px;
+          padding-bottom: 16px;
+          border-bottom: 1px solid #f1f5f9;
+        }
+        .orders-header-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: #fef3c7;
+          color: #92400e;
+          padding: 4px 10px;
+          border-radius: 9999px;
+          font-size: 0.72rem;
+          font-weight: 700;
+          letter-spacing: 0.3px;
+          text-transform: uppercase;
+          margin-bottom: 6px;
+        }
+        .orders-header-title-block h3 {
+          font-size: 1.4rem;
+          font-weight: 800;
+          color: #0f172a;
+          margin: 0 0 4px 0;
+          letter-spacing: -0.3px;
+        }
+        .orders-header-title-block p {
+          font-size: 0.85rem;
+          color: #64748b;
+          margin: 0;
+        }
+        .btn-pos-counter-bill {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+          color: #ffffff;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 10px;
+          font-weight: 700;
+          font-size: 0.85rem;
+          cursor: pointer;
+          box-shadow: 0 4px 12px rgba(180, 83, 9, 0.25);
+          transition: all 0.2s ease;
+        }
+        .btn-pos-counter-bill:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 16px rgba(180, 83, 9, 0.35);
+          background: linear-gradient(135deg, #92400e 0%, #78350f 100%);
+        }
+
+        /* KPI Quick-Filter Strip */
+        .orders-kpi-filter-strip {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+          margin-bottom: 20px;
+          padding: 12px 14px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 14px;
+        }
+        .order-kpi-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: #ffffff;
+          border: 1.5px solid #e2e8f0;
+          padding: 7px 14px;
+          border-radius: 10px;
+          font-size: 0.82rem;
+          font-weight: 600;
+          color: #475569;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .order-kpi-pill:hover {
+          border-color: #cbd5e1;
+          background: #f1f5f9;
+          transform: translateY(-1px);
+        }
+        .order-kpi-pill.active {
+          background: #0f172a;
+          border-color: #0f172a;
+          color: #ffffff;
+          box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+        }
+        .order-kpi-pill .kpi-count {
+          background: #f1f5f9;
+          color: #0f172a;
+          font-size: 0.72rem;
+          font-weight: 800;
+          padding: 2px 7px;
+          border-radius: 9999px;
+        }
+        .order-kpi-pill.active .kpi-count {
+          background: rgba(255, 255, 255, 0.2);
+          color: #ffffff;
+        }
+        .kpi-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          display: inline-block;
+        }
+        .kpi-dot.in-progress { background: #3b82f6; box-shadow: 0 0 6px rgba(59, 130, 246, 0.5); }
+        .kpi-dot.delivered { background: #10b981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.5); }
+        .kpi-dot.cod-pending { background: #f59e0b; box-shadow: 0 0 6px rgba(245, 158, 11, 0.5); }
+
+        .order-kpi-revenue-box {
+          margin-left: auto;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          padding-left: 12px;
+          border-left: 1px solid #cbd5e1;
+        }
+        .kpi-revenue-label {
+          font-size: 0.68rem;
+          text-transform: uppercase;
+          font-weight: 700;
+          color: #64748b;
+          letter-spacing: 0.3px;
+        }
+        .kpi-revenue-val {
+          font-size: 1.05rem;
+          font-weight: 900;
+          color: #0f172a;
+          letter-spacing: -0.3px;
+        }
+
+        /* Search & Filter Row */
+        .orders-search-filter-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 20px;
+          flex-wrap: wrap;
+        }
+        .orders-search-input-wrap {
+          flex: 1;
+          min-width: 280px;
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+        .orders-search-input-wrap .search-icon {
+          position: absolute;
+          left: 14px;
+          color: #94a3b8;
+          pointer-events: none;
+        }
+        .orders-search-input-wrap input {
+          width: 100%;
+          padding: 11px 40px 11px 42px;
+          background: #ffffff;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 12px;
+          font-size: 0.88rem;
+          font-weight: 500;
+          color: #0f172a;
+          transition: all 0.2s ease;
+          outline: none;
+        }
+        .orders-search-input-wrap input:focus {
+          border-color: #b45309;
+          box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.12);
+        }
+        .search-clear-btn {
+          position: absolute;
+          right: 12px;
+          background: #f1f5f9;
+          border: none;
+          color: #64748b;
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+        }
+        .search-clear-btn:hover {
+          background: #e2e8f0;
+          color: #0f172a;
+        }
+        .orders-filter-select-wrap {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: #ffffff;
+          border: 1.5px solid #e2e8f0;
+          padding: 0 14px;
+          border-radius: 12px;
+          color: #64748b;
+          min-width: 200px;
+        }
+        .orders-filter-select-wrap select {
+          border: none;
+          background: transparent;
+          padding: 11px 0;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #1e293b;
+          width: 100%;
+          outline: none;
+          cursor: pointer;
+        }
+
+        /* Empty State */
+        .orders-empty-state.modern {
+          text-align: center;
+          padding: 56px 24px;
+          background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+          border: 1.5px dashed #cbd5e1;
+          border-radius: 20px;
+          margin: 16px 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+        }
+        .empty-icon-halo {
+          width: 68px;
+          height: 68px;
+          border-radius: 50%;
+          background: #fef3c7;
+          color: #b45309;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 14px rgba(180, 83, 9, 0.15);
+        }
+        .orders-empty-state.modern h4 {
+          font-size: 1.2rem;
+          font-weight: 800;
+          color: #0f172a;
+          margin: 0;
+        }
+        .orders-empty-state.modern p {
+          font-size: 0.88rem;
+          color: #64748b;
+          max-width: 440px;
+          line-height: 1.5;
+          margin: 0;
+        }
+        .btn-reset-filters {
+          margin-top: 6px;
+          background: #0f172a;
+          color: #ffffff;
+          border: none;
+          padding: 8px 18px;
+          border-radius: 8px;
+          font-size: 0.82rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        .btn-reset-filters:hover {
+          background: #334155;
+        }
+
+        /* Desktop Table View (> 820px) */
+        .orders-desktop-table {
+          display: block;
+          overflow-x: auto;
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          background: #ffffff;
+          box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+        }
+        .orders-mobile-cards-list {
+          display: none;
+        }
+
+        .orders-table.modern-ui {
+          width: 100%;
+          border-collapse: separate;
+          border-spacing: 0;
+        }
+        .orders-table.modern-ui thead th {
+          background: #f8fafc;
+          padding: 14px 16px;
+          font-size: 0.74rem;
+          font-weight: 800;
+          color: #475569;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          border-bottom: 1.5px solid #e2e8f0;
+          white-space: nowrap;
+        }
+        .order-table-row.modern {
+          transition: background 0.15s ease;
+        }
+        .order-table-row.modern:hover {
+          background: #fafafa;
+        }
+        .order-table-row.modern td {
+          padding: 16px;
+          vertical-align: middle;
+          border-bottom: 1px solid #f1f5f9;
+        }
+        .order-table-row.modern:last-child td {
+          border-bottom: none;
+        }
+
+        /* Order ID Cell */
+        .order-id-cell {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .order-id-pill-row {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .order-id-pill {
+          background: #f1f5f9;
+          border: 1px solid #cbd5e1;
+          border-radius: 8px;
+          padding: 4px 9px;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+          font-size: 0.82rem;
+          font-weight: 800;
+          color: #0f172a;
+          letter-spacing: -0.2px;
+          display: inline-block;
+        }
+        .btn-copy-order-id {
+          background: transparent;
+          border: 1px solid #e2e8f0;
+          color: #64748b;
+          border-radius: 6px;
+          width: 24px;
+          height: 24px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .btn-copy-order-id:hover {
+          background: #f8fafc;
+          border-color: #cbd5e1;
+          color: #0f172a;
+        }
+        .btn-copy-order-id.copied {
+          border-color: #86efac;
+          background: #f0fdf4;
+        }
+        .order-timestamp {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 0.74rem;
+          color: #64748b;
+          font-weight: 500;
+        }
+
+        /* Customer Cell Modern */
+        .customer-details-cell.modern .customer-avatar-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .customer-monogram {
+          width: 38px;
+          height: 38px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, #b45309 0%, #78350f 100%);
+          color: #ffffff;
+          font-weight: 800;
+          font-size: 0.95rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          box-shadow: 0 2px 8px rgba(180, 83, 9, 0.25);
+        }
+        .customer-monogram.mobile {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          font-size: 0.9rem;
+        }
+        .customer-meta-col {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+          min-width: 0;
+        }
+        .customer-name {
+          font-size: 0.9rem;
+          font-weight: 800;
+          color: #0f172a;
+          line-height: 1.25;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .customer-phone {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 0.76rem;
+          color: #475569;
+          text-decoration: none;
+          font-weight: 600;
+          transition: color 0.15s;
+        }
+        .customer-phone:hover {
+          color: #b45309;
+        }
+        .customer-city-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+          background: #f1f5f9;
+          border: 1px solid #e2e8f0;
+          border-radius: 5px;
+          padding: 1px 6px;
+          font-size: 0.70rem;
+          color: #64748b;
+          font-weight: 600;
+          width: fit-content;
+        }
+
+        /* Order Items List Modern */
+        .order-items-cell .order-items-list.modern {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          max-width: 300px;
+        }
+        .order-item-badge.modern {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          padding: 5px 9px;
+          font-size: 0.78rem;
+          transition: background 0.15s;
+        }
+        .order-item-badge.modern:hover {
+          background: #f1f5f9;
+        }
+        .order-item-badge.modern .item-name {
+          font-weight: 600;
+          color: #334155;
+          line-height: 1.2;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .order-item-badge.modern .item-qty {
+          font-size: 0.72rem;
+          font-weight: 800;
+          color: #92400e;
+          background: #fef3c7;
+          padding: 1px 6px;
+          border-radius: 5px;
+          flex-shrink: 0;
+        }
+        .order-item-badge.modern .item-price {
+          font-size: 0.74rem;
+          font-weight: 700;
+          color: #64748b;
+          margin-left: auto;
+          flex-shrink: 0;
+        }
+
+        /* Total Amount Cell */
+        .order-amount-cell .order-amount-val {
+          font-size: 1.15rem;
+          font-weight: 900;
+          color: #0f172a;
+          line-height: 1.2;
+          letter-spacing: -0.3px;
+        }
+        .order-amount-cell .order-items-count {
+          font-size: 0.72rem;
+          color: #94a3b8;
+          font-weight: 600;
+          display: block;
+          margin-top: 3px;
+        }
+
+        /* Payment Details Cell */
+        .payment-details-cell {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .payment-method-row {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.8rem;
+          font-weight: 700;
+          color: #334155;
+        }
+        .payment-status-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 3px 9px;
+          border-radius: 9999px;
+          font-size: 0.72rem;
+          font-weight: 700;
+          width: fit-content;
+          letter-spacing: 0.2px;
+        }
+        .payment-status-badge.paid {
+          background: #dcfce7;
+          color: #15803d;
+          border: 1px solid #86efac;
+        }
+        .payment-status-badge.pending {
+          background: #fffbeb;
+          color: #b45309;
+          border: 1px solid #fde68a;
+        }
+
+        /* Live Status Selector Dropdown */
+        .status-dropdown-wrapper {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          width: 100%;
+        }
+        .status-indicator-dot {
+          position: absolute;
+          left: 12px;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          pointer-events: none;
+          z-index: 2;
+        }
+        .status-indicator-dot.delivered { background: #10b981; }
+        .status-indicator-dot.out-for-delivery { background: #0ea5e9; }
+        .status-indicator-dot.packed,
+        .status-indicator-dot.confirmed { background: #a855f7; }
+        .status-indicator-dot.order-placed { background: #f59e0b; }
+        .status-indicator-dot.cancelled { background: #ef4444; }
+
+        .status-selector-input.executive {
+          width: 100%;
+          padding: 7px 12px 7px 28px;
+          border-radius: 10px;
+          font-size: 0.8rem;
+          font-weight: 700;
+          cursor: pointer;
+          border: 1.5px solid;
+          outline: none;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          appearance: none;
+          -webkit-appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 10px center;
+          padding-right: 28px;
+        }
+        .status-selector-input.executive:focus {
+          box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.15);
+        }
+        .status-selector-input.executive.delivered {
+          background-color: #ecfdf5;
+          color: #047857;
+          border-color: #6ee7b7;
+        }
+        .status-selector-input.executive.out-for-delivery {
+          background-color: #f0f9ff;
+          color: #0369a1;
+          border-color: #7dd3fc;
+        }
+        .status-selector-input.executive.packed,
+        .status-selector-input.executive.confirmed {
+          background-color: #faf5ff;
+          color: #6b21a8;
+          border-color: #d8b4fe;
+        }
+        .status-selector-input.executive.order-placed {
+          background-color: #fffbeb;
+          color: #b45309;
+          border-color: #fde68a;
+        }
+        .status-selector-input.executive.cancelled {
+          background-color: #fff1f2;
+          color: #be123c;
+          border-color: #fecdd3;
+        }
+
+        /* Action Buttons Group */
+        .table-actions-group.modern-actions {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .table-action-icon-btn {
+          width: 32px;
+          height: 32px;
+          border-radius: 8px;
+          border: 1px solid #e2e8f0;
+          background: #ffffff;
+          color: #475569;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .table-action-icon-btn.invoice {
+          background: #fef3c7;
+          color: #92400e;
+          border-color: #fde68a;
+        }
+        .table-action-icon-btn.invoice:hover {
+          background: #b45309;
+          color: #ffffff;
+          border-color: #b45309;
+          transform: translateY(-1px);
+        }
+        .table-action-icon-btn.edit:hover {
+          background: #0ea5e9;
+          color: #ffffff;
+          border-color: #0ea5e9;
+          transform: translateY(-1px);
+        }
+        .table-action-icon-btn.delete:hover {
+          background: #ef4444;
+          color: #ffffff;
+          border-color: #ef4444;
+          transform: translateY(-1px);
+        }
+
+        /* ============================================================= */
+        /* MOBILE RESPONSIVE ORDERS CARD VIEW (<= 820px)                 */
+        /* ============================================================= */
+        @media (max-width: 820px) {
+          .orders-desktop-table {
+            display: none !important;
+          }
+          .orders-mobile-cards-list {
+            display: flex !important;
+            flex-direction: column;
+            gap: 16px;
+          }
+          .orders-subpage-root {
+            padding: 16px;
+          }
+          .orders-header-hero {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .btn-pos-counter-bill {
+            width: 100%;
+            justify-content: center;
+          }
+          .order-kpi-revenue-box {
+            width: 100%;
+            margin-left: 0;
+            border-left: none;
+            padding-left: 0;
+            padding-top: 10px;
+            border-top: 1px solid #cbd5e1;
+            align-items: flex-start;
+          }
+
+          /* Mobile Order Card */
+          .order-mobile-card.modern {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 16px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+          }
+          .order-mobile-card.modern:active {
+            transform: scale(0.99);
+          }
+          .order-card-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
+          }
+          .order-card-id-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+          }
+          .order-card-date {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.72rem;
+            color: #64748b;
+            font-weight: 500;
+          }
+          .status-selector-input.executive.mini {
+            width: auto;
+            min-width: 135px;
+            padding: 6px 26px 6px 12px;
+            font-size: 0.74rem;
+          }
+
+          /* Customer Row */
+          .order-card-customer-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #f1f5f9;
+          }
+          .customer-info-col {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+          }
+          .customer-contact-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+          }
+          .customer-phone-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            color: #334155;
+            text-decoration: none;
+          }
+          .customer-phone-chip:hover {
+            color: #b45309;
+            border-color: #b45309;
+          }
+          .customer-city-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #64748b;
+          }
+
+          /* Items Block */
+          .order-card-items-block {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+          }
+          .items-block-label {
+            font-size: 0.70rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+          }
+          .items-tags-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+          }
+
+          /* Summary Row */
+          .order-card-summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #fafafa;
+            border-radius: 12px;
+            border: 1px dashed #cbd5e1;
+          }
+          .total-amount-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+          }
+          .total-amount-meta .meta-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #64748b;
+          }
+          .payment-badges-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+          }
+          .payment-method-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #334155;
+          }
+
+          /* Footer Actions */
+          .order-card-actions-footer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-top: 4px;
+          }
+          .btn-card-tax-invoice {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+            color: #ffffff;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(180, 83, 9, 0.25);
+          }
+          .btn-card-tax-invoice:active {
+            background: #78350f;
+          }
+          .btn-card-icon-action {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: 1.5px solid #e2e8f0;
+            background: #ffffff;
+            color: #475569;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+          }
+          .btn-card-icon-action.delete {
+            color: #ef4444;
+            border-color: #fee2e2;
+          }
+
+          /* Mobile Sticky Orders Filter Toolbar */
+          .mobile-orders-filter-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 10px 14px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+            margin-bottom: 4px;
+          }
+          .mobile-filter-dropdown-pill {
+            position: relative;
+            display: flex;
+            align-items: center;
+            flex: 1;
+            background: #f8fafc;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 0 10px 0 32px;
+            transition: all 0.2s ease;
+          }
+          .mobile-filter-dropdown-pill:focus-within {
+            border-color: #b45309;
+            box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.12);
+            background: #ffffff;
+          }
+          .mobile-filter-dropdown-pill .filter-icon {
+            position: absolute;
+            left: 10px;
+            color: #b45309;
+            pointer-events: none;
+          }
+          .mobile-filter-dropdown-pill .select-chevron {
+            position: absolute;
+            right: 10px;
+            color: #64748b;
+            pointer-events: none;
+          }
+          .mobile-filter-select {
+            width: 100%;
+            border: none;
+            background: transparent;
+            padding: 8px 18px 8px 0;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #0f172a;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+          }
+          .mobile-orders-count-badge {
+            font-size: 0.72rem;
+            color: #64748b;
+            font-weight: 600;
+            white-space: nowrap;
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+          }
+          .mobile-orders-count-badge strong {
+            color: #0f172a;
+            font-weight: 800;
+          }
+        }
+
+        /* Order Payment & COD Edit Card in Modal */
+        .order-payment-edit-card {
+          background: #f8fafc;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 12px;
+          padding: 14px 16px;
+          margin-top: 4px;
+        }
+        .payment-edit-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+          flex-wrap: wrap;
+          padding-bottom: 8px;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .btn-mark-paid-quick {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          background: #16a34a;
+          color: #ffffff;
+          border: none;
+          padding: 6px 12px;
+          border-radius: 7px;
+          font-size: 0.74rem;
+          font-weight: 800;
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        .btn-mark-paid-quick:hover {
+          background: #15803d;
         }
 
         /* Form Grid styles */
