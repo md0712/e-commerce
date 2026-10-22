@@ -182,15 +182,16 @@ export default function Navbar({
         <div className="container header-container">
           {/* Logo */}
           <div className="brand-logo" onClick={() => handleNavClick('home')}>
-            <div className="logo-emblem">
-              <span className="logo-icon-roof">▲</span>
-              <span className="logo-icon-seat">🛋️</span>
-            </div>
+            <img 
+              src="/logo.png" 
+              alt="Sardar Electricals and Furnitures" 
+              className="navbar-brand-logo-img" 
+            />
             <div className="brand-text">
               <div className="brand-title">
-                Home<span>Kart</span>
+                Sardar <span>Electricals</span>
               </div>
-              <div className="brand-subtitle">FURNITURE &amp; ELECTRONICS</div>
+              <div className="brand-subtitle">&amp; FURNITURES</div>
             </div>
           </div>
 
@@ -234,7 +235,7 @@ export default function Navbar({
           <div className="header-actions">
             {/* WhatsApp Quick Dial (Desktop) */}
             <a 
-              href="https://wa.me/919876543210?text=Hi%20HomeKart%2C%20I%20would%20like%20to%20enquire%20about%20your%20products"
+              href="https://wa.me/919876543210?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20would%20like%20to%20enquire%20about%20your%20products"
               target="_blank" 
               rel="noreferrer"
               className="quick-whatsapp-btn"
@@ -760,12 +761,14 @@ export default function Navbar({
             {/* Drawer Header */}
             <div className="drawer-top-brand">
               <div className="drawer-brand" onClick={() => handleNavClick('home')}>
-                <div className="logo-emblem" style={{ width: '38px', height: '38px' }}>
-                  <span className="logo-icon-seat" style={{ fontSize: '16px' }}>🛋️</span>
-                </div>
+                <img 
+                  src="/logo.png" 
+                  alt="Sardar Electricals and Furnitures" 
+                  style={{ height: '36px', width: 'auto', objectFit: 'contain', borderRadius: '6px' }} 
+                />
                 <div>
-                  <h3 className="brand-title" style={{ fontSize: '1.35rem' }}>Home<span>Kart</span></h3>
-                  <small style={{ fontSize: '0.6rem', color: '#9c887e', letterSpacing: '1px' }}>FURNITURE &amp; ELECTRONICS</small>
+                  <h3 className="brand-title" style={{ fontSize: '1.15rem' }}>Sardar <span>Electricals</span></h3>
+                  <small style={{ fontSize: '0.6rem', color: '#9c887e', letterSpacing: '1px' }}>&amp; FURNITURES</small>
                 </div>
               </div>
               <button className="drawer-close-btn" onClick={() => setMobileMenuOpen(false)}>
@@ -1041,7 +1044,7 @@ export default function Navbar({
                 </div>
                 <p>Chat directly with our Chennai showroom managers on WhatsApp.</p>
                 <a 
-                  href="https://wa.me/919876543210?text=Hi%20HomeKart%2C%20I%20need%20assistance%20with%20products" 
+                  href="https://wa.me/919876543210?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20need%20assistance%20with%20products" 
                   target="_blank" 
                   rel="noreferrer"
                   className="btn-whatsapp"
@@ -1221,22 +1224,17 @@ export default function Navbar({
         .brand-logo {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 12px;
           cursor: pointer;
           user-select: none;
           flex-shrink: 0;
         }
-        .logo-emblem {
-          width: 44px;
-          height: 44px;
-          background: linear-gradient(135deg, #a24e23 0%, #6d2f0d 100%);
-          border-radius: 12px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          box-shadow: 0 4px 12px rgba(162, 78, 35, 0.3);
+        .navbar-brand-logo-img {
+          height: 46px;
+          width: auto;
+          max-width: 140px;
+          object-fit: contain;
+          border-radius: 8px;
         }
         .logo-icon-roof {
           font-size: 11px;

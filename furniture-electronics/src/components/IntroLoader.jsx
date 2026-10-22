@@ -20,7 +20,7 @@ export default function IntroLoader({ onComplete }) {
         } else if (next >= 65 && next < 95) {
           setStatusText('Connecting Modern Appliances...');
         } else if (next >= 95) {
-          setStatusText('Welcome to HomeKart!');
+          setStatusText('Welcome to Sardar Electricals and Furnitures!');
         }
         return next;
       });
@@ -47,7 +47,7 @@ export default function IntroLoader({ onComplete }) {
   };
 
   return (
-    <div className={`homekart-intro-screen ${isExiting ? 'fade-out' : ''}`}>
+    <div className={`sardar-intro-screen ${isExiting ? 'fade-out' : ''}`}>
       {/* Top Left & Right Decorative Organic Shapes */}
       <div className="corner-decor top-left">
         <svg viewBox="0 0 300 240" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -102,7 +102,7 @@ export default function IntroLoader({ onComplete }) {
             <div className="scene-image-card sofa-card">
               <img 
                 src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=650&q=80" 
-                alt="HomeKart Living Room Furniture" 
+                alt="Sardar Electricals and Furnitures Living Room Furniture" 
                 className="scene-photo"
               />
               <div className="card-ambient-shadow"></div>
@@ -121,33 +121,16 @@ export default function IntroLoader({ onComplete }) {
           
           {/* Brand Logo Header */}
           <div className="brand-emblem-header">
-            <div className="logo-icon-svg-wrap">
-              <svg width="68" height="60" viewBox="0 0 100 88" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* Roof */}
-                <path d="M50 10L12 40L17 46L50 19L83 46L88 40L50 10Z" fill="#3d2314" />
-                {/* 2x2 Window Panes */}
-                <rect x="42" y="28" width="6.5" height="6.5" rx="1.5" fill="#3d2314" />
-                <rect x="51.5" y="28" width="6.5" height="6.5" rx="1.5" fill="#3d2314" />
-                <rect x="42" y="37" width="6.5" height="6.5" rx="1.5" fill="#3d2314" />
-                <rect x="51.5" y="37" width="6.5" height="6.5" rx="1.5" fill="#3d2314" />
-                {/* Accent Dot */}
-                <circle cx="65" cy="38" r="3" fill="#3d2314" />
-                {/* Sofa Silhouette */}
-                <path d="M26 50C26 45 29 42 34 42H66C71 42 74 45 74 50V63H26V50Z" fill="#3d2314" />
-                <rect x="33" y="50" width="15.5" height="11" rx="2.5" fill="#ffffff" />
-                <rect x="51.5" y="50" width="15.5" height="11" rx="2.5" fill="#ffffff" />
-                {/* Arms */}
-                <rect x="20" y="49" width="9.5" height="16" rx="4.5" fill="#3d2314" />
-                <rect x="70.5" y="49" width="9.5" height="16" rx="4.5" fill="#3d2314" />
-                {/* Base & Legs */}
-                <rect x="24" y="63" width="52" height="6" rx="2" fill="#3d2314" />
-                <path d="M27 69L25 76H29L31 69H27Z" fill="#3d2314" />
-                <path d="M73 69L75 76H71L69 69H73Z" fill="#3d2314" />
-              </svg>
+            <div className="logo-icon-svg-wrap" style={{ background: 'transparent', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <img 
+                src="/logo.png" 
+                alt="Sardar Electricals and Furnitures" 
+                style={{ width: '84px', height: '84px', objectFit: 'contain', borderRadius: '14px' }} 
+              />
             </div>
 
-            <h1 className="brand-logo-text">HomeKart</h1>
-            <span className="brand-logo-subtitle">FURNITURE &amp; ELECTRONICS</span>
+            <h1 className="brand-logo-text" style={{ fontSize: '1.8rem', textAlign: 'center' }}>Sardar Electricals and Furnitures</h1>
+            <span className="brand-logo-subtitle">PREMIUM FURNITURE &amp; ELECTRONICS</span>
             
             <div className="brand-tagline-row">
               <span>Better Home</span>
@@ -156,7 +139,7 @@ export default function IntroLoader({ onComplete }) {
             </div>
           </div>
 
-          {/* Animated Circular Spinner with Center HomeKart Emblem */}
+          {/* Animated Circular Spinner with Center Sardar Logo */}
           <div className="center-spinner-wrapper">
             <div className="spinner-circular-track">
               {/* Spinning dual-tone arc */}
@@ -168,22 +151,12 @@ export default function IntroLoader({ onComplete }) {
               </div>
             </div>
 
-            <div className="spinner-emblem-core">
-              <svg width="44" height="40" viewBox="0 0 100 88" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50 10L12 40L17 46L50 19L83 46L88 40L50 10Z" fill="#8d5b3d" />
-                <rect x="42" y="28" width="6.5" height="6.5" rx="1.5" fill="#8d5b3d" />
-                <rect x="51.5" y="28" width="6.5" height="6.5" rx="1.5" fill="#8d5b3d" />
-                <rect x="42" y="37" width="6.5" height="6.5" rx="1.5" fill="#8d5b3d" />
-                <rect x="51.5" y="37" width="6.5" height="6.5" rx="1.5" fill="#8d5b3d" />
-                <path d="M26 50C26 45 29 42 34 42H66C71 42 74 45 74 50V63H26V50Z" fill="#8d5b3d" />
-                <rect x="33" y="50" width="15.5" height="11" rx="2.5" fill="#fcfaf7" />
-                <rect x="51.5" y="50" width="15.5" height="11" rx="2.5" fill="#fcfaf7" />
-                <rect x="20" y="49" width="9.5" height="16" rx="4.5" fill="#8d5b3d" />
-                <rect x="70.5" y="49" width="9.5" height="16" rx="4.5" fill="#8d5b3d" />
-                <rect x="24" y="63" width="52" height="6" rx="2" fill="#8d5b3d" />
-                <path d="M27 69L25 76H29L31 69H27Z" fill="#8d5b3d" />
-                <path d="M73 69L75 76H71L69 69H73Z" fill="#8d5b3d" />
-              </svg>
+            <div className="spinner-emblem-core" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <img 
+                src="/logo.png" 
+                alt="Logo" 
+                style={{ width: '42px', height: '42px', objectFit: 'contain', borderRadius: '8px' }} 
+              />
             </div>
           </div>
 
@@ -290,7 +263,7 @@ export default function IntroLoader({ onComplete }) {
 
       <style>{`
         /* Whole Screen Clean Beige & White Aesthetics matching user reference image */
-        .homekart-intro-screen {
+        .sardar-intro-screen {
           position: fixed;
           top: 0;
           left: 0;
@@ -305,7 +278,7 @@ export default function IntroLoader({ onComplete }) {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
           transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .homekart-intro-screen.fade-out {
+        .sardar-intro-screen.fade-out {
           opacity: 0;
           transform: scale(1.02);
           pointer-events: none;
@@ -733,7 +706,7 @@ export default function IntroLoader({ onComplete }) {
         }
 
         @media (max-width: 640px) {
-          .homekart-intro-screen {
+          .sardar-intro-screen {
             padding: 16px 12px;
           }
           .corner-decor {

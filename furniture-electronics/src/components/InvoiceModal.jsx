@@ -60,16 +60,25 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
           {/* Header */}
           <div className="invoice-header">
             <div className="brand-block">
-              <div className="invoice-brand-title">
-                Home<span>Kart</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '8px' }}>
+                <img 
+                  src="/logo.png" 
+                  alt="Sardar Electricals and Furnitures" 
+                  style={{ height: '52px', width: 'auto', objectFit: 'contain', borderRadius: '6px' }} 
+                />
+                <div>
+                  <div className="invoice-brand-title" style={{ fontSize: '1.4rem' }}>
+                    Sardar <span>Electricals &amp; Furnitures</span>
+                  </div>
+                  <p className="invoice-brand-sub" style={{ margin: 0 }}>PREMIUM SHOWROOM &amp; ELECTRONICS DESTINATION</p>
+                </div>
               </div>
-              <p className="invoice-brand-sub">FURNITURE &amp; ELECTRONICS SHOWROOM</p>
               <p className="invoice-company-details">
-                HomeKart Retail Private Limited<br />
-                123, Market Street, Thousand Lights, Anna Salai<br />
+                Sardar Electricals and Furnitures Private Limited<br />
+                123, Main Commercial Road, Market Area<br />
                 Chennai, Tamil Nadu - 600001<br />
                 <strong>GSTIN:</strong> 33AAACH1234F1Z5 | <strong>Phone:</strong> +91 98765 43210<br />
-                <strong>Email:</strong> support@homekart.in | <strong>Web:</strong> www.homekart.in
+                <strong>Email:</strong> care@sardarelectricals.com | <strong>Web:</strong> www.sardarelectricals.com
               </p>
             </div>
 
@@ -216,22 +225,22 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
               <h5>Terms &amp; Conditions:</h5>
               <ol>
                 <li>Goods once sold are covered under official manufacturer structural/component warranties.</li>
-                <li>Free doorstep installation and unpacking provided by HomeKart certified technicians.</li>
+                <li>Free doorstep installation and unpacking provided by Sardar Electricals and Furnitures certified technicians.</li>
                 <li>7-day return/replacement policy applies for manufacturing transit damages.</li>
                 <li>Jurisdiction of all disputes shall be the courts of Chennai, Tamil Nadu.</li>
               </ol>
             </div>
             <div className="signature-col">
               <div className="signature-line">
-                <div className="seal-badge">HOMEKART<br />VERIFIED</div>
+                <div className="seal-badge">SARDAR<br />VERIFIED</div>
               </div>
               <p>Authorized Signatory</p>
-              <small>HomeKart Retail Pvt. Ltd.</small>
+              <small>Sardar Electricals and Furnitures Pvt. Ltd.</small>
             </div>
           </div>
 
           <div className="invoice-footer-note">
-            *** This is a computer generated legal tax invoice issued by HomeKart Retail Private Limited ***
+            *** This is a computer generated legal tax invoice issued by Sardar Electricals and Furnitures Private Limited ***
           </div>
         </div>
       </div>

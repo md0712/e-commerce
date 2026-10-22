@@ -10,8 +10,21 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isSuperAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.superAdmin == true || 
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin')
+      );
+    }
+
     function isAdmin() {
-      return isAuthenticated() && request.auth.token.admin == true;
+      return isAuthenticated() && (
+        request.auth.token.admin == true || 
+        request.auth.token.superAdmin == true ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'super_admin', 'shop_admin'])
+      );
     }
 
     function isOwner(userId) {
@@ -19,25 +32,33 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------
-    // 1. Users Collection: Private customer profile data
+    // 1. Users Collection: Customer & Staff Profiles
     // -------------------------------------------------------------
     match /users/{userId} {
-      // Customers can read their own profile; admins can read any profile
-      allow read: if isOwner(userId) || isAdmin();
+      // Super Admin and Admins can read all users; customers can read their own
+      allow read: if isOwner(userId) || isAdmin() || isSuperAdmin();
 
-      // Customer can create their own profile upon registration
-      // Cannot self-assign admin claims or roles
-      allow create: if isOwner(userId)
-                    && (!('role' in request.resource.data) || request.resource.data.role != 'admin')
-                    && (!('admin' in request.resource.data) || request.resource.data.admin != true);
+      // Super Admin can create any user account (shop_admin, employee, etc.)
+      // Regular customers can create their own profile without privileged roles
+      allow create: if isSuperAdmin() 
+                    || (
+                      isOwner(userId)
+                      && (!('role' in request.resource.data) || request.resource.data.role == 'customer')
+                      && (!('admin' in request.resource.data) || request.resource.data.admin != true)
+                      && (!('superAdmin' in request.resource.data) || request.resource.data.superAdmin != true)
+                    );
 
-      // Customer can update profile fields, but CANNOT modify privileged role fields
-      allow update: if (isOwner(userId) 
-                        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'admin', 'isAdmin'])
-                       ) || isAdmin();
+      // Super Admin can update any user; Admins can update non-superadmin accounts
+      // Regular customer can update profile fields, but CANNOT touch roles or admin flags
+      allow update: if isSuperAdmin()
+                    || (isAdmin() && (!('role' in resource.data) || resource.data.role != 'super_admin'))
+                    || (
+                      isOwner(userId) 
+                      && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'admin', 'isAdmin', 'superAdmin'])
+                    );
 
-      // Only administrators can delete user records
-      allow delete: if isAdmin();
+      // Only Super Admin can delete user records
+      allow delete: if isSuperAdmin();
     }
 
     // -------------------------------------------------------------
@@ -47,8 +68,8 @@ service cloud.firestore {
       // Storefront visitors & customers can browse all products
       allow read: if true;
 
-      // Only verified administrators can create, edit, or delete catalog products
-      allow write: if isAdmin();
+      // Verified administrators and super admins can create, edit, or delete catalog products
+      allow write: if isAdmin() || isSuperAdmin();
     }
 
     // -------------------------------------------------------------
@@ -56,7 +77,7 @@ service cloud.firestore {
     // -------------------------------------------------------------
     match /categories/{categoryId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isAdmin() || isSuperAdmin();
     }
 
     // -------------------------------------------------------------
@@ -64,19 +85,20 @@ service cloud.firestore {
     // -------------------------------------------------------------
     match /orders/{orderId} {
       // Verified admins can view all orders. Customers can only view their own orders.
-      allow read: if isAdmin() || (isAuthenticated() && resource.data.customerUid == request.auth.uid);
+      allow read: if isAdmin() || isSuperAdmin() || (isAuthenticated() && resource.data.customerUid == request.auth.uid);
 
       // Authenticated customers can place orders with their UID; guest checkout supported with guest tag
       allow create: if (isAuthenticated() && request.resource.data.customerUid == request.auth.uid)
                     || (request.resource.data.customerUid == 'guest')
-                    || isAdmin();
+                    || isAdmin()
+                    || isSuperAdmin();
 
       // Customers CANNOT modify placed orders (protects status, paymentStatus, totals).
       // Only administrators can update status or edit orders.
-      allow update: if isAdmin();
+      allow update: if isAdmin() || isSuperAdmin();
 
-      // Only administrators can delete order records
-      allow delete: if isAdmin();
+      // Only administrators / super admins can delete order records
+      allow delete: if isAdmin() || isSuperAdmin();
     }
 
     // -------------------------------------------------------------
@@ -87,7 +109,7 @@ service cloud.firestore {
       allow create: if true;
 
       // Only verified administrators can inspect, reply to, or delete enquiries
-      allow read, update, delete: if isAdmin();
+      allow read, update, delete: if isAdmin() || isSuperAdmin();
     }
 
     // -------------------------------------------------------------
@@ -95,7 +117,15 @@ service cloud.firestore {
     // -------------------------------------------------------------
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isAdmin() || isSuperAdmin();
+    }
+
+    // -------------------------------------------------------------
+    // 7. Customers Collection: Showroom customer directory
+    // -------------------------------------------------------------
+    match /customers/{customerId} {
+      allow read: if isAdmin() || isSuperAdmin();
+      allow write: if true; // Allows billing and orders to upsert customer records
     }
 
     // -------------------------------------------------------------

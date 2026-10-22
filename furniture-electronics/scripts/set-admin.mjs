@@ -1,5 +1,5 @@
 /**
- * Admin Provisioning Script for SardarElectricalsAndFurnitures (HomeKart)
+ * Admin Provisioning Script for Sardar Electricals and Furnitures
  * 
  * Securely assigns the verified Firebase Auth custom user claim { admin: true }
  * to a designated user. This is executed server-side via the Firebase Admin SDK.
@@ -8,8 +8,8 @@
  *   node scripts/set-admin.mjs <user-email-or-uid> [--key <path-to-serviceAccountKey.json>]
  * 
  * Examples:
- *   node scripts/set-admin.mjs admin@homekart.com
- *   node scripts/set-admin.mjs admin@homekart.com --key ./serviceAccountKey.json
+ *   node scripts/set-admin.mjs admin@sardarelectricals.com
+ *   node scripts/set-admin.mjs admin@sardarelectricals.com --key ./serviceAccountKey.json
  * 
  * How to obtain a Service Account Key:
  *   1. Visit Firebase Console -> Project Settings -> Service accounts
@@ -29,7 +29,7 @@ const args = process.argv.slice(2);
 if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
   console.log(`
 =============================================================
-  HomeKart / Sardar Electricals - Admin Provisioning Script
+  Sardar Electricals and Furnitures - Admin Provisioning Script
 =============================================================
 Usage:
   node scripts/set-admin.mjs <user-email-or-uid> [--key <path>]
@@ -39,9 +39,9 @@ Options:
   --revoke       Revoke admin privileges instead of granting
 
 Examples:
-  node scripts/set-admin.mjs admin@homekart.com
-  node scripts/set-admin.mjs admin@homekart.com --key ./serviceAccountKey.json
-  node scripts/set-admin.mjs admin@homekart.com --revoke
+  node scripts/set-admin.mjs admin@sardarelectricals.com
+  node scripts/set-admin.mjs admin@sardarelectricals.com --key ./serviceAccountKey.json
+  node scripts/set-admin.mjs admin@sardarelectricals.com --revoke
 `);
   process.exit(0);
 }

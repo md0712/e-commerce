@@ -16,6 +16,7 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
 
@@ -30,15 +31,17 @@ export function AuthProvider({ children }) {
         try {
           // Read verified ID token claims directly from Firebase Auth
           const tokenResult = await user.getIdTokenResult();
-          const adminClaim = Boolean(tokenResult.claims.admin);
-          setIsAdmin(adminClaim);
+          const superAdminClaim = Boolean(tokenResult.claims.superAdmin);
+          const adminClaim = Boolean(tokenResult.claims.admin || superAdminClaim);
 
-          // Fetch or initialize customer/admin profile in Firestore
+          // Fetch profile in Firestore
           const userRef = doc(db, 'users', user.uid);
           const snap = await getDoc(userRef);
 
+          let profile = null;
           if (snap.exists()) {
-            setUserProfile(snap.data());
+            profile = snap.data();
+            setUserProfile(profile);
           } else {
             // First time login profile document
             const newProfile = {
@@ -46,26 +49,36 @@ export function AuthProvider({ children }) {
               name: user.displayName || user.email?.split('@')[0] || 'Customer',
               email: user.email,
               photoURL: user.photoURL || null,
+              role: adminClaim ? (superAdminClaim ? 'super_admin' : 'admin') : 'customer',
               createdAt: serverTimestamp(),
               updatedAt: serverTimestamp()
             };
             try {
               await setDoc(userRef, newProfile);
+              profile = newProfile;
               setUserProfile(newProfile);
             } catch (err) {
               console.warn('Could not persist user profile to Firestore:', err);
+              profile = newProfile;
               setUserProfile(newProfile);
             }
           }
+
+          const hasSuper = superAdminClaim || profile?.role === 'super_admin';
+          const hasAdmin = adminClaim || hasSuper || profile?.role === 'admin' || profile?.role === 'shop_admin';
+          setIsSuperAdmin(hasSuper);
+          setIsAdmin(hasAdmin);
         } catch (err) {
           console.error('Error verifying auth claims or profile:', err);
           setIsAdmin(false);
+          setIsSuperAdmin(false);
           setUserProfile(null);
         }
       } else {
         setCurrentUser(null);
         setUserProfile(null);
         setIsAdmin(false);
+        setIsSuperAdmin(false);
       }
 
       setLoading(false);
@@ -74,16 +87,35 @@ export function AuthProvider({ children }) {
     return () => unsubscribe();
   }, []);
 
-  // Customer / Admin Login
+  // Customer / Admin / Super Admin Login
   const login = async (email, password) => {
     setAuthError(null);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
-      // Immediately check claims
-      const tokenResult = await userCredential.user.getIdTokenResult(true);
-      const adminClaim = Boolean(tokenResult.claims.admin);
-      setIsAdmin(adminClaim);
-      return { user: userCredential.user, isAdmin: adminClaim };
+      const user = userCredential.user;
+
+      // Check claims
+      const tokenResult = await user.getIdTokenResult(true);
+      const superAdminClaim = Boolean(tokenResult.claims.superAdmin);
+      const adminClaim = Boolean(tokenResult.claims.admin || superAdminClaim);
+
+      // Fetch profile
+      let profile = null;
+      try {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) {
+          profile = snap.data();
+          setUserProfile(profile);
+        }
+      } catch {}
+
+      const hasSuper = superAdminClaim || profile?.role === 'super_admin';
+      const hasAdmin = adminClaim || hasSuper || profile?.role === 'admin' || profile?.role === 'shop_admin';
+
+      setIsSuperAdmin(hasSuper);
+      setIsAdmin(hasAdmin);
+
+      return { user, isAdmin: hasAdmin, isSuperAdmin: hasSuper };
     } catch (error) {
       setAuthError(error.message);
       throw error;
@@ -106,6 +138,7 @@ export function AuthProvider({ children }) {
         name: name ? name.trim() : (user.email?.split('@')[0] || 'Customer'),
         email: user.email,
         photoURL: null,
+        role: 'customer',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
@@ -132,6 +165,7 @@ export function AuthProvider({ children }) {
       setCurrentUser(null);
       setUserProfile(null);
       setIsAdmin(false);
+      setIsSuperAdmin(false);
     } catch (error) {
       setAuthError(error.message);
       throw error;
@@ -151,15 +185,31 @@ export function AuthProvider({ children }) {
 
   // Force token refresh (useful after running admin provisioning script)
   const refreshClaims = async () => {
-    if (!auth.currentUser) return false;
+    if (!auth.currentUser) return { isAdmin: false, isSuperAdmin: false };
     try {
       const tokenResult = await auth.currentUser.getIdTokenResult(true);
-      const adminClaim = Boolean(tokenResult.claims.admin);
-      setIsAdmin(adminClaim);
-      return adminClaim;
+      const superAdminClaim = Boolean(tokenResult.claims.superAdmin);
+      const adminClaim = Boolean(tokenResult.claims.admin || superAdminClaim);
+
+      let profile = null;
+      try {
+        const snap = await getDoc(doc(db, 'users', auth.currentUser.uid));
+        if (snap.exists()) {
+          profile = snap.data();
+          setUserProfile(profile);
+        }
+      } catch {}
+
+      const hasSuper = superAdminClaim || profile?.role === 'super_admin';
+      const hasAdmin = adminClaim || hasSuper || profile?.role === 'admin' || profile?.role === 'shop_admin';
+
+      setIsSuperAdmin(hasSuper);
+      setIsAdmin(hasAdmin);
+
+      return { isAdmin: hasAdmin, isSuperAdmin: hasSuper };
     } catch (err) {
       console.error('Failed to refresh claims:', err);
-      return false;
+      return { isAdmin: false, isSuperAdmin: false };
     }
   };
 
@@ -167,6 +217,7 @@ export function AuthProvider({ children }) {
     currentUser,
     userProfile,
     isAdmin,
+    isSuperAdmin,
     loading,
     authError,
     login,

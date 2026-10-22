@@ -9,6 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "set-admin": "node scripts/set-admin.mjs",
+    "create-super-admin": "node scripts/create-super-admin.mjs",
     "test:rules": "firebase emulators:exec --only firestore \"node tests/rules.test.mjs\""
   },
   "dependencies": {

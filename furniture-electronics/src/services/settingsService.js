@@ -1,0 +1,97 @@
+import { 
+  doc, 
+  getDoc, 
+  setDoc, 
+  onSnapshot, 
+  serverTimestamp 
+} from 'firebase/firestore';
+import { db } from '../lib/firebase';
+
+const SETTINGS_COLLECTION = 'settings';
+const STORE_CONFIG_DOC = 'store_config';
+
+export const DEFAULT_STORE_CONFIG = {
+  // Store Branding & Contact
+  storeName: 'Sardar Electricals & Furnitures',
+  phone: '+91 98765 43210',
+  email: 'care@sardarelectricals.com',
+  address: 'Sardar Electricals & Furnitures, Main Commercial Road, Market Area',
+  timing: '9:30 AM – 9:30 PM (All 7 Days Open)',
+  announcement1: 'Free Express Delivery & 0% Easy EMI on All Products',
+  announcement2: 'Festive Mega Offer: Special Discounts on Complete Living Room & Appliance Combos',
+  footerDescription: 'Sardar Electricals & Furnitures is your trusted destination for luxury furniture, smart electronics, and top-tier home appliances. Delivering quality and comfort since 1998.',
+  instagramUrl: 'https://instagram.com',
+  facebookUrl: 'https://facebook.com',
+  youtubeUrl: 'https://youtube.com',
+  whatsappNumber: '+91 98765 43210',
+
+  // Legal & Tax Settings
+  storeLegalName: 'Sardar Electricals & Furnitures Pvt Ltd',
+  gstNumber: '33AAAAH1234A1Z5',
+  currency: 'INR (₹)',
+  taxGst: '18%',
+  invoicePrefix: 'SEF-2026-',
+  freeShippingThreshold: '4999',
+  standardDeliveryFee: '0',
+  courierPartner: 'Sardar White-Glove Fleet',
+  defaultOrderStatus: 'Order Placed',
+  whatsappAlerts: true,
+  smsAlerts: true,
+  emailReports: true,
+  twoFactorAuth: false
+};
+
+/**
+ * Fetch store settings from Firestore with local fallback
+ */
+export async function getStoreSettings() {
+  try {
+    const docRef = doc(db, SETTINGS_COLLECTION, STORE_CONFIG_DOC);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      return { ...DEFAULT_STORE_CONFIG, ...snap.data() };
+    }
+    return DEFAULT_STORE_CONFIG;
+  } catch (err) {
+    console.warn('Error reading store settings from Firestore:', err.message);
+    return DEFAULT_STORE_CONFIG;
+  }
+}
+
+/**
+ * Update store settings in Firestore (Admin only)
+ */
+export async function saveStoreSettings(updates) {
+  const docRef = doc(db, SETTINGS_COLLECTION, STORE_CONFIG_DOC);
+  const data = {
+    ...updates,
+    updatedAt: serverTimestamp()
+  };
+  await setDoc(docRef, data, { merge: true });
+  return data;
+}
+
+/**
+ * Real-time listener for store settings
+ */
+export function subscribeToStoreSettings(onUpdate) {
+  try {
+    const docRef = doc(db, SETTINGS_COLLECTION, STORE_CONFIG_DOC);
+    return onSnapshot(
+      docRef,
+      (snap) => {
+        if (snap.exists()) {
+          onUpdate({ ...DEFAULT_STORE_CONFIG, ...snap.data() });
+        } else {
+          onUpdate(DEFAULT_STORE_CONFIG);
+        }
+      },
+      (error) => {
+        console.warn('Real-time store settings notice:', error.message);
+      }
+    );
+  } catch (err) {
+    console.warn('Could not subscribe to store settings:', err.message);
+    return () => {};
+  }
+}

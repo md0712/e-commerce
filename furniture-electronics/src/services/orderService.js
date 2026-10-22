@@ -34,15 +34,68 @@ export async function createOrder(orderData, customerUid = null) {
     updatedAt: serverTimestamp()
   };
 
+  let orderResult;
   if (orderData.id) {
     const docRef = doc(db, ORDERS_COLLECTION, String(orderData.id));
     await setDoc(docRef, cleanOrder);
-    return { id: orderData.id, ...cleanOrder };
+    orderResult = { id: orderData.id, ...cleanOrder };
   } else {
     const colRef = collection(db, ORDERS_COLLECTION);
     const docRef = await addDoc(colRef, cleanOrder);
-    return { id: docRef.id, ...cleanOrder };
+    cleanOrder.id = docRef.id;
+    orderResult = { id: docRef.id, ...cleanOrder };
   }
+
+  // Real-time synchronization of customer records to Firestore 'customers' collection
+  try {
+    const custKey = orderData.customer?.phone || 
+      orderData.customer?.email || 
+      (orderData.customer?.name ? orderData.customer.name.toLowerCase().replace(/\s+/g, '_') : null) ||
+      customerUid;
+
+    if (custKey) {
+      const custDocRef = doc(db, 'customers', String(custKey));
+      const existingSnap = await getDoc(custDocRef);
+      if (existingSnap.exists()) {
+        const prev = existingSnap.data();
+        await updateDoc(custDocRef, {
+          name: orderData.customer?.name || prev.name,
+          phone: orderData.customer?.phone || prev.phone,
+          email: orderData.customer?.email || prev.email,
+          address: orderData.customer?.address || prev.address,
+          city: orderData.customer?.city || prev.city,
+          state: orderData.customer?.state || prev.state,
+          pincode: orderData.customer?.pincode || prev.pincode,
+          orderCount: (prev.orderCount || 1) + 1,
+          totalSpent: (Number(prev.totalSpent) || 0) + (Number(cleanOrder.total) || 0),
+          lastOrderDate: cleanOrder.date || new Date().toISOString(),
+          lastOrderId: cleanOrder.id,
+          updatedAt: serverTimestamp()
+        });
+      } else {
+        await setDoc(custDocRef, {
+          id: custKey,
+          name: orderData.customer?.name || 'Showroom Customer',
+          phone: orderData.customer?.phone || '—',
+          email: orderData.customer?.email || '—',
+          address: orderData.customer?.address || '—',
+          city: orderData.customer?.city || 'Chennai',
+          state: orderData.customer?.state || 'Tamil Nadu',
+          pincode: orderData.customer?.pincode || '600001',
+          orderCount: 1,
+          totalSpent: Number(cleanOrder.total) || 0,
+          lastOrderDate: cleanOrder.date || new Date().toISOString(),
+          lastOrderId: cleanOrder.id,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+      }
+    }
+  } catch (custErr) {
+    console.warn('Customer profile synchronization note:', custErr.message);
+  }
+
+  return orderResult;
 }
 
 /**

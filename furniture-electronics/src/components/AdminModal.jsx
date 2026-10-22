@@ -101,7 +101,7 @@ export default function AdminModal({
       badge: newProductForm.badge || null,
       image: newProductForm.image,
       gallery: [newProductForm.image],
-      description: newProductForm.description || 'Showroom verified premium addition to HomeKart catalog.',
+      description: newProductForm.description || 'Showroom verified premium addition to Sardar Electricals and Furnitures catalog.',
       features: [
         'Highest grade materials inspected for longevity',
         'Official manufacturer warranty coverage included',
@@ -159,9 +159,12 @@ export default function AdminModal({
       <div className="admin-modal-panel" onClick={(e) => e.stopPropagation()}>
         {/* Top Header */}
         <div className="admin-header-bar">
-          <div className="header-brand-wrap">
-            <span className="admin-portal-pill">Staff &amp; Store Management Portal</span>
-            <h2>HomeKart Operations CMS</h2>
+          <div className="header-brand-wrap" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img src="/logo.png" alt="Sardar Logo" style={{ height: '36px', width: 'auto', objectFit: 'contain', borderRadius: '6px' }} />
+            <div>
+              <span className="admin-portal-pill">Staff &amp; Store Management Portal</span>
+              <h2>Sardar Electricals and Furnitures Operations CMS</h2>
+            </div>
           </div>
 
           <div className="header-nav-tabs">

@@ -80,10 +80,14 @@ export default function Footer({ onNavigate, onOpenAdmin, onOpenTrackOrder }) {
             {/* Col 1: Brand Info */}
             <div className="footer-brand-col">
               <div className="footer-logo" onClick={() => handleLink('home')}>
-                <div className="footer-logo-icon">▲</div>
+                <img 
+                  src="/logo.png" 
+                  alt="Sardar Electricals and Furnitures" 
+                  className="footer-logo-img" 
+                />
                 <div className="footer-logo-text">
-                  <span>Home<strong>Kart</strong></span>
-                  <small>FURNITURE &amp; ELECTRONICS</small>
+                  <span>Sardar <strong>Electricals</strong></span>
+                  <small>&amp; FURNITURES</small>
                 </div>
               </div>
               <p className="footer-brand-desc">
@@ -156,7 +160,7 @@ export default function Footer({ onNavigate, onOpenAdmin, onOpenTrackOrder }) {
                   <Mail size={18} className="contact-icon" />
                   <div>
                     <strong>Support Email:</strong>
-                    <a href="mailto:support@homekart.com">support@homekart.com</a>
+                    <a href="mailto:care@sardarelectricals.com">care@sardarelectricals.com</a>
                   </div>
                 </li>
                 <li>
@@ -184,7 +188,7 @@ export default function Footer({ onNavigate, onOpenAdmin, onOpenTrackOrder }) {
         <div className="container bottom-bar-inner">
           <div className="copyright-group">
             <p className="copyright-text">
-              © {new Date().getFullYear()} HomeKart Furniture &amp; Electronics. All rights reserved.
+              © {new Date().getFullYear()} Sardar Electricals and Furnitures. All rights reserved.
             </p>
             <span className="powered-by-divider">•</span>
             <p className="powered-by-text">
@@ -307,9 +311,16 @@ export default function Footer({ onNavigate, onOpenAdmin, onOpenTrackOrder }) {
         .footer-logo {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 12px;
           cursor: pointer;
           margin-bottom: 14px;
+        }
+        .footer-logo-img {
+          height: 44px;
+          width: auto;
+          max-width: 120px;
+          object-fit: contain;
+          border-radius: 6px;
         }
         .footer-logo-icon {
           width: 36px;

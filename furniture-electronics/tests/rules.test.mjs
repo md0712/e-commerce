@@ -29,7 +29,7 @@ async function runTests() {
     const customerBobCtx = testEnv.authenticatedContext('bob', { email: 'bob@example.com' });
     const customerAliceCtx = testEnv.authenticatedContext('alice', { email: 'alice@example.com' });
     const adminCtx = testEnv.authenticatedContext('admin_user', { 
-      email: 'admin@homekart.com',
+      email: 'admin@sardarelectricals.com',
       admin: true // Verified custom claim
     });
 

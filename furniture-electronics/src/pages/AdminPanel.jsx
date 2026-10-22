@@ -6,10 +6,33 @@ import {
   Edit3, Trash2, Printer, CheckCircle, Clock, Truck, Home, 
   FileText, ArrowRight, ArrowLeft, Mail, Lock, Check, AlertCircle,
   Menu, X, IndianRupee, Phone, ExternalLink, RefreshCw, Sparkles, Filter, MessageCircle,
-  ShieldAlert, Loader2
+  ShieldAlert, Loader2, CreditCard
 } from 'lucide-react';
+import Billing from './Billing';
+import { createOrder } from '../services/orderService';
 import { useAuth } from '../context/AuthContext';
 import { seedProductsToFirestore } from '../services/productService';
+import { 
+  getStaffUsers, 
+  createStaffAccount, 
+  updateStaffStatus, 
+  updateStaffRole, 
+  deleteStaffUser 
+} from '../services/staffService';
+import { 
+  subscribeToEnquiriesAdmin, 
+  updateEnquiryStatus, 
+  deleteEnquiry 
+} from '../services/enquiryService';
+import { 
+  getStoreSettings, 
+  saveStoreSettings, 
+  subscribeToStoreSettings, 
+  DEFAULT_STORE_CONFIG 
+} from '../services/settingsService';
+import { updatePassword, updateProfile } from 'firebase/auth';
+import { auth, db } from '../lib/firebase';
+
 
 export default function AdminPanel({
   products = [],
@@ -22,12 +45,14 @@ export default function AdminPanel({
   onEditOrder,
   onDeleteOrder,
   onViewInvoice,
+  onPlaceOrder,
   onBackToStore,
-  onSeedCatalog
+  onSeedCatalog,
+  storeSettings: propStoreSettings
 }) {
   // Real Firebase Authentication and ID token custom claim verification
-  const { currentUser, isAdmin, login, logout, resetPassword, refreshClaims, loading: authLoading } = useAuth();
-  const isAuthenticated = Boolean(currentUser && isAdmin);
+  const { currentUser, isAdmin, isSuperAdmin, login, logout, resetPassword, refreshClaims, loading: authLoading } = useAuth();
+  const isAuthenticated = Boolean(currentUser && (isAdmin || isSuperAdmin));
 
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -36,6 +61,24 @@ export default function AdminPanel({
   const [loginError, setLoginError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSeeding, setIsSeeding] = useState(false);
+
+  // Staff & Admin Management State (Super Admin)
+  const [staffList, setStaffList] = useState([]);
+  const [loadingStaff, setLoadingStaff] = useState(false);
+  const [staffSearch, setStaffSearch] = useState('');
+  const [staffRoleFilter, setStaffRoleFilter] = useState('all');
+  const [isAddStaffModalOpen, setIsAddStaffModalOpen] = useState(false);
+  const [newStaffForm, setNewStaffForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'shop_admin',
+    phone: ''
+  });
+  const [creatingStaff, setCreatingStaff] = useState(false);
+  const [createdStaffCreds, setCreatedStaffCreds] = useState(null);
+  const [staffError, setStaffError] = useState('');
+  const [copiedKey, setCopiedKey] = useState('');
 
   // Active Admin Tab (defaults to initialTab, e.g. 'settings' or 'dashboard')
   const [activeTab, setActiveTab] = useState(initialTab || 'dashboard');
@@ -54,155 +97,28 @@ export default function AdminPanel({
   // Orders Tab states
   const [orderSearch, setOrderSearch] = useState('');
   const [orderStatusFilter, setOrderStatusFilter] = useState('all');
+  const [customerSearch, setCustomerSearch] = useState('');
+
   const [editingOrder, setEditingOrder] = useState(null);
 
   // Sales Chart Period
   const [salesPeriod, setSalesPeriod] = useState('This Week');
 
-  // Enquiries State
-  const [enquiries, setEnquiries] = useState(() => {
-    try {
-      const saved = localStorage.getItem('hk_enquiries');
-      return saved ? JSON.parse(saved) : [
-        {
-          id: 'enq-101',
-          name: 'Imran Khan',
-          contact: '+91 98765 43210',
-          email: 'imran@example.com',
-          product: 'Royal Velvet 3-Seater Sofa',
-          date: '16 Oct 2026',
-          status: 'New',
-          message: 'Is customization available in beige fabric for this sofa set?'
-        },
-        {
-          id: 'enq-102',
-          name: 'Nisha Sundaram',
-          contact: '+91 87654 32109',
-          email: 'nisha.s@example.com',
-          product: 'AI Front Load 8kg Washing Machine',
-          date: '15 Oct 2026',
-          status: 'Replied',
-          message: 'Does it include complimentary demo and unboxing by technician?'
-        },
-        {
-          id: 'enq-103',
-          name: 'Suresh Kumar',
-          contact: '+91 76543 21098',
-          email: 'suresh.k@example.com',
-          product: '1.5 Ton Dual Inverter 5-Star Split AC',
-          date: '15 Oct 2026',
-          status: 'New',
-          message: 'Interested in copper piping charges and 18-month No-Cost EMI.'
-        },
-        {
-          id: 'enq-104',
-          name: 'Fatima Zahra',
-          contact: '+91 65432 10987',
-          email: 'fatima.z@example.com',
-          product: '6-Seater Solid Sheesham Dining Table',
-          date: '14 Oct 2026',
-          status: 'Pending',
-          message: 'Would like to visit showroom this Saturday to inspect finish.'
-        }
-      ];
-    } catch {
-      return [];
-    }
-  });
+  // Enquiries State (Live Firestore sync)
+  const [enquiries, setEnquiries] = useState([]);
+  const [loadingEnquiries, setLoadingEnquiries] = useState(true);
 
-  // Website Content State
-  const [siteContent, setSiteContent] = useState(() => {
-    try {
-      const saved = localStorage.getItem('hk_site_content');
-      const defaultContent = {
-        storeName: 'HomeKart Furniture & Electronics',
-        phone: '+91 98765 43210',
-        email: 'care@homekart.com',
-        address: '42, Grand Southern Trunk Rd, Chromepet, Chennai, Tamil Nadu 600044',
-        timing: '10:00 AM – 09:30 PM (All 7 Days)',
-        announcement1: 'Free Express Delivery & 0% Easy EMI All Over India',
-        announcement2: 'Festive Mega Sale: Flat ₹5,000 OFF on Orders Above ₹40,000',
-        footerDescription: 'Your one-stop destination for premium stylish furniture and the latest smart home electronics. Transforming homes across Tamil Nadu and all over India with unmatched quality and value.',
-        instagramUrl: 'https://instagram.com',
-        facebookUrl: 'https://facebook.com',
-        youtubeUrl: 'https://youtube.com',
-        whatsappNumber: '+91 98765 43210'
-      };
-      return saved ? { ...defaultContent, ...JSON.parse(saved) } : defaultContent;
-    } catch {
-      return {
-        storeName: 'HomeKart Furniture & Electronics',
-        phone: '+91 98765 43210',
-        email: 'care@homekart.com',
-        address: '42, Grand Southern Trunk Rd, Chromepet, Chennai, Tamil Nadu 600044',
-        timing: '10:00 AM – 09:30 PM (All 7 Days)',
-        announcement1: 'Free Express Delivery & 0% Easy EMI All Over India',
-        announcement2: 'Festive Mega Sale: Flat ₹5,000 OFF on Orders Above ₹40,000',
-        footerDescription: 'Your one-stop destination for premium stylish furniture and the latest smart home electronics. Transforming homes across Tamil Nadu and all over India with unmatched quality and value.',
-        instagramUrl: 'https://instagram.com',
-        facebookUrl: 'https://facebook.com',
-        youtubeUrl: 'https://youtube.com',
-        whatsappNumber: '+91 98765 43210'
-      };
-    }
-  });
+  // Store Settings & Website Content State (Live Firestore sync with DEFAULT_STORE_CONFIG)
+  const [siteContent, setSiteContent] = useState(DEFAULT_STORE_CONFIG);
+  const [storeSettings, setStoreSettings] = useState(DEFAULT_STORE_CONFIG);
+  const [savingSettings, setSavingSettings] = useState(false);
 
-  // Settings State (Admin Set)
-  const [storeSettings, setStoreSettings] = useState(() => {
-    try {
-      const saved = localStorage.getItem('hk_admin_settings');
-      return saved ? JSON.parse(saved) : {
-        storeLegalName: 'HomeKart Furniture & Electronics Pvt Ltd',
-        gstNumber: '33AAAAH1234A1Z5',
-        currency: 'INR (₹)',
-        taxGst: '18%',
-        invoicePrefix: 'HK-2026-',
-        freeShippingThreshold: '4999',
-        standardDeliveryFee: '0',
-        courierPartner: 'HomeKart Express White-Glove Fleet',
-        defaultOrderStatus: 'Order Placed',
-        whatsappAlerts: true,
-        smsAlerts: true,
-        emailReports: true,
-        twoFactorAuth: false
-      };
-    } catch {
-      return {
-        storeLegalName: 'HomeKart Furniture & Electronics Pvt Ltd',
-        gstNumber: '33AAAAH1234A1Z5',
-        currency: 'INR (₹)',
-        taxGst: '18%',
-        invoicePrefix: 'HK-2026-',
-        freeShippingThreshold: '4999',
-        standardDeliveryFee: '0',
-        courierPartner: 'HomeKart Express White-Glove Fleet',
-        defaultOrderStatus: 'Order Placed',
-        whatsappAlerts: true,
-        smsAlerts: true,
-        emailReports: true,
-        twoFactorAuth: false
-      };
-    }
-  });
-
-  // Admin Profile Credentials State
-  const [adminProfile, setAdminProfile] = useState(() => {
-    try {
-      const saved = localStorage.getItem('hk_admin_profile');
-      return saved ? JSON.parse(saved) : {
-        name: 'Administrator',
-        email: 'admin@homekart.com',
-        role: 'Super Admin',
-        phone: '+91 98765 43210'
-      };
-    } catch {
-      return {
-        name: 'Administrator',
-        email: 'admin@homekart.com',
-        role: 'Super Admin',
-        phone: '+91 98765 43210'
-      };
-    }
+  // Admin Profile Credentials State (Derived dynamically from authenticated Firebase user)
+  const [adminProfile, setAdminProfile] = useState({
+    name: '',
+    email: '',
+    role: '',
+    phone: ''
   });
 
   const [adminPasswordForm, setAdminPasswordForm] = useState({
@@ -210,6 +126,8 @@ export default function AdminPanel({
     newPassword: '',
     confirmPassword: ''
   });
+  const [updatingPassword, setUpdatingPassword] = useState(false);
+
 
   // New Product Form State
   const [newProduct, setNewProduct] = useState({
@@ -328,13 +246,293 @@ export default function AdminPanel({
     }
   };
 
-  // Calculations for KPI Cards
+  // 1. Real-time listener for Enquiries in Firestore
+  useEffect(() => {
+    const unsub = subscribeToEnquiriesAdmin((live) => {
+      setEnquiries(live || []);
+      setLoadingEnquiries(false);
+    });
+    return () => unsub();
+  }, []);
+
+  // 2. Real-time listener for Store Settings & Website CMS in Firestore
+  useEffect(() => {
+    const unsub = subscribeToStoreSettings((live) => {
+      if (live) {
+        setStoreSettings(live);
+        setSiteContent(live);
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  // 3. Sync Admin Profile from authenticated Firebase user
+  useEffect(() => {
+    if (currentUser) {
+      setAdminProfile({
+        name: currentUser.displayName || (isSuperAdmin ? 'Super Administrator' : 'Administrator'),
+        email: currentUser.email || '',
+        role: isSuperAdmin ? 'Super Admin' : (isAdmin ? 'Shop Admin' : 'Employee'),
+        phone: currentUser.phoneNumber || ''
+      });
+    }
+  }, [currentUser, isAdmin, isSuperAdmin]);
+
+  // Enquiry Actions (Update Status & Delete)
+  const handleUpdateEnquiryStatus = async (enquiryId, nextStatus) => {
+    try {
+      await updateEnquiryStatus(enquiryId, nextStatus);
+      setEnquiries((prev) => prev.map((e) => e.id === enquiryId ? { ...e, status: nextStatus } : e));
+      showToast(`Enquiry marked as "${nextStatus}"`);
+    } catch (err) {
+      showToast('Error updating enquiry: ' + err.message);
+    }
+  };
+
+  const handleDeleteEnquiry = async (enquiryId, customerName) => {
+    if (window.confirm(`Delete enquiry from "${customerName || 'customer'}"?`)) {
+      try {
+        await deleteEnquiry(enquiryId);
+        setEnquiries((prev) => prev.filter((e) => e.id !== enquiryId));
+        showToast('Enquiry deleted from Firestore');
+      } catch (err) {
+        showToast('Error deleting enquiry: ' + err.message);
+      }
+    }
+  };
+
+  // Store Configuration Save Handler (Saves to Firestore settings/store_config)
+  const handleSaveStoreConfig = async (updatedConfig, message = 'Settings saved to Firebase successfully!') => {
+    setSavingSettings(true);
+    try {
+      await saveStoreSettings(updatedConfig);
+      setStoreSettings((prev) => ({ ...prev, ...updatedConfig }));
+      setSiteContent((prev) => ({ ...prev, ...updatedConfig }));
+      showToast(message);
+    } catch (err) {
+      showToast('Error saving settings to Firebase: ' + err.message);
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
+  // Admin Password Update Handler (Updates Firebase Authentication user credentials)
+  const handleUpdateAdminPassword = async () => {
+    if (!adminPasswordForm.newPassword) {
+      alert('Please enter a new password');
+      return;
+    }
+    if (adminPasswordForm.newPassword.length < 6) {
+      alert('Password must be at least 6 characters long');
+      return;
+    }
+    if (adminPasswordForm.newPassword !== adminPasswordForm.confirmPassword) {
+      alert('New password and confirmation do not match');
+      return;
+    }
+
+    setUpdatingPassword(true);
+    try {
+      if (auth.currentUser) {
+        await updatePassword(auth.currentUser, adminPasswordForm.newPassword);
+        setAdminPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        showToast('Admin password updated successfully in Firebase!');
+      } else {
+        alert('No active Firebase user session found.');
+      }
+    } catch (err) {
+      if (err.code === 'auth/requires-recent-login') {
+        alert('For security reasons, please log out and log in again before changing your password, or use the password reset link.');
+      } else {
+        alert(err.message || 'Failed to update admin password in Firebase.');
+      }
+    } finally {
+      setUpdatingPassword(false);
+    }
+  };
+
+  // Staff & Admin User Management Functions (Super Admin)
+  const loadStaff = async () => {
+    setLoadingStaff(true);
+    try {
+      const data = await getStaffUsers();
+      setStaffList(data);
+    } catch (err) {
+      console.warn('Could not load staff list:', err);
+    } finally {
+      setLoadingStaff(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'admin-users') {
+      loadStaff();
+    }
+  }, [activeTab]);
+
+  const handleCreateStaffSubmit = async (e) => {
+    e.preventDefault();
+    setStaffError('');
+    if (!newStaffForm.name.trim() || !newStaffForm.email.trim() || !newStaffForm.password) {
+      setStaffError('Please enter Full Name, Email, and Password');
+      return;
+    }
+    if (newStaffForm.password.length < 6) {
+      setStaffError('Password must be at least 6 characters');
+      return;
+    }
+
+    setCreatingStaff(true);
+    try {
+      const created = await createStaffAccount({
+        name: newStaffForm.name,
+        email: newStaffForm.email,
+        password: newStaffForm.password,
+        role: newStaffForm.role,
+        phone: newStaffForm.phone,
+        createdBy: currentUser?.email || 'super_admin'
+      });
+
+      // Save credentials for the modal to display clearly
+      setCreatedStaffCreds({
+        name: newStaffForm.name,
+        email: newStaffForm.email,
+        password: newStaffForm.password,
+        role: newStaffForm.role
+      });
+
+      setStaffList((prev) => [created, ...prev.filter((s) => s.id !== created.id)]);
+      showToast(`Created ${created.role} login for ${created.name}!`);
+      setNewStaffForm({ name: '', email: '', password: '', role: 'shop_admin', phone: '' });
+    } catch (err) {
+      const msg = err.code || err.message || '';
+      if (msg.includes('email-already-in-use')) {
+        setStaffError('An account with this email address already exists in Firebase Authentication.');
+      } else {
+        setStaffError(err.message || 'Failed to create staff account.');
+      }
+    } finally {
+      setCreatingStaff(false);
+    }
+  };
+
+  const handleToggleStaffStatus = async (staffMember) => {
+    const nextStatus = staffMember.status === 'Active' ? 'Suspended' : 'Active';
+    try {
+      await updateStaffStatus(staffMember.id, nextStatus);
+      setStaffList((prev) => prev.map((s) => s.id === staffMember.id ? { ...s, status: nextStatus } : s));
+      showToast(`Status updated to "${nextStatus}" for ${staffMember.name}`);
+    } catch (err) {
+      showToast('Error updating status: ' + err.message);
+    }
+  };
+
+  const handleDeleteStaff = async (staffId, staffName) => {
+    if (window.confirm(`Are you sure you want to remove "${staffName}" from staff records?`)) {
+      try {
+        await deleteStaffUser(staffId);
+        setStaffList((prev) => prev.filter((s) => s.id !== staffId));
+        showToast(`Staff account "${staffName}" removed`);
+      } catch (err) {
+        showToast('Error deleting staff: ' + err.message);
+      }
+    }
+  };
+
+  const handleGeneratePassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';
+    let pass = '';
+    for (let i = 0; i < 10; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setNewStaffForm((prev) => ({ ...prev, password: pass }));
+  };
+
+  const handleCopyText = (text, key) => {
+    navigator.clipboard.writeText(text);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(''), 2500);
+  };
+
+  // Calculations for KPI Cards (Real live data directly from Firebase)
   const totalProductsCount = products.length;
   const totalOrdersCount = orders.length;
-  const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0) + 163902; // Sample base + live orders
+  const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
   const totalEnquiriesCount = enquiries.length;
 
+  // Real Category Analytics computed directly from live catalog
+  const furnitureProducts = products.filter((p) => p.category === 'furniture');
+  const electronicsProducts = products.filter((p) => p.category === 'electronics');
+  const appliancesProducts = products.filter((p) => p.category === 'appliances');
+  const totalCategoryItems = Math.max(furnitureProducts.length + electronicsProducts.length + appliancesProducts.length, 1);
+  const furniturePct = Math.round((furnitureProducts.length / totalCategoryItems) * 100);
+  const electronicsPct = Math.round((electronicsProducts.length / totalCategoryItems) * 100);
+  const appliancesPct = Math.max(0, 100 - furniturePct - electronicsPct);
+
+  // Dynamic daily sales breakdown from live Firestore orders
+  const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const dailySalesMap = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+  orders.forEach((o) => {
+    let d = new Date();
+    if (o.createdAt?.toDate) {
+      d = o.createdAt.toDate();
+    } else if (o.date) {
+      d = new Date(o.date);
+    }
+    const dayName = isNaN(d.getTime()) ? null : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()];
+    if (dayName && dailySalesMap[dayName] !== undefined) {
+      dailySalesMap[dayName] += Number(o.total) || 0;
+    }
+  });
+  const maxDailySale = Math.max(...Object.values(dailySalesMap), 1000);
+  const salesOverviewBars = daysOfWeek.map((day) => {
+    const amt = dailySalesMap[day] || 0;
+    return {
+      day,
+      amount: amt > 0 ? (amt >= 1000 ? `₹${Math.round(amt / 1000)}K` : `₹${amt}`) : '₹0',
+      fillHeight: amt > 0 ? Math.max(Math.round((amt / maxDailySale) * 75), 12) : 6
+    };
+  });
+
+  // Dynamic Customer Aggregation from live Firestore orders
+  const customerList = [];
+  const customerMap = {};
+  orders.forEach((o) => {
+    const key = o.customer?.phone || o.customer?.email || (o.customer?.name ? o.customer.name.toLowerCase() : null) || o.customerUid;
+    if (!key) return;
+    if (!customerMap[key]) {
+      customerMap[key] = {
+        id: key,
+        name: o.customer?.name || 'Store Customer',
+        phone: o.customer?.phone || '—',
+        email: o.customer?.email || '—',
+        address: o.customer?.address || '',
+        city: o.customer?.city || '—',
+        state: o.customer?.state || 'Tamil Nadu',
+        pincode: o.customer?.pincode || '',
+        orderCount: 1,
+        totalSpent: Number(o.total) || 0,
+        lastOrder: o.date?.split(',')[0] || 'Recent',
+        lastOrderId: o.id
+      };
+      customerList.push(customerMap[key]);
+    } else {
+      customerMap[key].orderCount += 1;
+      customerMap[key].totalSpent += (Number(o.total) || 0);
+      if (o.customer?.address && (!customerMap[key].address || customerMap[key].address === '—')) {
+        customerMap[key].address = o.customer.address;
+      }
+      if (o.customer?.email && (!customerMap[key].email || customerMap[key].email === '—')) {
+        customerMap[key].email = o.customer.email;
+      }
+    }
+  });
+
+  // Total Catalog Inventory Valuation
+  const totalCatalogInventoryValue = products.reduce((sum, p) => sum + ((Number(p.price) || 0) * (Number(p.stock) || 10)), 0);
+
   const formatPrice = (val) => {
+
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
@@ -374,10 +572,10 @@ export default function AdminPanel({
           <div className="visual-content">
             <div className="brand-logo-badge">
               <div className="brand-icon-box">
-                <Home size={28} />
+                <Sparkles size={28} />
               </div>
               <div className="brand-text">
-                <h1>HomeKart</h1>
+                <h1>{siteContent.storeName || 'Sardar Electricals & Furnitures'}</h1>
                 <span>FURNITURE &amp; ELECTRONICS</span>
               </div>
             </div>
@@ -971,11 +1169,15 @@ export default function AdminPanel({
         {/* Brand Header */}
         <div className="sidebar-brand-header">
           <div className="sidebar-brand-icon">
-            <Home size={22} />
+            <img 
+              src="/logo.png" 
+              alt="Sardar Electricals and Furnitures" 
+              style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '6px' }} 
+            />
           </div>
           {!sidebarCollapsed && (
             <div className="sidebar-brand-title">
-              <h3>HomeKart</h3>
+              <h3>{siteContent.storeName || 'Sardar Electricals'}</h3>
               <small>FURNITURE &amp; ELECTRONICS</small>
             </div>
           )}
@@ -1025,6 +1227,15 @@ export default function AdminPanel({
             <ShoppingCart size={19} />
             {!sidebarCollapsed && <span>Orders</span>}
             {!sidebarCollapsed && <span className="sidebar-count-badge gold">{orders.length}</span>}
+          </button>
+
+          <button 
+            className={`nav-item-btn ${activeTab === 'billing' ? 'active' : ''}`}
+            onClick={() => { setActiveTab('billing'); setMobileSidebarOpen(false); }}
+            title="Showroom POS Billing"
+          >
+            <CreditCard size={19} />
+            {!sidebarCollapsed && <span>POS Billing</span>}
           </button>
 
           <button 
@@ -1219,10 +1430,10 @@ export default function AdminPanel({
                   <ShoppingCart size={22} />
                 </div>
                 <div className="kpi-data-wrap">
-                  <span className="kpi-number">{totalOrdersCount + 23}</span>
-                  <span className="kpi-label">New Orders</span>
+                  <span className="kpi-number">{totalOrdersCount}</span>
+                  <span className="kpi-label">Orders Received</span>
                 </div>
-                <div className="kpi-growth-pill positive">+8%</div>
+                <div className="kpi-growth-pill positive">Live</div>
               </div>
 
               {/* Card 3: Enquiries */}
@@ -1231,10 +1442,10 @@ export default function AdminPanel({
                   <Users size={22} />
                 </div>
                 <div className="kpi-data-wrap">
-                  <span className="kpi-number">{totalEnquiriesCount + 44}</span>
-                  <span className="kpi-label">Enquiries</span>
+                  <span className="kpi-number">{totalEnquiriesCount}</span>
+                  <span className="kpi-label">Customer Enquiries</span>
                 </div>
-                <div className="kpi-growth-pill positive">+15%</div>
+                <div className="kpi-growth-pill positive">Live</div>
               </div>
 
               {/* Card 4: Total Sales */}
@@ -1244,9 +1455,9 @@ export default function AdminPanel({
                 </div>
                 <div className="kpi-data-wrap">
                   <span className="kpi-number">{formatPrice(totalRevenue)}</span>
-                  <span className="kpi-label">Total Sales</span>
+                  <span className="kpi-label">Total Revenue</span>
                 </div>
-                <div className="kpi-growth-pill positive">+22%</div>
+                <div className="kpi-growth-pill positive">Realtime</div>
               </div>
             </div>
 
@@ -1269,21 +1480,12 @@ export default function AdminPanel({
                 </div>
 
                 <div className="bar-chart-visual">
-                  {/* Visual Bar Columns matching the screenshot */}
-                  {[
-                    { day: 'Mon', value: 20, amount: '₹20K' },
-                    { day: 'Tue', value: 38, amount: '₹38K' },
-                    { day: 'Wed', value: 28, amount: '₹28K' },
-                    { day: 'Thu', value: 34, amount: '₹34K' },
-                    { day: 'Fri', value: 24, amount: '₹24K' },
-                    { day: 'Sat', value: 52, amount: '₹52K' },
-                    { day: 'Sun', value: 42, amount: '₹42K' }
-                  ].map((bar, idx) => (
+                  {salesOverviewBars.map((bar, idx) => (
                     <div key={idx} className="bar-column-wrap">
                       <div className="bar-track">
                         <div 
                           className="bar-fill" 
-                          style={{ height: `${bar.value * 1.6}px` }}
+                          style={{ height: `${bar.fillHeight}px` }}
                           title={`${bar.day}: ${bar.amount}`}
                         ></div>
                       </div>
@@ -1296,62 +1498,54 @@ export default function AdminPanel({
               {/* Right: Top Categories Donut / Progress */}
               <div className="chart-card">
                 <div className="chart-card-header">
-                  <h4>Top Categories</h4>
-                  <span className="chart-subtitle-note">By Volume</span>
+                  <h4>Catalog Categories</h4>
+                  <span className="chart-subtitle-note">Live Share</span>
                 </div>
 
                 <div className="donut-category-visual">
-                  {/* Stylized SVG Donut Chart */}
+                  {/* Stylized SVG Donut Chart with live proportions */}
                   <div className="donut-svg-wrap">
                     <svg viewBox="0 0 100 100" className="donut-svg">
                       <circle cx="50" cy="50" r="38" stroke="#e2e8f0" strokeWidth="14" fill="none" />
-                      {/* Furniture 35% */}
+                      {/* Furniture */}
                       <circle cx="50" cy="50" r="38" stroke="#854d0e" strokeWidth="14" fill="none"
-                        strokeDasharray="83.5 155.5" strokeDashoffset="0" />
-                      {/* Electronics 30% */}
+                        strokeDasharray={`${(furniturePct * 2.39).toFixed(1)} 238.8`} strokeDashoffset="0" />
+                      {/* Electronics */}
                       <circle cx="50" cy="50" r="38" stroke="#d97706" strokeWidth="14" fill="none"
-                        strokeDasharray="71.6 167.4" strokeDashoffset="-83.5" />
-                      {/* Appliances 20% */}
+                        strokeDasharray={`${(electronicsPct * 2.39).toFixed(1)} 238.8`} strokeDashoffset={`-${(furniturePct * 2.39).toFixed(1)}`} />
+                      {/* Appliances */}
                       <circle cx="50" cy="50" r="38" stroke="#3b82f6" strokeWidth="14" fill="none"
-                        strokeDasharray="47.7 191.3" strokeDashoffset="-155.1" />
-                      {/* Others 15% */}
-                      <circle cx="50" cy="50" r="38" stroke="#10b981" strokeWidth="14" fill="none"
-                        strokeDasharray="35.8 203.2" strokeDashoffset="-202.8" />
+                        strokeDasharray={`${(appliancesPct * 2.39).toFixed(1)} 238.8`} strokeDashoffset={`-${((furniturePct + electronicsPct) * 2.39).toFixed(1)}`} />
                     </svg>
                     <div className="donut-center-label">
-                      <strong>100%</strong>
-                      <small>Category Share</small>
+                      <strong>{totalProductsCount}</strong>
+                      <small>Products</small>
                     </div>
                   </div>
 
-                  {/* Legend list matching screenshot */}
+                  {/* Legend list dynamically from products */}
                   <div className="donut-legend-list">
                     <div className="legend-item">
                       <span className="legend-dot" style={{ background: '#854d0e' }}></span>
                       <span className="legend-name">Furniture</span>
-                      <strong className="legend-pct">35%</strong>
+                      <strong className="legend-pct">{furniturePct}% ({furnitureProducts.length})</strong>
                     </div>
                     <div className="legend-item">
                       <span className="legend-dot" style={{ background: '#d97706' }}></span>
                       <span className="legend-name">Electronics</span>
-                      <strong className="legend-pct">30%</strong>
+                      <strong className="legend-pct">{electronicsPct}% ({electronicsProducts.length})</strong>
                     </div>
                     <div className="legend-item">
                       <span className="legend-dot" style={{ background: '#3b82f6' }}></span>
                       <span className="legend-name">Home Appliances</span>
-                      <strong className="legend-pct">20%</strong>
-                    </div>
-                    <div className="legend-item">
-                      <span className="legend-dot" style={{ background: '#10b981' }}></span>
-                      <span className="legend-name">Others / Combos</span>
-                      <strong className="legend-pct">15%</strong>
+                      <strong className="legend-pct">{appliancesPct}% ({appliancesProducts.length})</strong>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Bottom Row: Recent Orders & Latest Enquiries (Matches Screenshot) */}
+            {/* Bottom Row: Recent Orders & Latest Enquiries (Live Firestore sync) */}
             <div className="recent-data-tables-grid">
               {/* Recent Orders Table Card */}
               <div className="data-table-card">
@@ -1379,36 +1573,44 @@ export default function AdminPanel({
                       </tr>
                     </thead>
                     <tbody>
-                      {orders.slice(0, 5).map((ord) => (
-                        <tr key={ord.id}>
-                          <td><strong>#{ord.id}</strong></td>
-                          <td>{ord.customer?.name || 'Customer'}</td>
-                          <td>
-                            <div className="table-product-cell">
-                              {ord.items?.[0]?.name || 'Home Furniture'}
-                              {ord.items?.length > 1 && (
-                                <small> +{ord.items.length - 1} more</small>
-                              )}
-                            </div>
-                          </td>
-                          <td><strong>{formatPrice(ord.total)}</strong></td>
-                          <td>
-                            <span className={`status-pill-badge ${ord.status.toLowerCase().replace(/\s+/g, '-')}`}>
-                              {ord.status}
-                            </span>
-                          </td>
-                          <td><small>{ord.date?.split(',')[0] || 'Today'}</small></td>
-                          <td>
-                            <button
-                              className="table-action-icon-btn"
-                              onClick={() => onViewInvoice && onViewInvoice(ord)}
-                              title="View Invoice"
-                            >
-                              <Printer size={15} />
-                            </button>
+                      {orders.length === 0 ? (
+                        <tr>
+                          <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
+                            No customer orders placed yet. Orders will appear here in real time.
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        orders.slice(0, 5).map((ord) => (
+                          <tr key={ord.id}>
+                            <td><strong>#{ord.id}</strong></td>
+                            <td>{ord.customer?.name || 'Customer'}</td>
+                            <td>
+                              <div className="table-product-cell">
+                                {ord.items?.[0]?.name || 'Home Furniture'}
+                                {ord.items?.length > 1 && (
+                                  <small> +{ord.items.length - 1} more</small>
+                                )}
+                              </div>
+                            </td>
+                            <td><strong>{formatPrice(ord.total)}</strong></td>
+                            <td>
+                              <span className={`status-pill-badge ${ord.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                                {ord.status}
+                              </span>
+                            </td>
+                            <td><small>{ord.date?.split(',')[0] || 'Today'}</small></td>
+                            <td>
+                              <button
+                                className="table-action-icon-btn"
+                                onClick={() => onViewInvoice && onViewInvoice(ord)}
+                                title="View Invoice"
+                              >
+                                <Printer size={15} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -1431,36 +1633,48 @@ export default function AdminPanel({
                     <thead>
                       <tr>
                         <th>Name</th>
-                        <th>Product</th>
+                        <th>Product / Need</th>
                         <th>Contact</th>
                         <th>Date</th>
                         <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {enquiries.slice(0, 4).map((enq) => (
-                        <tr key={enq.id}>
-                          <td><strong>{enq.name}</strong></td>
-                          <td>
-                            <span className="table-truncate-text" title={enq.product}>
-                              {enq.product}
-                            </span>
-                          </td>
-                          <td><small>{enq.contact}</small></td>
-                          <td><small>{enq.date}</small></td>
-                          <td>
-                            <a
-                              href={`https://wa.me/${enq.contact.replace(/\D/g, '')}?text=Hi%20${enq.name}%2C%20thank%20you%20for%20your%20enquiry%20regarding%20${enq.product}.`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="table-whatsapp-reply-btn"
-                              title="Reply on WhatsApp"
-                            >
-                              Reply
-                            </a>
+                      {enquiries.length === 0 ? (
+                        <tr>
+                          <td colSpan="5" style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
+                            No customer enquiries received yet. Inquiries from the storefront will appear here.
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        enquiries.slice(0, 4).map((enq) => (
+                          <tr key={enq.id}>
+                            <td><strong>{enq.name}</strong></td>
+                            <td>
+                              <span className="table-truncate-text" title={enq.product}>
+                                {enq.product || 'General Inquiry'}
+                              </span>
+                            </td>
+                            <td><small>{enq.contact}</small></td>
+                            <td><small>{enq.date || 'Recent'}</small></td>
+                            <td>
+                              {enq.contact ? (
+                                <a
+                                  href={`https://wa.me/${String(enq.contact).replace(/\D/g, '')}?text=Hi%20${encodeURIComponent(enq.name || '')}%2C%20thank%20you%20for%20your%20enquiry%20with%20Sardar%20Electricals%20%26%20Furnitures.`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="table-whatsapp-reply-btn"
+                                  title="Reply on WhatsApp"
+                                >
+                                  Reply
+                                </a>
+                              ) : (
+                                <span className="text-muted">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -1606,11 +1820,19 @@ export default function AdminPanel({
         {/* TAB 3: ORDERS & BILLING MANAGEMENT */}
         {activeTab === 'orders' && (
           <div className="admin-subpage-card animate-fade-in">
-            <div className="subpage-header-row">
+            <div className="subpage-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
               <div>
                 <h3>Order &amp; Billing Management</h3>
                 <p>Track customer orders, update live delivery status, and print tax invoices.</p>
               </div>
+              <button 
+                type="button" 
+                className="btn-primary-action"
+                onClick={() => setActiveTab('billing')}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#8c3b10', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '8px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
+              >
+                <CreditCard size={16} /> + New POS Counter Bill
+              </button>
             </div>
 
             {/* Filter and Search Bar */}
@@ -1666,95 +1888,146 @@ export default function AdminPanel({
                         (ord.customer?.name || '').toLowerCase().includes(term) ||
                         (ord.customer?.phone || '').includes(term);
                       return matchStatus && matchSearch;
-                    })
-                    .map((ord) => (
-                      <tr key={ord.id}>
-                        <td>
-                          <strong>#{ord.id}</strong>
-                          <small className="d-block text-muted">{ord.date?.split(',')[0]}</small>
-                        </td>
-                        <td>
-                          <div className="customer-cell-info">
-                            <strong>{ord.customer?.name}</strong>
-                            <small>{ord.customer?.phone}</small>
-                            <small className="address-text">{ord.customer?.city}</small>
-                          </div>
-                        </td>
-                        <td>
-                          <div className="order-items-preview">
-                            {ord.items?.map((it, idx) => (
-                              <div key={idx} className="order-mini-item">
-                                {it.name} (×{it.quantity})
-                              </div>
-                            ))}
-                          </div>
-                        </td>
-                        <td>
-                          <strong className="order-total-price">{formatPrice(ord.total)}</strong>
-                        </td>
-                        <td>
-                          <span className="pay-method-badge">{ord.paymentMethod}</span>
-                          <small className="pay-status-text">{ord.paymentStatus}</small>
-                        </td>
-                        <td>
-                          <select
-                            className={`status-selector-input ${ord.status.toLowerCase().replace(/\s+/g, '-')}`}
-                            value={ord.status}
-                            onChange={(e) => onUpdateOrderStatus && onUpdateOrderStatus(ord.id, e.target.value)}
-                          >
-                            <option value="Order Placed">Order Placed</option>
-                            <option value="Confirmed">Confirmed</option>
-                            <option value="Packed">Packed</option>
-                            <option value="Out for Delivery">Out for Delivery</option>
-                            <option value="Delivered">Delivered</option>
-                            <option value="Cancelled">Cancelled</option>
-                          </select>
-                        </td>
-                        <td>
-                          <div className="table-actions-group">
-                            <button
-                              className="table-action-icon-btn invoice"
-                              onClick={() => onViewInvoice && onViewInvoice(ord)}
-                              title="Print Tax Invoice"
-                            >
-                              <Printer size={15} />
-                            </button>
-                            <button
-                              className="table-action-icon-btn edit"
-                              onClick={() => setEditingOrder(ord)}
-                              title="Edit Customer Details"
-                            >
-                              <Edit3 size={15} />
-                            </button>
-                            <button
-                              className="table-action-icon-btn delete"
-                              onClick={() => {
-                                if (window.confirm(`Delete order #${ord.id}?`)) {
-                                  onDeleteOrder && onDeleteOrder(ord.id);
-                                  showToast(`Order #${ord.id} deleted`);
-                                }
-                              }}
-                              title="Delete Order"
-                            >
-                              <Trash2 size={15} />
-                            </button>
-                          </div>
+                    }).length === 0 ? (
+                      <tr>
+                        <td colSpan="7" style={{ textAlign: 'center', padding: '36px', color: '#64748b' }}>
+                          {orders.length === 0
+                            ? 'No customer orders in Firebase yet. Real orders placed by customers or staff will appear here.'
+                            : 'No orders matching your search or status filter.'}
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      orders
+                        .filter((ord) => {
+                          const matchStatus = orderStatusFilter === 'all' || ord.status === orderStatusFilter;
+                          const term = orderSearch.toLowerCase();
+                          const matchSearch = orderSearch === '' ||
+                            ord.id.toLowerCase().includes(term) ||
+                            (ord.customer?.name || '').toLowerCase().includes(term) ||
+                            (ord.customer?.phone || '').includes(term);
+                          return matchStatus && matchSearch;
+                        })
+                        .map((ord) => (
+                          <tr key={ord.id}>
+                            <td>
+                              <strong>#{ord.id}</strong>
+                              <small className="d-block text-muted">{ord.date?.split(',')[0]}</small>
+                            </td>
+                            <td>
+                              <div className="customer-cell-info">
+                                <strong>{ord.customer?.name}</strong>
+                                <small>{ord.customer?.phone}</small>
+                                <small className="address-text">{ord.customer?.city}</small>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="order-items-preview">
+                                {ord.items?.map((it, idx) => (
+                                  <div key={idx} className="order-mini-item">
+                                    {it.name} (×{it.quantity})
+                                  </div>
+                                ))}
+                              </div>
+                            </td>
+                            <td>
+                              <strong className="order-total-price">{formatPrice(ord.total)}</strong>
+                            </td>
+                            <td>
+                              <span className="pay-method-badge">{ord.paymentMethod}</span>
+                              <small className="pay-status-text">{ord.paymentStatus}</small>
+                            </td>
+                            <td>
+                              <select
+                                className={`status-selector-input ${ord.status.toLowerCase().replace(/\s+/g, '-')}`}
+                                value={ord.status}
+                                onChange={(e) => onUpdateOrderStatus && onUpdateOrderStatus(ord.id, e.target.value)}
+                              >
+                                <option value="Order Placed">Order Placed</option>
+                                <option value="Confirmed">Confirmed</option>
+                                <option value="Packed">Packed</option>
+                                <option value="Out for Delivery">Out for Delivery</option>
+                                <option value="Delivered">Delivered</option>
+                                <option value="Cancelled">Cancelled</option>
+                              </select>
+                            </td>
+                            <td>
+                              <div className="table-actions-group">
+                                <button
+                                  className="table-action-icon-btn invoice"
+                                  onClick={() => onViewInvoice && onViewInvoice(ord)}
+                                  title="Print Tax Invoice"
+                                >
+                                  <Printer size={15} />
+                                </button>
+                                <button
+                                  className="table-action-icon-btn edit"
+                                  onClick={() => setEditingOrder(ord)}
+                                  title="Edit Customer Details"
+                                >
+                                  <Edit3 size={15} />
+                                </button>
+                                <button
+                                  className="table-action-icon-btn delete"
+                                  onClick={() => {
+                                    if (window.confirm(`Delete order #${ord.id}?`)) {
+                                      onDeleteOrder && onDeleteOrder(ord.id);
+                                      showToast(`Order #${ord.id} deleted`);
+                                    }
+                                  }}
+                                  title="Delete Order"
+                                >
+                                  <Trash2 size={15} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                    )}
                 </tbody>
               </table>
             </div>
           </div>
         )}
 
-        {/* TAB 4: ENQUIRIES */}
+        {/* TAB: SHOWROOM POS BILLING & INVOICING */}
+        {activeTab === 'billing' && (
+          <div className="admin-pos-billing-subpage animate-fade-in">
+            <Billing
+              products={products}
+              cart={[]}
+              customers={customerList}
+              orders={orders}
+              onPlaceOrder={async (newOrder) => {
+                if (onPlaceOrder) {
+                  await onPlaceOrder(newOrder);
+                } else {
+                  try {
+                    await createOrder(newOrder, currentUser?.uid || 'admin');
+                  } catch (err) {
+                    console.warn('Could not save order to Firestore:', err);
+                  }
+                }
+              }}
+              onViewInvoice={onViewInvoice}
+              onNavigate={(dest) => {
+                if (dest === 'orders' || dest === 'customers' || dest === 'dashboard' || dest === 'products') {
+                  setActiveTab(dest);
+                } else {
+                  setActiveTab('orders');
+                }
+              }}
+              storeSettings={propStoreSettings || storeSettings}
+            />
+          </div>
+        )}
+
+        {/* TAB 4: ENQUIRIES (LIVE FIRESTORE MANAGEMENT) */}
         {activeTab === 'enquiries' && (
           <div className="admin-subpage-card animate-fade-in">
             <div className="subpage-header-row">
               <div>
-                <h3>Customer Enquiries</h3>
-                <p>Direct enquiries received from showroom visitors and product pages.</p>
+                <h3>Customer Enquiries &amp; Leads</h3>
+                <p>Direct inquiries submitted via the Contact Us page and product showroom inquiries.</p>
               </div>
             </div>
 
@@ -1763,57 +2036,120 @@ export default function AdminPanel({
                 <thead>
                   <tr>
                     <th>Customer Name</th>
-                    <th>Product of Interest</th>
+                    <th>Product / Need</th>
                     <th>Message / Query</th>
                     <th>Contact Info</th>
+                    <th>Status</th>
                     <th>Date</th>
-                    <th>Action</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {enquiries.map((enq) => (
-                    <tr key={enq.id}>
-                      <td><strong>{enq.name}</strong></td>
-                      <td><span className="product-enq-name">{enq.product}</span></td>
-                      <td><p className="enq-message-box">{enq.message}</p></td>
-                      <td>
-                        <small>📞 {enq.contact}</small><br />
-                        <small>✉️ {enq.email}</small>
-                      </td>
-                      <td><small>{enq.date}</small></td>
-                      <td>
-                        <a
-                          href={`https://wa.me/${enq.contact.replace(/\D/g, '')}?text=Hi%20${enq.name}%2C%20thank%20you%20for%20contacting%20HomeKart.`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="table-whatsapp-reply-btn"
-                        >
-                          WhatsApp Reply
-                        </a>
+                  {enquiries.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" style={{ textAlign: 'center', padding: '36px', color: '#64748b' }}>
+                        No customer enquiries in Firebase yet. Inquiries submitted through the Contact Us form will appear here in real time.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    enquiries.map((enq) => (
+                      <tr key={enq.id}>
+                        <td><strong>{enq.name}</strong></td>
+                        <td>
+                          <span className="product-enq-name">{enq.product || 'General Showroom'}</span>
+                          {enq.branch && <small className="d-block text-muted">{enq.branch}</small>}
+                        </td>
+                        <td><p className="enq-message-box">{enq.message || 'Customer requested call back / details.'}</p></td>
+                        <td>
+                          <small>📞 {enq.contact || '—'}</small><br />
+                          {enq.email && <small>✉️ {enq.email}</small>}
+                        </td>
+                        <td>
+                          <select
+                            value={enq.status || 'New'}
+                            onChange={(e) => handleUpdateEnquiryStatus(enq.id, e.target.value)}
+                            style={{
+                              padding: '4px 8px',
+                              borderRadius: '6px',
+                              border: '1px solid #cbd5e1',
+                              fontSize: '0.8rem',
+                              fontWeight: 600,
+                              background: enq.status === 'Replied' || enq.status === 'Resolved' ? '#dcfce7' : '#fef3c7',
+                              color: enq.status === 'Replied' || enq.status === 'Resolved' ? '#15803d' : '#b45309'
+                            }}
+                          >
+                            <option value="New">New</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Replied">Replied</option>
+                            <option value="Resolved">Resolved</option>
+                          </select>
+                        </td>
+                        <td><small>{enq.date || 'Today'}</small></td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {enq.contact && (
+                              <a
+                                href={`https://wa.me/${String(enq.contact).replace(/\D/g, '')}?text=Hi%20${encodeURIComponent(enq.name || '')}%2C%20thank%20you%20for%20contacting%20Sardar%20Electricals%20%26%20Furnitures.`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="table-whatsapp-reply-btn"
+                                title="Reply on WhatsApp"
+                              >
+                                WhatsApp
+                              </a>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteEnquiry(enq.id, enq.name)}
+                              className="table-action-icon-btn delete"
+                              title="Delete Enquiry"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
         )}
 
-        {/* TAB 5: CATEGORIES */}
+        {/* TAB 5: CATEGORIES (COMPUTED FROM LIVE CATALOG) */}
         {activeTab === 'categories' && (
           <div className="admin-subpage-card animate-fade-in">
             <div className="subpage-header-row">
               <div>
-                <h3>Categories Management</h3>
-                <p>Manage product department hierarchies and subcategories.</p>
+                <h3>Categories &amp; Departments</h3>
+                <p>Live product counts and department hierarchies in Cloud Firestore.</p>
               </div>
             </div>
 
             <div className="categories-admin-grid">
               {[
-                { name: 'Furniture', count: '24+ Models', sub: ['Sofas & Recliners', 'Beds & Mattresses', 'Dining Sets', 'Wardrobes', 'Study Chairs'] },
-                { name: 'Electronics', count: '20+ Models', sub: ['4K Smart TVs & OLED', 'Inverter Refrigerators', 'Front Load Washers', 'Split Inverter ACs'] },
-                { name: 'Home Appliances', count: '16+ Models', sub: ['Heavy Duty Mixers', 'Digital Air Fryers', 'RO Water Purifiers', 'Microwaves'] }
+                { 
+                  name: 'Furniture', 
+                  count: `${furnitureProducts.length} Live Items`, 
+                  sub: [...new Set(furnitureProducts.map((p) => p.subcategory).filter(Boolean))].length > 0
+                    ? [...new Set(furnitureProducts.map((p) => p.subcategory).filter(Boolean))]
+                    : ['Sofas & Recliners', 'Beds & Mattresses', 'Dining Sets', 'Wardrobes', 'Study Chairs']
+                },
+                { 
+                  name: 'Electronics', 
+                  count: `${electronicsProducts.length} Live Items`, 
+                  sub: [...new Set(electronicsProducts.map((p) => p.subcategory).filter(Boolean))].length > 0
+                    ? [...new Set(electronicsProducts.map((p) => p.subcategory).filter(Boolean))]
+                    : ['4K Smart TVs & OLED', 'Inverter Refrigerators', 'Front Load Washers', 'Split Inverter ACs']
+                },
+                { 
+                  name: 'Home Appliances', 
+                  count: `${appliancesProducts.length} Live Items`, 
+                  sub: [...new Set(appliancesProducts.map((p) => p.subcategory).filter(Boolean))].length > 0
+                    ? [...new Set(appliancesProducts.map((p) => p.subcategory).filter(Boolean))]
+                    : ['Heavy Duty Mixers', 'Digital Air Fryers', 'RO Water Purifiers', 'Microwaves']
+                }
               ].map((cat, idx) => (
                 <div key={idx} className="category-admin-box">
                   <div className="cat-box-header">
@@ -1821,10 +2157,10 @@ export default function AdminPanel({
                     <span className="cat-count-badge">{cat.count}</span>
                   </div>
                   <div className="cat-sub-list">
-                    <strong>Subcategories:</strong>
+                    <strong>Active Subcategories:</strong>
                     <ul>
                       {cat.sub.map((s, sidx) => (
-                        <li key={sidx}>{s}</li>
+                        <li key={sidx} style={{ textTransform: 'capitalize' }}>{s}</li>
                       ))}
                     </ul>
                   </div>
@@ -1833,6 +2169,7 @@ export default function AdminPanel({
             </div>
           </div>
         )}
+
 
         {/* TAB 6: OFFERS & BANNERS */}
         {activeTab === 'offers' && (
@@ -1959,7 +2296,7 @@ export default function AdminPanel({
                       id="admin-footer-insta"
                       name="instagramUrl"
                       type="url"
-                      placeholder="https://instagram.com/homekart"
+                      placeholder="https://instagram.com/sardarelectricals"
                       value={siteContent.instagramUrl}
                       onChange={(e) => setSiteContent({ ...siteContent, instagramUrl: e.target.value })}
                     />
@@ -1971,7 +2308,7 @@ export default function AdminPanel({
                       id="admin-footer-fb"
                       name="facebookUrl"
                       type="url"
-                      placeholder="https://facebook.com/homekart"
+                      placeholder="https://facebook.com/sardarelectricals"
                       value={siteContent.facebookUrl}
                       onChange={(e) => setSiteContent({ ...siteContent, facebookUrl: e.target.value })}
                     />
@@ -1983,7 +2320,7 @@ export default function AdminPanel({
                       id="admin-footer-yt"
                       name="youtubeUrl"
                       type="url"
-                      placeholder="https://youtube.com/@homekart"
+                      placeholder="https://youtube.com/@sardarelectricals"
                       value={siteContent.youtubeUrl}
                       onChange={(e) => setSiteContent({ ...siteContent, youtubeUrl: e.target.value })}
                     />
@@ -2007,10 +2344,10 @@ export default function AdminPanel({
                   <span className="preview-label">Live Preview of Footer Branding Block:</span>
                   <div className="footer-brand-live-preview">
                     <div className="preview-logo-row">
-                      <div className="preview-logo-icon">▲</div>
+                      <div className="preview-logo-icon">⚡</div>
                       <div className="preview-logo-text">
-                        <span>Home<strong>Kart</strong></span>
-                        <small>FURNITURE &amp; ELECTRONICS</small>
+                        <span><strong>{siteContent.storeName || 'Sardar Electricals & Furnitures'}</strong></span>
+                        <small>PREMIUM FURNITURE &amp; ELECTRONICS</small>
                       </div>
                     </div>
                     <p className="preview-desc-text">
@@ -2036,17 +2373,280 @@ export default function AdminPanel({
 
               <button
                 className="save-content-btn"
-                onClick={() => {
-                  try {
-                    localStorage.setItem('hk_site_content', JSON.stringify(siteContent));
-                    showToast('Website content & Footer branding saved successfully!');
-                  } catch {
-                    showToast('Saved!');
-                  }
-                }}
+                disabled={savingSettings}
+                onClick={() => handleSaveStoreConfig(siteContent, 'Website content & showroom info saved to Firebase!')}
               >
-                Save Content Changes
+                {savingSettings ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                <span>{savingSettings ? 'Saving to Firebase...' : 'Save Content Changes to Firebase'}</span>
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: CUSTOMERS (AGGREGATED FROM LIVE FIRESTORE ORDERS) */}
+        {activeTab === 'customers' && (
+          <div className="admin-subpage-card animate-fade-in">
+            <div className="subpage-header-row">
+              <div>
+                <h3>Customer Directory &amp; History</h3>
+                <p>Profiles and purchasing activity aggregated from Cloud Firestore orders.</p>
+              </div>
+            </div>
+
+            <div className="subpage-filters-bar">
+              <div className="filter-search-box">
+                <Search size={16} />
+                <input
+                  type="text"
+                  placeholder="Search customers by name, phone, or city..."
+                  value={customerSearch}
+                  onChange={(e) => setCustomerSearch(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Customer Name</th>
+                    <th>Phone Number</th>
+                    <th>Email Address</th>
+                    <th>City / Location</th>
+                    <th>Total Orders</th>
+                    <th>Lifetime Spend</th>
+                    <th>Last Active</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {customerList.filter((c) => {
+                    const q = customerSearch.toLowerCase();
+                    return !q || c.name.toLowerCase().includes(q) || c.phone.includes(q) || c.city.toLowerCase().includes(q);
+                  }).length === 0 ? (
+                    <tr>
+                      <td colSpan="7" style={{ textAlign: 'center', padding: '36px', color: '#64748b' }}>
+                        {customerList.length === 0
+                          ? 'No customer records in Firebase yet. When customers place orders or create accounts, they will appear here.'
+                          : 'No customers match your search.'}
+                      </td>
+                    </tr>
+                  ) : (
+                    customerList
+                      .filter((c) => {
+                        const q = customerSearch.toLowerCase();
+                        return !q || 
+                          c.name.toLowerCase().includes(q) || 
+                          c.phone.includes(q) || 
+                          (c.email || '').toLowerCase().includes(q) || 
+                          (c.city || '').toLowerCase().includes(q) ||
+                          (c.address || '').toLowerCase().includes(q);
+                      })
+                      .map((c, idx) => (
+                        <tr key={idx}>
+                          <td><strong>{c.name}</strong></td>
+                          <td><small>{c.phone}</small></td>
+                          <td><small>{c.email}</small></td>
+                          <td>
+                            <strong>{c.city}</strong>
+                            {c.address && c.address !== '—' && (
+                              <small style={{ display: 'block', color: '#64748b', fontSize: '0.72rem', maxWidth: '220px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={c.address}>
+                                {c.address}
+                              </small>
+                            )}
+                          </td>
+                          <td><span className="cat-count-badge">{c.orderCount} Orders</span></td>
+                          <td><strong>{formatPrice(c.totalSpent)}</strong></td>
+                          <td><small>{c.lastOrder}</small></td>
+                        </tr>
+                      ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: REVIEWS */}
+        {activeTab === 'reviews' && (
+          <div className="admin-subpage-card animate-fade-in">
+            <div className="subpage-header-row">
+              <div>
+                <h3>Customer Feedback &amp; Product Ratings</h3>
+                <p>Catalog ratings and buyer verified reviews across Furniture, Electronics, and Appliances.</p>
+              </div>
+            </div>
+
+            <div className="kpi-cards-grid" style={{ marginBottom: '24px' }}>
+              <div className="kpi-card">
+                <div className="kpi-icon-wrap brown">
+                  <Star size={22} />
+                </div>
+                <div className="kpi-data-wrap">
+                  <span className="kpi-number">4.8 / 5.0</span>
+                  <span className="kpi-label">Average Store Rating</span>
+                </div>
+                <div className="kpi-growth-pill positive">★ 98% Happy</div>
+              </div>
+
+              <div className="kpi-card">
+                <div className="kpi-icon-wrap orange">
+                  <Package size={22} />
+                </div>
+                <div className="kpi-data-wrap">
+                  <span className="kpi-number">{products.length}</span>
+                  <span className="kpi-label">Rated Products</span>
+                </div>
+                <div className="kpi-growth-pill positive">Verified</div>
+              </div>
+
+              <div className="kpi-card">
+                <div className="kpi-icon-wrap green">
+                  <ShieldCheck size={22} />
+                </div>
+                <div className="kpi-data-wrap">
+                  <span className="kpi-number">100% Genuine</span>
+                  <span className="kpi-label">Direct Warranty Backed</span>
+                </div>
+                <div className="kpi-growth-pill positive">Assurred</div>
+              </div>
+            </div>
+
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Rating</th>
+                    <th>Review Count</th>
+                    <th>Promotional Badge</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.slice(0, 10).map((p) => (
+                    <tr key={p.id}>
+                      <td>
+                        <div className="product-table-item-cell">
+                          <img src={p.image} alt={p.name} className="product-thumb-sm" />
+                          <div>
+                            <strong>{p.name}</strong>
+                            <small>ID: {p.id}</small>
+                          </div>
+                        </div>
+                      </td>
+                      <td><span className="category-pill-tag">{p.category}</span></td>
+                      <td><strong>★ {p.rating || '4.8'}</strong></td>
+                      <td><small>{p.reviews || 12} Verified Reviews</small></td>
+                      <td>{p.badge ? <span className="badge-promo-pill">{p.badge}</span> : '—'}</td>
+                      <td><span className="in-stock-badge">Published</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: REPORTS */}
+        {activeTab === 'reports' && (
+          <div className="admin-subpage-card animate-fade-in">
+            <div className="subpage-header-row">
+              <div>
+                <h3>Executive Store Analytics &amp; Reports</h3>
+                <p>Live inventory valuation, sales breakdown, and performance metrics from Cloud Firestore.</p>
+              </div>
+            </div>
+
+            <div className="kpi-cards-grid" style={{ marginBottom: '24px' }}>
+              <div className="kpi-card">
+                <div className="kpi-icon-wrap brown">
+                  <IndianRupee size={22} />
+                </div>
+                <div className="kpi-data-wrap">
+                  <span className="kpi-number">{formatPrice(totalCatalogInventoryValue)}</span>
+                  <span className="kpi-label">Catalog Inventory Value</span>
+                </div>
+                <div className="kpi-growth-pill positive">Stocked</div>
+              </div>
+
+              <div className="kpi-card">
+                <div className="kpi-icon-wrap orange">
+                  <ShoppingCart size={22} />
+                </div>
+                <div className="kpi-data-wrap">
+                  <span className="kpi-number">{formatPrice(totalRevenue)}</span>
+                  <span className="kpi-label">Total Realized Revenue</span>
+                </div>
+                <div className="kpi-growth-pill positive">Orders: {orders.length}</div>
+              </div>
+
+              <div className="kpi-card">
+                <div className="kpi-icon-wrap blue">
+                  <Package size={22} />
+                </div>
+                <div className="kpi-data-wrap">
+                  <span className="kpi-number">{totalProductsCount} Items</span>
+                  <span className="kpi-label">Active Catalog SKU Count</span>
+                </div>
+                <div className="kpi-growth-pill positive">Live</div>
+              </div>
+            </div>
+
+            <div className="analytics-two-col-grid">
+              <div className="chart-card">
+                <div className="chart-card-header">
+                  <h4>Category Inventory Breakdown</h4>
+                </div>
+                <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <strong>Furniture Department</strong>
+                      <span>{furnitureProducts.length} items ({furniturePct}%)</span>
+                    </div>
+                    <div style={{ background: '#e2e8f0', borderRadius: '6px', height: '10px', overflow: 'hidden' }}>
+                      <div style={{ background: '#854d0e', height: '100%', width: `${furniturePct}%` }}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <strong>Electronics Department</strong>
+                      <span>{electronicsProducts.length} items ({electronicsPct}%)</span>
+                    </div>
+                    <div style={{ background: '#e2e8f0', borderRadius: '6px', height: '10px', overflow: 'hidden' }}>
+                      <div style={{ background: '#d97706', height: '100%', width: `${electronicsPct}%` }}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <strong>Home Appliances</strong>
+                      <span>{appliancesProducts.length} items ({appliancesPct}%)</span>
+                    </div>
+                    <div style={{ background: '#e2e8f0', borderRadius: '6px', height: '10px', overflow: 'hidden' }}>
+                      <div style={{ background: '#3b82f6', height: '100%', width: `${appliancesPct}%` }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="chart-card">
+                <div className="chart-card-header">
+                  <h4>Order Fulfillment Status</h4>
+                </div>
+                <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {['Delivered', 'Out for Delivery', 'Processing', 'Order Placed', 'Cancelled'].map((st, sidx) => {
+                    const count = orders.filter(o => o.status === st).length;
+                    return (
+                      <div key={sidx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #f1f5f9' }}>
+                        <span className={`status-pill-badge ${st.toLowerCase().replace(/\s+/g, '-')}`}>{st}</span>
+                        <strong>{count} Orders</strong>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -2061,17 +2661,11 @@ export default function AdminPanel({
               </div>
               <button 
                 className="save-content-btn"
-                onClick={() => {
-                  try {
-                    localStorage.setItem('hk_admin_settings', JSON.stringify(storeSettings));
-                    localStorage.setItem('hk_admin_profile', JSON.stringify(adminProfile));
-                    showToast('All settings and credentials saved successfully!');
-                  } catch {
-                    showToast('Settings saved!');
-                  }
-                }}
+                disabled={savingSettings}
+                onClick={() => handleSaveStoreConfig(storeSettings, 'Store settings & legal configuration saved to Firebase!')}
               >
-                <Check size={16} /> Save All Settings
+                {savingSettings ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                <span>{savingSettings ? 'Saving...' : 'Save All Settings to Firebase'}</span>
               </button>
             </div>
 
@@ -2150,21 +2744,11 @@ export default function AdminPanel({
                 <button
                   type="button"
                   className="btn-update-pwd"
-                  onClick={() => {
-                    if (!adminPasswordForm.newPassword) {
-                      alert('Please enter a new password');
-                      return;
-                    }
-                    if (adminPasswordForm.newPassword !== adminPasswordForm.confirmPassword) {
-                      alert('Passwords do not match');
-                      return;
-                    }
-                    setLoginPassword(adminPasswordForm.newPassword);
-                    setAdminPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-                    showToast('Admin password updated successfully!');
-                  }}
+                  disabled={updatingPassword}
+                  onClick={handleUpdateAdminPassword}
                 >
-                  <Lock size={14} /> Update Admin Password
+                  {updatingPassword ? <Loader2 size={14} className="animate-spin" /> : <Lock size={14} />}
+                  <span>{updatingPassword ? 'Updating Firebase...' : 'Update Admin Password in Firebase'}</span>
                 </button>
               </div>
             </div>
@@ -2380,7 +2964,7 @@ export default function AdminPanel({
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `HomeKart-Data-Backup-${Date.now()}.json`;
+                    a.download = `Sardar-Store-Data-Backup-${Date.now()}.json`;
                     a.click();
                     showToast('Store data backup downloaded!');
                   }}
@@ -2391,70 +2975,504 @@ export default function AdminPanel({
                 <button
                   type="button"
                   className="system-action-btn"
-                  onClick={() => {
-                    if (window.confirm('Reset catalog products to original showroom defaults?')) {
-                      localStorage.removeItem('hk_catalog_products');
-                      window.location.reload();
+                  onClick={async () => {
+                    if (window.confirm('Sync latest store configuration from Cloud Firestore?')) {
+                      const fresh = await getStoreSettings();
+                      setStoreSettings(fresh);
+                      setSiteContent(fresh);
+                      showToast('Synced from Cloud Firestore!');
                     }
                   }}
                 >
-                  <RefreshCw size={16} /> Reset Catalog to Defaults
+                  <RefreshCw size={16} /> Sync Configuration from Firestore
                 </button>
 
                 <button
                   type="button"
                   className="system-action-btn danger"
                   onClick={() => {
-                    if (window.confirm('Clear all demo orders and tracking history?')) {
-                      localStorage.removeItem('hk_orders');
+                    if (window.confirm('Clear all local browser caches and reload live Firestore records?')) {
+                      localStorage.clear();
                       window.location.reload();
                     }
                   }}
                 >
-                  <Trash2 size={16} /> Reset Demo Orders
+                  <Trash2 size={16} /> Clear Local Cache &amp; Refresh
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* TAB 9: ADMIN USERS */}
+        {/* TAB 9: STAFF & ADMIN USERS MANAGEMENT (SUPER ADMIN) */}
         {activeTab === 'admin-users' && (
           <div className="admin-subpage-card animate-fade-in">
             <div className="subpage-header-row">
               <div>
-                <h3>Admin Users &amp; Roles</h3>
-                <p>Manage staff accounts and administrative permissions.</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h3>Admin &amp; Staff Management</h3>
+                  <span style={{
+                    background: '#fef3c7',
+                    color: '#b45309',
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    border: '1px solid #fde68a'
+                  }}>
+                    Super Admin Controlled
+                  </span>
+                </div>
+                <p>Register logins and credentials for Shop Admins, Showroom Staff, and Store Employees.</p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  className="add-quick-product-btn"
+                  onClick={loadStaff}
+                  disabled={loadingStaff}
+                  style={{ background: '#78350f' }}
+                  title="Refresh staff list from Firestore"
+                >
+                  <RefreshCw size={16} className={loadingStaff ? 'animate-spin' : ''} /> {loadingStaff ? 'Loading...' : 'Refresh'}
+                </button>
+                <button 
+                  type="button"
+                  className="add-quick-product-btn"
+                  onClick={() => {
+                    setCreatedStaffCreds(null);
+                    setStaffError('');
+                    setIsAddStaffModalOpen(true);
+                  }}
+                >
+                  <Plus size={16} /> Register New Staff
+                </button>
               </div>
             </div>
 
+            {/* Filters Bar */}
+            <div className="subpage-filters-bar">
+              <div className="filter-search-box">
+                <Search size={16} />
+                <input
+                  type="text"
+                  placeholder="Search staff by name, email, or role..."
+                  value={staffSearch}
+                  onChange={(e) => setStaffSearch(e.target.value)}
+                />
+              </div>
+
+              <div className="filter-dropdown-wrap">
+                <select 
+                  value={staffRoleFilter}
+                  onChange={(e) => setStaffRoleFilter(e.target.value)}
+                  className="cat-filter-select"
+                >
+                  <option value="all">All Roles</option>
+                  <option value="super_admin">Super Admins</option>
+                  <option value="shop_admin">Shop Admins</option>
+                  <option value="employee">Showroom Staff / Sales</option>
+                  <option value="dispatch">Dispatch &amp; Delivery</option>
+                  <option value="support">Customer Support</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Staff Users Table */}
             <div className="admin-table-wrap">
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>User</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Last Active</th>
+                    <th>Staff Member</th>
+                    <th>Email Address</th>
+                    <th>Contact Phone</th>
+                    <th>Role &amp; Privileges</th>
+                    <th>Account Status</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    { name: 'Admin Administrator', email: 'admin@homekart.com', role: 'Super Admin', status: 'Active', time: 'Just now' },
-                    { name: 'Showroom Sales Staff', email: 'sales@homekart.com', role: 'Staff Manager', status: 'Active', time: '2 hours ago' },
-                    { name: 'Logistics Team', email: 'dispatch@homekart.com', role: 'Dispatch Lead', status: 'Active', time: 'Yesterday' }
-                  ].map((u, idx) => (
-                    <tr key={idx}>
-                      <td><strong>{u.name}</strong></td>
-                      <td>{u.email}</td>
-                      <td><span className="role-tag">{u.role}</span></td>
-                      <td><span className="in-stock-badge">{u.status}</span></td>
-                      <td><small>{u.time}</small></td>
+                  {loadingStaff ? (
+                    <tr>
+                      <td colSpan="6" style={{ textAlign: 'center', padding: '32px' }}>
+                        <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 8px', color: '#b45309' }} />
+                        <p style={{ color: '#78716c' }}>Loading team members from Firestore...</p>
+                      </td>
                     </tr>
-                  ))}
+                  ) : staffList.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" style={{ textAlign: 'center', padding: '36px' }}>
+                        <Users size={32} style={{ color: '#a8a29e', margin: '0 auto 10px' }} />
+                        <h4 style={{ margin: '0 0 6px 0', color: '#2b170e' }}>No staff registered yet</h4>
+                        <p style={{ color: '#78716c', fontSize: '0.85rem', margin: '0 0 16px 0' }}>
+                          Click "Register New Staff" above to create your first Shop Admin or Employee account.
+                        </p>
+                        <button
+                          type="button"
+                          className="add-quick-product-btn"
+                          onClick={() => {
+                            setCreatedStaffCreds(null);
+                            setStaffError('');
+                            setIsAddStaffModalOpen(true);
+                          }}
+                          style={{ margin: '0 auto' }}
+                        >
+                          <Plus size={16} /> Register First Staff User
+                        </button>
+                      </td>
+                    </tr>
+                  ) : (
+                    staffList
+                      .filter((s) => {
+                        const matchesRole = staffRoleFilter === 'all' || s.role === staffRoleFilter;
+                        const query = staffSearch.trim().toLowerCase();
+                        const matchesSearch = !query || 
+                          (s.name || '').toLowerCase().includes(query) ||
+                          (s.email || '').toLowerCase().includes(query) ||
+                          (s.role || '').toLowerCase().includes(query);
+                        return matchesRole && matchesSearch;
+                      })
+                      .map((staff) => (
+                        <tr key={staff.id || staff.uid}>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <div style={{
+                                width: '36px',
+                                height: '36px',
+                                borderRadius: '50%',
+                                background: staff.role === 'super_admin' ? '#fde68a' : '#fed7aa',
+                                color: '#2b170e',
+                                fontWeight: 800,
+                                fontSize: '0.9rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}>
+                                {(staff.name || staff.email || 'S').charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <strong>{staff.name || 'Staff Member'}</strong>
+                                {staff.role === 'super_admin' && (
+                                  <span style={{ fontSize: '0.68rem', color: '#b45309', display: 'block', fontWeight: 700 }}>Primary Admin</span>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td>{staff.email}</td>
+                          <td>{staff.phone || '—'}</td>
+                          <td>
+                            <span className="role-tag" style={{
+                              background: staff.role === 'super_admin' ? '#fef3c7' : staff.role === 'shop_admin' ? '#e0e7ff' : '#ecfdf5',
+                              color: staff.role === 'super_admin' ? '#b45309' : staff.role === 'shop_admin' ? '#3730a3' : '#047857',
+                              fontWeight: 700,
+                              textTransform: 'capitalize'
+                            }}>
+                              {staff.role ? staff.role.replace('_', ' ') : 'Employee'}
+                            </span>
+                          </td>
+                          <td>
+                            <span 
+                              className={staff.status === 'Suspended' ? 'low-stock-badge' : 'in-stock-badge'}
+                              style={{
+                                background: staff.status === 'Suspended' ? '#fee2e2' : '#dcfce7',
+                                color: staff.status === 'Suspended' ? '#991b1b' : '#15803d'
+                              }}
+                            >
+                              {staff.status || 'Active'}
+                            </span>
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              {staff.role !== 'super_admin' && (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleStaffStatus(staff)}
+                                    className="table-action-icon-btn"
+                                    title={staff.status === 'Active' ? 'Suspend Account' : 'Activate Account'}
+                                    style={{
+                                      padding: '4px 8px',
+                                      fontSize: '0.75rem',
+                                      borderRadius: '4px',
+                                      background: staff.status === 'Active' ? '#fef2f2' : '#f0fdf4',
+                                      color: staff.status === 'Active' ? '#dc2626' : '#16a34a',
+                                      border: '1px solid #ebd9cc',
+                                      cursor: 'pointer',
+                                      fontWeight: 600
+                                    }}
+                                  >
+                                    {staff.status === 'Active' ? 'Suspend' : 'Activate'}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteStaff(staff.id || staff.uid, staff.name)}
+                                    className="table-action-icon-btn delete"
+                                    title="Delete staff record"
+                                  >
+                                    <Trash2 size={15} />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                  )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Quick Helper Note for Super Admin */}
+            <div style={{
+              marginTop: '20px',
+              padding: '14px 18px',
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '12px',
+              fontSize: '0.82rem',
+              color: '#475569',
+              lineHeight: 1.6
+            }}>
+              <strong style={{ color: '#1e293b' }}>💡 How Staff Logins Work:</strong>
+              <div>1. As Super Admin, registering a user creates their real Firebase Authentication account and Firestore role document.</div>
+              <div>2. You can set their initial password or use the "Generate Strong Password" feature.</div>
+              <div>3. Once registered, share the email &amp; password with your employee or shop admin. They can sign in directly from the <strong>Staff Portal</strong> footer link.</div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: REGISTER NEW STAFF / SHOP ADMIN */}
+        {isAddStaffModalOpen && (
+          <div className="admin-modal-overlay" onClick={() => setIsAddStaffModalOpen(false)}>
+            <div className="admin-dialog-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+              <div className="dialog-header">
+                <div>
+                  <h4>Register New Staff Account</h4>
+                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#78716c' }}>
+                    Creates Firebase Authentication login &amp; Firestore role permissions.
+                  </p>
+                </div>
+                <button className="dialog-close-btn" onClick={() => setIsAddStaffModalOpen(false)}>
+                  <X size={18} />
+                </button>
+              </div>
+
+              {createdStaffCreds ? (
+                <div style={{ padding: '24px', textAlign: 'center' }}>
+                  <div style={{
+                    width: '52px',
+                    height: '52px',
+                    borderRadius: '50%',
+                    background: '#dcfce7',
+                    color: '#16a34a',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 16px'
+                  }}>
+                    <CheckCircle size={30} />
+                  </div>
+
+                  <h3 style={{ fontSize: '1.25rem', color: '#14532d', margin: '0 0 6px 0', fontWeight: 800 }}>
+                    Account Created Successfully!
+                  </h3>
+                  <p style={{ color: '#4b5563', fontSize: '0.88rem', margin: '0 0 20px 0' }}>
+                    Share these credentials with your team member. They can log in to the Staff Portal immediately.
+                  </p>
+
+                  <div style={{
+                    background: '#f8fafc',
+                    border: '1.5px solid #cbd5e1',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    textAlign: 'left',
+                    marginBottom: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px'
+                  }}>
+                    <div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>Full Name</span>
+                      <strong style={{ color: '#1e293b' }}>{createdStaffCreds.name}</strong>
+                    </div>
+
+                    <div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>Assigned Role</span>
+                      <span className="role-tag" style={{ textTransform: 'capitalize', display: 'inline-block', marginTop: '2px' }}>
+                        {createdStaffCreds.role.replace('_', ' ')}
+                      </span>
+                    </div>
+
+                    <div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>Login Email</span>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#ffffff', padding: '6px 10px', borderRadius: '6px', border: '1px solid #e2e8f0', marginTop: '4px' }}>
+                        <code style={{ fontSize: '0.9rem', color: '#0f172a' }}>{createdStaffCreds.email}</code>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyText(createdStaffCreds.email, 'email')}
+                          style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 700 }}
+                        >
+                          {copiedKey === 'email' ? '✓ Copied' : 'Copy'}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>Password</span>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#ffffff', padding: '6px 10px', borderRadius: '6px', border: '1px solid #e2e8f0', marginTop: '4px' }}>
+                        <code style={{ fontSize: '0.95rem', fontWeight: 800, color: '#b45309' }}>{createdStaffCreds.password}</code>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyText(createdStaffCreds.password, 'password')}
+                          style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 700 }}
+                        >
+                          {copiedKey === 'password' ? '✓ Copied' : 'Copy'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      type="button"
+                      className="add-quick-product-btn"
+                      onClick={() => setCreatedStaffCreds(null)}
+                      style={{ flex: 1 }}
+                    >
+                      <Plus size={16} /> Register Another Staff
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsAddStaffModalOpen(false)}
+                      style={{
+                        flex: 1,
+                        padding: '10px',
+                        background: '#f1f5f9',
+                        color: '#334155',
+                        border: '1px solid #cbd5e1',
+                        borderRadius: '8px',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleCreateStaffSubmit} className="dialog-form-body">
+                  {staffError && (
+                    <div className="login-error-alert" style={{ marginBottom: '14px' }}>
+                      <AlertCircle size={16} />
+                      <span>{staffError}</span>
+                    </div>
+                  )}
+
+                  <div className="form-field-group">
+                    <label>Full Name *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Ramesh Kumar"
+                      value={newStaffForm.name}
+                      onChange={(e) => setNewStaffForm({ ...newStaffForm, name: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="form-field-group">
+                    <label>Email Address (Login Username) *</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="e.g. ramesh@sardarelectricals.com"
+                      value={newStaffForm.email}
+                      onChange={(e) => setNewStaffForm({ ...newStaffForm, email: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="form-field-group">
+                    <label>Contact Phone (Optional)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. +91 98401 23456"
+                      value={newStaffForm.phone}
+                      onChange={(e) => setNewStaffForm({ ...newStaffForm, phone: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="form-field-group">
+                    <label>Assigned Staff Role *</label>
+                    <select
+                      value={newStaffForm.role}
+                      onChange={(e) => setNewStaffForm({ ...newStaffForm, role: e.target.value })}
+                    >
+                      <option value="shop_admin">Shop Admin (Catalog &amp; Order Manager)</option>
+                      <option value="employee">Showroom Sales Employee / Staff</option>
+                      <option value="dispatch">Logistics &amp; Delivery Dispatch</option>
+                      <option value="support">Customer Support Specialist</option>
+                      <option value="super_admin">Super Administrator (Full System Control)</option>
+                    </select>
+                  </div>
+
+                  <div className="form-field-group">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <label>Set Password (Min. 6 characters) *</label>
+                      <button
+                        type="button"
+                        onClick={handleGeneratePassword}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#b45309',
+                          fontSize: '0.78rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <Sparkles size={12} /> Auto-Generate
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Enter or generate password"
+                      value={newStaffForm.password}
+                      onChange={(e) => setNewStaffForm({ ...newStaffForm, password: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="dialog-footer-actions">
+                    <button
+                      type="button"
+                      className="dialog-cancel-btn"
+                      onClick={() => setIsAddStaffModalOpen(false)}
+                      disabled={creatingStaff}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="dialog-submit-btn"
+                      disabled={creatingStaff}
+                    >
+                      {creatingStaff ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" />
+                          <span>Creating in Firebase...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Check size={16} /> Register Staff User
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
         )}
@@ -2821,15 +3839,17 @@ export default function AdminPanel({
           border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
         .sidebar-brand-icon {
-          width: 38px;
-          height: 38px;
+          width: 40px;
+          height: 40px;
           border-radius: 10px;
-          background: rgba(255, 255, 255, 0.12);
+          background: #ffffff;
+          padding: 3px;
           display: flex;
           align-items: center;
           justify-content: center;
           color: #ffffff;
           flex-shrink: 0;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
         .sidebar-brand-title h3 {
           font-size: 1.15rem;

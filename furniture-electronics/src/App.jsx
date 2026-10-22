@@ -19,8 +19,10 @@ import Offers from './pages/Offers';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import AdminPanel from './pages/AdminPanel';
+import Billing from './pages/Billing';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { subscribeToStoreSettings, DEFAULT_STORE_CONFIG } from './services/settingsService';
 import { 
   getProducts, 
   createProduct, 
@@ -39,76 +41,6 @@ import {
 import { products as initialProducts } from './data/products';
 import { MessageCircle, ArrowUp } from 'lucide-react';
 
-const defaultOrders = [
-  {
-    id: 'HK-2026-8941',
-    date: '16 Oct 2026, 04:30 PM',
-    customer: {
-      name: 'Priya Sharma',
-      phone: '+91 98401 23456',
-      email: 'priya.sharma@example.com',
-      address: 'Plot 42, Green Park Avenue, Anna Nagar',
-      city: 'Chennai',
-      pincode: '600040'
-    },
-    items: [
-      {
-        id: 'f1',
-        name: 'Royal Velvet 3-Seater Sofa',
-        category: 'furniture',
-        price: 34999,
-        quantity: 1,
-        image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=400&q=80'
-      },
-      {
-        id: 'e1',
-        name: '55" Ultra HD 4K Smart OLED TV',
-        category: 'electronics',
-        price: 54999,
-        quantity: 1,
-        image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=400&q=80'
-      }
-    ],
-    subtotal: 89998,
-    discount: 5000,
-    delivery: 0,
-    total: 84998,
-    paymentMethod: 'UPI (GPay / PhonePe)',
-    paymentStatus: 'Paid',
-    status: 'Out for Delivery',
-    notes: 'Please ring the doorbell twice. Evening delivery preferred.'
-  },
-  {
-    id: 'HK-2026-7820',
-    date: '15 Oct 2026, 11:15 AM',
-    customer: {
-      name: 'Rajesh Kumar',
-      phone: '+91 97890 54321',
-      email: 'rajesh.k@example.com',
-      address: 'Flat 302, Palm Meadows, Velachery Main Rd',
-      city: 'Chennai',
-      pincode: '600042'
-    },
-    items: [
-      {
-        id: 'a1',
-        name: 'Digital Touch Air Fryer 5.5L',
-        category: 'appliances',
-        price: 4999,
-        quantity: 1,
-        image: 'https://images.unsplash.com/photo-1585515320310-259814833e62?auto=format&fit=crop&w=400&q=80'
-      }
-    ],
-    subtotal: 4999,
-    discount: 250,
-    delivery: 0,
-    total: 4749,
-    paymentMethod: 'Credit / Debit Card',
-    paymentStatus: 'Paid',
-    status: 'Delivered',
-    notes: 'Delivered at security reception desk.'
-  }
-];
 
 function AppContent() {
   const { currentUser, isAdmin } = useAuth();
@@ -163,20 +95,28 @@ function AppContent() {
   // Real-time listener for orders in Firestore
   useEffect(() => {
     const unsubscribe = subscribeToOrdersAdmin((liveOrders) => {
-      if (liveOrders && liveOrders.length > 0) {
-        setOrders(liveOrders);
-      }
+      setOrders(liveOrders || []);
     });
     return () => unsubscribe();
   }, []);
 
-  // Orders & Billing State (persisted)
+  // Store Settings (Legal, Tax, Payment Mode toggles)
+  const [storeSettings, setStoreSettings] = useState(DEFAULT_STORE_CONFIG);
+
+  useEffect(() => {
+    const unsub = subscribeToStoreSettings((liveSettings) => {
+      if (liveSettings) setStoreSettings(liveSettings);
+    });
+    return () => unsub();
+  }, []);
+
+  // Orders & Billing State (synced with Firestore)
   const [orders, setOrders] = useState(() => {
     try {
       const saved = localStorage.getItem('hk_orders');
-      return saved ? JSON.parse(saved) : defaultOrders;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return defaultOrders;
+      return [];
     }
   });
 
@@ -452,6 +392,8 @@ function AppContent() {
           onEditOrder={handleEditOrder}
           onDeleteOrder={handleDeleteOrder}
           onViewInvoice={handleViewInvoice}
+          onPlaceOrder={handlePlaceOrder}
+          storeSettings={storeSettings}
           onBackToStore={() => handleNavigate('home')}
           onSeedCatalog={handleSeedCatalog}
         />
@@ -621,6 +563,7 @@ function AppContent() {
         onPlaceOrder={handlePlaceOrder}
         onOpenTrackOrder={handleOpenTrackOrder}
         onViewInvoice={handleViewInvoice}
+        onNavigate={handleNavigate}
       />
 
       {/* Wishlist Drawer */}
@@ -670,7 +613,7 @@ function AppContent() {
         onClose={() => setIsAuthModalOpen(false)}
         initialMode={authModalMode}
         onSuccess={(mode) => {
-          showToast(mode === 'register' ? 'Account created! Welcome to HomeKart.' : 'Signed in successfully!');
+          showToast(mode === 'register' ? 'Account created! Welcome to Sardar Electricals and Furnitures.' : 'Signed in successfully!');
         }}
       />
 
@@ -687,7 +630,7 @@ function AppContent() {
 
       {/* Floating WhatsApp Quick Action Button */}
       <a
-        href="https://wa.me/919876543210?text=Hi%20HomeKart%2C%20I%20am%20browsing%20your%20website%20and%20would%20like%20to%20enquire%20about%20your%20products"
+        href="https://wa.me/919876543210?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20am%20browsing%20your%20website%20and%20would%20like%20to%20enquire%20about%20your%20products"
         target="_blank"
         rel="noreferrer"
         className="floating-wa-btn pulse-glow"

@@ -1,6 +1,6 @@
-# HomeKart — Furniture & Electronics E-Commerce Web Application
+# Sardar Electricals and Furnitures — Premium E-Commerce Web Application
 
-A modern, responsive, and aesthetic web platform for **HomeKart Furniture & Electronics**, modeled after luxury showroom retail and modern Indian e-commerce standards. Built with **React**, **Vite**, **Vanilla CSS Design Tokens**, and **Lucide Icons**.
+A modern, responsive, and aesthetic web platform for **Sardar Electricals and Furnitures**, modeled after luxury showroom retail and modern Indian e-commerce standards. Built with **React**, **Vite**, **Vanilla CSS Design Tokens**, and **Lucide Icons**.
 
 ---
 

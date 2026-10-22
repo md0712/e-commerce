@@ -15,7 +15,8 @@ export default function CartDrawer({
   onClearCart,
   onPlaceOrder,
   onOpenTrackOrder,
-  onViewInvoice 
+  onViewInvoice,
+  onNavigate
 }) {
   const { currentUser, userProfile } = useAuth();
   const [couponCode, setCouponCode] = useState('');
@@ -99,7 +100,7 @@ export default function CartDrawer({
       .join('%0A');
 
     const message = encodeURIComponent(
-      `Hello HomeKart, I want to confirm my order enquiry:%0A%0A${itemsList}%0A%0ASubtotal: ${formatPrice(subtotal)}%0ADiscount: ${formatPrice(discountAmount)}%0ANet Total: ${formatPrice(finalTotal)}%0A%0APlease provide delivery schedule and invoice confirmation.`
+      `Hello Sardar Electricals and Furnitures, I want to confirm my order enquiry:%0A%0A${itemsList}%0A%0ASubtotal: ${formatPrice(subtotal)}%0ADiscount: ${formatPrice(discountAmount)}%0ANet Total: ${formatPrice(finalTotal)}%0A%0APlease provide delivery schedule and invoice confirmation.`
     );
 
     window.open(`https://wa.me/919876543210?text=${message}`, '_blank');
@@ -151,7 +152,7 @@ export default function CartDrawer({
       paymentMethod: billingForm.paymentMethod,
       paymentStatus: billingForm.paymentMethod.includes('COD') || billingForm.paymentMethod.includes('Cash') ? 'Pending (COD)' : 'Paid Online',
       status: 'Order Placed',
-      courier: 'HomeKart Express Delivery Fleet',
+      courier: 'Sardar Express Delivery Fleet',
       trackingNumber: `EXP-CH-${Math.floor(10000 + Math.random() * 90000)}`
     };
 
@@ -454,7 +455,7 @@ export default function CartDrawer({
             <h2>Order Placed Successfully!</h2>
             <p className="order-num">Order Reference: <strong>#{lastPlacedOrder.id}</strong></p>
             <p className="success-msg">
-              Thank you for choosing HomeKart, <strong>{lastPlacedOrder.customer?.name}</strong>. Your order is confirmed and our showroom fulfillment team in Chennai is preparing your items.
+              Thank you for choosing Sardar Electricals and Furnitures, <strong>{lastPlacedOrder.customer?.name}</strong>. Your order is confirmed and our showroom fulfillment team in Chennai is preparing your items.
             </p>
 
             <div className="order-status-card-preview">

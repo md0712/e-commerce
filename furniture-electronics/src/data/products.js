@@ -714,7 +714,7 @@ export const testimonials = [
     location: 'T. Nagar, Chennai',
     rating: 5,
     title: 'Transformed our entire home!',
-    comment: 'We furnished our 3BHK with HomeKart. The teak wood dining set and 55" smart TV package were delivered within 48 hours. Exceptional craftsmanship and polite delivery team!',
+    comment: 'We furnished our 3BHK with Sardar Electricals and Furnitures. The teak wood dining set and 55" smart TV package were delivered within 48 hours. Exceptional craftsmanship and polite delivery team!',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
     purchasedItem: 'Living Room Royale Combo & Dining Suite'
   },
@@ -741,11 +741,11 @@ export const testimonials = [
 ];
 
 export const storeInfo = {
-  name: 'HomeKart Furniture & Electronics',
+  name: 'Sardar Electricals and Furnitures',
   tagline: 'Your Home, Our Priority',
   phone: '+91 98765 43210',
   whatsapp: '919876543210',
-  email: 'support@homekart.com',
+  email: 'care@sardarelectricals.com',
   address: '123, Market Street, Thousand Lights, Chennai, Tamil Nadu - 600001',
   hours: 'Monday – Sunday: 09:30 AM – 09:30 PM',
   branches: [

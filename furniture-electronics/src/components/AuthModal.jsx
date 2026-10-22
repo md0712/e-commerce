@@ -131,8 +131,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onSu
 
         {/* Header Branding */}
         <div className="auth-modal-header">
-          <div className="auth-badge-icon">
-            <Sparkles size={20} />
+          <div className="auth-badge-icon" style={{ background: '#ffffff', padding: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+            <img src="/logo.png" alt="Sardar Logo" style={{ width: '36px', height: '36px', objectFit: 'contain', borderRadius: '4px' }} />
           </div>
           <h3>
             {mode === 'login' && 'Welcome Back'}
@@ -141,7 +141,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onSu
           </h3>
           <p>
             {mode === 'login' && 'Sign in to access your orders, wishlist, and exclusive member discounts'}
-            {mode === 'register' && 'Join HomeKart for faster checkout, live tracking, and member pricing'}
+            {mode === 'register' && 'Join Sardar Electricals and Furnitures for faster checkout, live tracking, and member pricing'}
             {mode === 'forgot' && 'Enter your registered email address to receive password reset instructions'}
           </p>
         </div>
@@ -283,7 +283,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onSu
             ) : (
               <>
                 <span>
-                  {mode === 'login' && 'Sign In to HomeKart'}
+                  {mode === 'login' && 'Sign In to Sardar Electricals and Furnitures'}
                   {mode === 'register' && 'Create Account'}
                   {mode === 'forgot' && 'Send Reset Link'}
                 </span>

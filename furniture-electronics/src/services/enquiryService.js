@@ -59,3 +59,13 @@ export async function updateEnquiryStatus(enquiryId, status) {
   await updateDoc(docRef, { status });
   return { id: enquiryId, status };
 }
+
+/**
+ * Delete enquiry (Admin only)
+ */
+export async function deleteEnquiry(enquiryId) {
+  const docRef = doc(db, ENQUIRIES_COLLECTION, String(enquiryId));
+  await deleteDoc(docRef);
+  return { id: enquiryId };
+}
+

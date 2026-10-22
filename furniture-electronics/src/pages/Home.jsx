@@ -346,7 +346,7 @@ export default function Home({
           <div className="section-header-center">
             <span className="badge-pill badge-bestseller">Verified Reviews</span>
             <h2 className="section-main-heading">What Our Valued Customers Say</h2>
-            <p className="section-sub-heading">Over 15,000+ satisfied homeowners have furnished their living spaces with HomeKart</p>
+            <p className="section-sub-heading">Over 15,000+ satisfied homeowners have furnished their living spaces with Sardar Electricals and Furnitures</p>
           </div>
 
           <div className="testimonials-grid">
@@ -393,7 +393,7 @@ export default function Home({
                   <MapPin size={18} /> Get Showroom Directions
                 </button>
                 <a 
-                  href="https://wa.me/919876543210?text=Hi%20HomeKart%2C%20I%20would%20like%20to%20book%20a%20showroom%20visit" 
+                  href="https://wa.me/919876543210?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20would%20like%20to%20book%20a%20showroom%20visit" 
                   target="_blank" 
                   rel="noreferrer"
                   className="btn-whatsapp"

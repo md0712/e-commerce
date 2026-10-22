@@ -4,6 +4,8 @@ import {
   Send, CheckCircle, Navigation, Sparkles, Building 
 } from 'lucide-react';
 import { storeInfo } from '../data/products';
+import { createEnquiry } from '../services/enquiryService';
+
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -25,7 +27,7 @@ export default function Contact() {
       address: '123, Market Street, Thousand Lights, Mount Road, Chennai, Tamil Nadu - 600001',
       phone: '+91 98765 43210',
       whatsapp: '919876543210',
-      email: 'chennai.central@homekart.com',
+      email: 'chennai.central@sardarelectricals.com',
       timing: '9:30 AM – 9:30 PM (All 7 Days Open)',
       // Google Maps embed URL for Chennai Thousand Lights
       mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3886.586675549005!2d80.2520845!3d13.0619864!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a5266157121b6a7%3A0x6b8471c261e3895e!2sThousand%20Lights%2C%20Chennai%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin',
@@ -37,7 +39,7 @@ export default function Contact() {
       address: 'Plot 45, IT Highway, Thoraipakkam, OMR, Chennai, Tamil Nadu - 600097',
       phone: '+91 98765 43211',
       whatsapp: '919876543211',
-      email: 'omr@homekart.com',
+      email: 'omr@sardarelectricals.com',
       timing: '10:00 AM – 9:00 PM (Everyday)',
       mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.756247348924!2d80.232371!3d12.923412!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a525c34e8b5c92f%3A0xc3cf9c9a35e466b0!2sThoraipakkam%2C%20Chennai%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin',
       directionsUrl: 'https://maps.google.com/?q=Thoraipakkam+Chennai'
@@ -48,7 +50,7 @@ export default function Contact() {
       address: '88, Avinashi Road, Near Lakshmi Mills, Coimbatore, Tamil Nadu - 641037',
       phone: '+91 98765 43212',
       whatsapp: '919876543212',
-      email: 'coimbatore@homekart.com',
+      email: 'coimbatore@sardarelectricals.com',
       timing: '10:00 AM – 9:00 PM (Everyday)',
       mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.326887483789!2d76.980614!3d11.011681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba859a53164964f%3A0xc6657cbb592efb72!2sAvinashi%20Rd%2C%20Coimbatore%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin',
       directionsUrl: 'https://maps.google.com/?q=Avinashi+Road+Coimbatore'
@@ -64,18 +66,33 @@ export default function Contact() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.phone) {
       alert('Please provide your name and phone number so our showroom consultant can contact you.');
       return;
     }
+    try {
+      await createEnquiry({
+        name: formData.name,
+        contact: formData.phone,
+        email: formData.email || '',
+        product: formData.category || 'General Showroom Enquiry',
+        branch: formData.branch || currentBranch.name,
+        message: formData.message || '',
+        status: 'New',
+        date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+      });
+    } catch (err) {
+      console.warn('Could not post enquiry to Firestore:', err);
+    }
     setSubmitted(true);
   };
 
+
   const handleForwardToWhatsApp = () => {
     const text = encodeURIComponent(
-      `Hello HomeKart Team! My name is ${formData.name}. Phone: ${formData.phone}. Interested in: ${formData.category} for ${formData.branch}. Message: ${formData.message}`
+      `Hello Sardar Electricals and Furnitures Team! My name is ${formData.name}. Phone: ${formData.phone}. Interested in: ${formData.category} for ${formData.branch}. Message: ${formData.message}`
     );
     window.open(`https://wa.me/${currentBranch.whatsapp}?text=${text}`, '_blank');
   };
@@ -87,7 +104,7 @@ export default function Contact() {
         <div className="container">
           <div className="contact-hero-content">
             <span className="badge-pill badge-bestseller">We're Here For You</span>
-            <h1 className="contact-headline">Contact HomeKart Showrooms &amp; Support</h1>
+            <h1 className="contact-headline">Contact Sardar Electricals and Furnitures Showrooms &amp; Support</h1>
             <p className="contact-sub">
               Have questions about customized sofa fabrics, bulk order discounts, or 0% EMI financing? Our customer care and showroom consultants are ready to assist.
             </p>
@@ -128,13 +145,13 @@ export default function Contact() {
                   </div>
                 </a>
 
-                <a href="mailto:support@homekart.com" className="channel-card">
+                <a href="mailto:care@sardarelectricals.com" className="channel-card">
                   <div className="channel-icon-circle">
                     <Mail size={20} />
                   </div>
                   <div>
                     <span className="channel-label">Email Support</span>
-                    <strong>support@homekart.com</strong>
+                    <strong>care@sardarelectricals.com</strong>
                   </div>
                 </a>
 
@@ -185,7 +202,7 @@ export default function Contact() {
                       <Navigation size={15} /> Open in Google Maps
                     </a>
                     <a 
-                      href={`https://wa.me/${currentBranch.whatsapp}?text=Hi%20HomeKart%2C%20I%20am%20enquiring%20about%20your%20${currentBranch.city}%20showroom`}
+                      href={`https://wa.me/${currentBranch.whatsapp}?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20am%20enquiring%20about%20your%20${currentBranch.city}%20showroom`}
                       target="_blank"
                       rel="noreferrer"
                       className="btn-whatsapp branch-wa-btn"
