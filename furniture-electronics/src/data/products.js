@@ -717,6 +717,7 @@ export const storeInfo = {
   whatsapp: '916383056338',
   secondaryWhatsapp: '919344623632',
   email: 'sardarmart64@gmail.com',
+  gstin: '33DVKPR2334L1Z9',
   address: 'No. 192, E.H Road, Cholan nagar, Vyasarpadi, Erukancheri, Chennai - 39.',
   instagram: {
     name: 'sardar_mart_ch_39',

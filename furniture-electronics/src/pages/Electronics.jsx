@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { SlidersHorizontal, ArrowUpDown, Tv, ShieldCheck, Zap, Package } from 'lucide-react';
+import { SlidersHorizontal, ArrowUpDown, Tv, ShieldCheck, Zap, Package, Layers } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 
 export default function Electronics({ 
@@ -30,17 +30,39 @@ export default function Electronics({
     return allProducts.filter(p => p.category === 'electronics');
   }, [allProducts]);
 
-  const subcategories = [
-    { id: 'all', label: 'All Electronics' },
-    { id: 'tvs', label: 'Smart TVs & OLED' },
-    { id: 'refrigerators', label: 'Inverter Refrigerators' },
-    { id: 'washers', label: 'Washing Machines' },
-    { id: 'acs', label: 'Air Conditioners' }
-  ];
+  const subcategories = useMemo(() => {
+    const list = [
+      { id: 'all', label: 'All Electronics' },
+      { id: 'tvs', label: 'Smart TVs & OLED' },
+      { id: 'refrigerators', label: 'Inverter Refrigerators' },
+      { id: 'washers', label: 'Washing Machines' },
+      { id: 'acs', label: 'Air Conditioners' }
+    ];
+    const known = new Set(list.map(s => s.id.toLowerCase()));
+    electronicsProducts.forEach(p => {
+      if (p.subcategory && !known.has(p.subcategory.toLowerCase())) {
+        known.add(p.subcategory.toLowerCase());
+        list.push({
+          id: p.subcategory,
+          label: p.subcategory.charAt(0).toUpperCase() + p.subcategory.slice(1).replace(/-/g, ' ')
+        });
+      }
+    });
+    if (selectedSubcat && selectedSubcat !== 'all' && !known.has(selectedSubcat.toLowerCase())) {
+      list.push({
+        id: selectedSubcat,
+        label: selectedSubcat.charAt(0).toUpperCase() + selectedSubcat.slice(1).replace(/-/g, ' ')
+      });
+    }
+    return list;
+  }, [electronicsProducts, selectedSubcat]);
 
   const filteredProducts = useMemo(() => {
     return electronicsProducts.filter(p => {
-      const matchSubcat = selectedSubcat === 'all' || p.subcategory === selectedSubcat;
+      const matchSubcat = selectedSubcat === 'all' || 
+        p.subcategory === selectedSubcat || 
+        (p.subcategory && p.subcategory.toLowerCase() === selectedSubcat.toLowerCase()) ||
+        (p.category && p.category.toLowerCase() === selectedSubcat.toLowerCase());
       const matchPrice = p.price <= maxPrice;
       const matchSearch = searchQuery === '' || 
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -71,7 +93,24 @@ export default function Electronics({
       <div className="container main-catalog-container">
         {/* Toolbar */}
         <div className="catalog-toolbar">
-          <div className="subcat-pills">
+          {/* Subcategory Dropdown for Mobile View */}
+          <div className="subcat-mobile-dropdown-wrap">
+            <Layers size={15} className="subcat-dropdown-icon" />
+            <select
+              value={selectedSubcat}
+              onChange={(e) => setSelectedSubcat(e.target.value)}
+              className="subcat-mobile-select"
+              aria-label="Filter by electronics subcategory"
+            >
+              {subcategories.map(sub => (
+                <option key={sub.id} value={sub.id}>
+                  {sub.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="subcat-pills desktop-subcat-pills">
             {subcategories.map(sub => (
               <button
                 key={sub.id}

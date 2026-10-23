@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowRight, Sparkles, Truck, CreditCard, 
-  ShieldCheck, Lock, Star, ChevronRight, ChevronLeft, MessageCircle, MapPin, Package 
+  ShieldCheck, Lock, Star, ChevronRight, ChevronLeft, MessageCircle, MapPin, Package, Layers 
 } from 'lucide-react';
 import CategoryCard from '../components/CategoryCard';
 import ProductCard from '../components/ProductCard';
 import OfferBanner from '../components/OfferBanner';
-import { categories, storeInfo } from '../data/products';
+import { categories as defaultCategories, storeInfo } from '../data/products';
 import { subscribeToReviews } from '../services/reviewService';
 
 export default function Home({ 
@@ -17,9 +17,13 @@ export default function Home({
   onToggleWishlist,
   cart = [],
   onUpdateQuantity,
-  products: customProducts
+  products: customProducts,
+  categories: propCategories
 }) {
   const allProducts = Array.isArray(customProducts) ? customProducts : (customProducts || []);
+  const activeCategories = (Array.isArray(propCategories) && propCategories.length > 0)
+    ? propCategories
+    : defaultCategories;
   const [activeTab, setActiveTab] = useState('all');
   const [heroSlide, setHeroSlide] = useState(0);
 
@@ -275,15 +279,54 @@ export default function Home({
           </div>
 
           <div className="categories-row-grid">
-            {categories.map((cat) => (
-              <CategoryCard 
-                key={cat.id} 
-                category={cat} 
-                onSelectCategory={() => {
-                  onNavigate(cat.category);
-                }} 
-              />
-            ))}
+            {activeCategories.map((cat) => {
+              const catId = (cat.id || '').toLowerCase().trim();
+              const catName = (cat.name || '').toLowerCase().trim();
+              const catDept = (cat.category || '').toLowerCase().trim();
+
+              // Calculate live model count directly from backend Firestore database products
+              const liveCount = allProducts.filter((p) => {
+                const pSub = (p.subcategory || '').toLowerCase().trim();
+                const pCat = (p.category || '').toLowerCase().trim();
+                const pName = (p.name || '').toLowerCase().trim();
+
+                // Direct subcategory match
+                if (pSub && (pSub === catId || pSub === catName)) return true;
+                // Match parent department if category is top-level
+                if (pCat && (pCat === catId || pCat === catName)) return true;
+                // Department match + subcategory
+                if (catDept && pCat === catDept && pSub && pSub === catId) return true;
+                // Keyword match
+                if (catId && pSub.includes(catId)) return true;
+                if (catName && (pSub.includes(catName) || pName.includes(catName))) return true;
+                return false;
+              }).length;
+
+              // Format dynamic count label (e.g. "24+ Models", "3 Models", or "0 Models")
+              const countLabel = liveCount > 0 
+                ? (liveCount >= 5 ? `${liveCount}+ Models` : `${liveCount} Model${liveCount === 1 ? '' : 's'}`)
+                : '0 Models';
+
+              return (
+                <CategoryCard 
+                  key={cat.id} 
+                  category={{
+                    ...cat,
+                    itemCount: countLabel
+                  }} 
+                  onSelectCategory={() => {
+                    // Determine parent department
+                    const targetDept = ['furniture', 'electronics', 'appliances'].includes(catDept)
+                      ? catDept
+                      : (['furniture', 'electronics', 'appliances'].includes(catId)
+                          ? catId
+                          : 'furniture');
+                    // Navigate to department and filter by subcategory to display the products immediately
+                    onNavigate(targetDept, cat.id);
+                  }} 
+                />
+              );
+            })}
           </div>
         </div>
       </section>
@@ -300,7 +343,23 @@ export default function Home({
               <p className="section-sub-heading">Best selling furniture &amp; popular electronics with instant WhatsApp inquiry</p>
             </div>
 
-            <div className="category-tabs-group">
+            {/* Mobile Dropdown Selector for Featured Products */}
+            <div className="featured-mobile-dropdown-wrap">
+              <Layers size={15} className="featured-dropdown-icon" />
+              <select
+                value={activeTab}
+                onChange={(e) => setActiveTab(e.target.value)}
+                className="featured-mobile-select"
+                aria-label="Filter featured products category"
+              >
+                <option value="all">All Featured</option>
+                <option value="furniture">Furniture</option>
+                <option value="electronics">Electronics</option>
+                <option value="appliances">Home Appliances</option>
+              </select>
+            </div>
+
+            <div className="category-tabs-group desktop-category-tabs">
               <button 
                 className={`tab-btn ${activeTab === 'all' ? 'active' : ''}`}
                 onClick={() => setActiveTab('all')}
@@ -1281,19 +1340,13 @@ export default function Home({
             font-size: 0.7rem;
           }
 
-          .category-tabs-group {
-            width: 100%;
-            overflow-x: auto;
-            scrollbar-width: none;
-            padding: 3px;
+          .desktop-category-tabs {
+            display: none !important;
           }
-          .category-tabs-group::-webkit-scrollbar {
-            display: none;
-          }
-          .tab-btn {
-            white-space: nowrap;
-            padding: 6px 14px;
-            font-size: 0.78rem;
+          .featured-mobile-dropdown-wrap {
+            display: block !important;
+            width: 100% !important;
+            margin-top: 6px;
           }
           .center-view-all-box .btn-primary {
             width: 100%;

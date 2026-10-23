@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Heart, ShoppingBag, MessageCircle, Eye } from 'lucide-react';
+import { subscribeToStoreSettings, DEFAULT_STORE_CONFIG } from '../services/settingsService';
 
 // Lightweight inline SVG icons tailored to match the screenshot specifications
 function SpecIcon({ type }) {
@@ -224,6 +225,18 @@ export default function ProductCard({
   onUpdateQuantity
 }) {
   const [localQty, setLocalQty] = useState(cartQuantity);
+  const [showDiscount, setShowDiscount] = useState(() => {
+    return Boolean(DEFAULT_STORE_CONFIG.showDiscountPercentage);
+  });
+
+  useEffect(() => {
+    const unsub = subscribeToStoreSettings((settings) => {
+      if (settings && typeof settings.showDiscountPercentage !== 'undefined') {
+        setShowDiscount(Boolean(settings.showDiscountPercentage));
+      }
+    });
+    return () => unsub();
+  }, []);
 
   React.useEffect(() => {
     if (cartQuantity !== undefined) {
@@ -392,7 +405,7 @@ export default function ProductCard({
           {originalPrice && originalPrice > price && (
             <span className="original-price">{formatPrice(originalPrice)}</span>
           )}
-          {discount > 0 && (
+          {discount > 0 && showDiscount && (
             <span className="discount-badge">{discount}% OFF</span>
           )}
         </div>

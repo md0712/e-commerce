@@ -44,11 +44,19 @@ import {
   togglePromoCodeStatus, 
   subscribeToPromoCodes 
 } from '../services/promoService';
+import { 
+  subscribeToCategories, 
+  createCategory, 
+  updateCategory, 
+  deleteCategory, 
+  seedCategoriesToFirestore 
+} from '../services/categoryService';
 import AdminMobileNav from '../components/AdminMobileNav';
 
 
 export default function AdminPanel({
   products = [],
+  categories: propCategories = [],
   orders = [],
   promoCodes: propPromoCodes = [],
   initialTab = 'dashboard',
@@ -259,6 +267,124 @@ export default function AdminPanel({
       showToast(`Promo code "${code}" is now ${next}.`);
     } catch (err) {
       showToast(`Failed to update promo status: ${err.message}`);
+    }
+  };
+
+  // Categories Management State (Live Firestore sync)
+  const [categoriesList, setCategoriesList] = useState(propCategories || []);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [categorySearch, setCategorySearch] = useState('');
+  const [categoryDeptFilter, setCategoryDeptFilter] = useState('all');
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [savingCategory, setSavingCategory] = useState(false);
+  const [categoryForm, setCategoryForm] = useState({
+    id: '',
+    name: '',
+    category: 'furniture',
+    image: '',
+    badge: '',
+    order: 1
+  });
+
+  useEffect(() => {
+    const unsub = subscribeToCategories((liveCats) => {
+      setCategoriesList(liveCats || []);
+      setLoadingCategories(false);
+    });
+    return () => unsub();
+  }, []);
+
+  const handleOpenAddCategory = () => {
+    setEditingCategory(null);
+    setCategoryForm({
+      id: '',
+      name: '',
+      category: 'furniture',
+      image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80',
+      badge: 'Popular',
+      order: categoriesList.length + 1
+    });
+    setIsCategoryModalOpen(true);
+  };
+
+  const handleOpenEditCategory = (cat) => {
+    setEditingCategory(cat);
+    setCategoryForm({
+      id: cat.id || '',
+      name: cat.name || '',
+      category: cat.category || 'furniture',
+      image: cat.image || '',
+      badge: cat.badge || '',
+      order: cat.order || 1
+    });
+    setIsCategoryModalOpen(true);
+  };
+
+  const handleSaveCategory = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!categoryForm.name.trim()) {
+      showToast('Please enter a Category Title');
+      return;
+    }
+    setSavingCategory(true);
+    try {
+      const generatedSlug = (categoryForm.id || categoryForm.name)
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+      if (editingCategory) {
+        await updateCategory(editingCategory.id, {
+          name: categoryForm.name.trim(),
+          category: categoryForm.category,
+          image: categoryForm.image.trim() || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80',
+          badge: categoryForm.badge.trim(),
+          order: Number(categoryForm.order) || 1
+        });
+        showToast(`Category "${categoryForm.name}" updated successfully!`);
+      } else {
+        await createCategory({
+          id: generatedSlug,
+          name: categoryForm.name.trim(),
+          category: categoryForm.category,
+          image: categoryForm.image.trim() || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80',
+          badge: categoryForm.badge.trim(),
+          order: Number(categoryForm.order) || (categoriesList.length + 1)
+        });
+        showToast(`Category "${categoryForm.name}" created and synced with Firestore!`);
+      }
+      setIsCategoryModalOpen(false);
+      setEditingCategory(null);
+    } catch (err) {
+      console.error('Error saving category:', err);
+      showToast(`Error: ${err.message}`);
+    } finally {
+      setSavingCategory(false);
+    }
+  };
+
+  const handleDeleteCategory = async (catId, catName) => {
+    if (window.confirm(`Are you sure you want to delete category "${catName}"? This will remove it from the storefront and Firestore database.`)) {
+      try {
+        await deleteCategory(catId);
+        showToast(`Category "${catName}" deleted from Firestore`);
+      } catch (err) {
+        console.error('Error deleting category:', err);
+        showToast(`Error: ${err.message}`);
+      }
+    }
+  };
+
+  const handleResetDefaultCategories = async () => {
+    if (window.confirm('Restore initial default 8 showroom categories to Cloud Firestore?')) {
+      try {
+        await seedCategoriesToFirestore();
+        showToast('Default 8 categories restored to Cloud Firestore!');
+      } catch (err) {
+        showToast(`Error restoring categories: ${err.message}`);
+      }
     }
   };
 
@@ -1415,6 +1541,7 @@ export default function AdminPanel({
           >
             <Layers size={19} />
             {!sidebarCollapsed && <span>Categories</span>}
+            {!sidebarCollapsed && <span className="sidebar-count-badge">{categoriesList.length}</span>}
           </button>
 
           <button 
@@ -1785,8 +1912,8 @@ export default function AdminPanel({
                   </button>
                 </div>
 
-                <div className="admin-table-wrap">
-                  <table className="admin-table">
+                <div className="admin-table-wrap scrollable-recent-table">
+                  <table className="admin-table recent-orders-table">
                     <thead>
                       <tr>
                         <th>#</th>
@@ -1854,8 +1981,8 @@ export default function AdminPanel({
                   </button>
                 </div>
 
-                <div className="admin-table-wrap">
-                  <table className="admin-table">
+                <div className="admin-table-wrap scrollable-recent-table">
+                  <table className="admin-table recent-enquiries-table">
                     <thead>
                       <tr>
                         <th>Name</th>
@@ -2702,56 +2829,390 @@ export default function AdminPanel({
           </div>
         )}
 
-        {/* TAB 5: CATEGORIES (COMPUTED FROM LIVE CATALOG) */}
+        {/* TAB 5: CATEGORIES MANAGEMENT (LIVE FIRESTORE DATABASE SYNC) */}
         {activeTab === 'categories' && (
           <div className="admin-subpage-card animate-fade-in">
-            <div className="subpage-header-row">
+            {/* Header with Title and Actions */}
+            <div className="subpage-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
               <div>
-                <h3>Categories &amp; Departments</h3>
-                <p>Live product counts and department hierarchies in Cloud Firestore.</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <h3 style={{ margin: 0 }}>Category Management &amp; Storefront Sync</h3>
+                  <span style={{ 
+                    fontSize: '0.74rem', 
+                    fontWeight: 700, 
+                    padding: '3px 8px', 
+                    borderRadius: '12px', 
+                    background: '#dcfce7', 
+                    color: '#15803d',
+                    border: '1px solid #bbf7d0',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    <CheckCircle size={12} /> Live Cloud Firestore
+                  </span>
+                </div>
+                <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '0.9rem' }}>
+                  Manage storefront collections displayed in "Shop by Category". Model counts are calculated live from products in Cloud Firestore database.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={handleResetDefaultCategories}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '9px 14px',
+                    borderRadius: '8px',
+                    border: '1.5px solid #cbd5e1',
+                    background: '#ffffff',
+                    color: '#475569',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                  title="Reload the 8 default showroom categories into Firestore if needed"
+                >
+                  <RefreshCw size={14} /> Restore Defaults
+                </button>
+
+                <button 
+                  type="button"
+                  className="add-quick-product-btn"
+                  onClick={handleOpenAddCategory}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: '#854d0e',
+                    color: '#ffffff',
+                    padding: '9px 18px',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    fontSize: '0.88rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 4px rgba(133, 77, 14, 0.25)'
+                  }}
+                >
+                  <Plus size={16} /> Add New Category
+                </button>
               </div>
             </div>
 
-            <div className="categories-admin-grid">
-              {[
-                { 
-                  name: 'Furniture', 
-                  count: `${furnitureProducts.length} Live Items`, 
-                  sub: [...new Set(furnitureProducts.map((p) => p.subcategory).filter(Boolean))].length > 0
-                    ? [...new Set(furnitureProducts.map((p) => p.subcategory).filter(Boolean))]
-                    : ['Sofas & Recliners', 'Beds & Mattresses', 'Dining Sets', 'Wardrobes', 'Study Chairs']
-                },
-                { 
-                  name: 'Electronics', 
-                  count: `${electronicsProducts.length} Live Items`, 
-                  sub: [...new Set(electronicsProducts.map((p) => p.subcategory).filter(Boolean))].length > 0
-                    ? [...new Set(electronicsProducts.map((p) => p.subcategory).filter(Boolean))]
-                    : ['4K Smart TVs & OLED', 'Inverter Refrigerators', 'Front Load Washers', 'Split Inverter ACs']
-                },
-                { 
-                  name: 'Home Appliances', 
-                  count: `${appliancesProducts.length} Live Items`, 
-                  sub: [...new Set(appliancesProducts.map((p) => p.subcategory).filter(Boolean))].length > 0
-                    ? [...new Set(appliancesProducts.map((p) => p.subcategory).filter(Boolean))]
-                    : ['Heavy Duty Mixers', 'Digital Air Fryers', 'RO Water Purifiers', 'Microwaves']
-                }
-              ].map((cat, idx) => (
-                <div key={idx} className="category-admin-box">
-                  <div className="cat-box-header">
-                    <h4>{cat.name}</h4>
-                    <span className="cat-count-badge">{cat.count}</span>
-                  </div>
-                  <div className="cat-sub-list">
-                    <strong>Active Subcategories:</strong>
-                    <ul>
-                      {cat.sub.map((s, sidx) => (
-                        <li key={sidx} style={{ textTransform: 'capitalize' }}>{s}</li>
-                      ))}
-                    </ul>
-                  </div>
+            {/* Department Summary Stat Pills */}
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
+              gap: '12px', 
+              margin: '20px 0 16px' 
+            }}>
+              <div style={{ background: '#f8fafc', padding: '14px 16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Total Categories</span>
+                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', marginTop: '2px' }}>
+                  {categoriesList.length}
                 </div>
-              ))}
+              </div>
+              <div style={{ background: '#fef3c7', padding: '14px 16px', borderRadius: '12px', border: '1px solid #fde68a' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#92400e', textTransform: 'uppercase' }}>Furniture Categories</span>
+                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#78350f', marginTop: '2px' }}>
+                  {categoriesList.filter(c => (c.category || '').toLowerCase() === 'furniture').length}
+                </div>
+              </div>
+              <div style={{ background: '#e0f2fe', padding: '14px 16px', borderRadius: '12px', border: '1px solid #bae6fd' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0369a1', textTransform: 'uppercase' }}>Electronics Categories</span>
+                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#075985', marginTop: '2px' }}>
+                  {categoriesList.filter(c => (c.category || '').toLowerCase() === 'electronics').length}
+                </div>
+              </div>
+              <div style={{ background: '#fce7f3', padding: '14px 16px', borderRadius: '12px', border: '1px solid #fbcfe8' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#9d174d', textTransform: 'uppercase' }}>Appliances Categories</span>
+                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#831843', marginTop: '2px' }}>
+                  {categoriesList.filter(c => (c.category || '').toLowerCase() === 'appliances').length}
+                </div>
+              </div>
+              <div style={{ background: '#f1f5f9', padding: '14px 16px', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase' }}>Live Products in Catalog</span>
+                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#1e293b', marginTop: '2px' }}>
+                  {products.length}
+                </div>
+              </div>
             </div>
+
+            {/* Filter and Search Bar */}
+            <div className="subpage-filters-bar" style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', margin: '0 0 20px' }}>
+              <div className="filter-search-box" style={{ flex: 1, minWidth: '240px' }}>
+                <Search size={16} />
+                <input
+                  type="text"
+                  placeholder="Search categories by name, slug, badge, or department..."
+                  value={categorySearch}
+                  onChange={(e) => setCategorySearch(e.target.value)}
+                />
+              </div>
+
+              <div className="filter-dropdown-wrap">
+                <select 
+                  value={categoryDeptFilter}
+                  onChange={(e) => setCategoryDeptFilter(e.target.value)}
+                  className="cat-filter-select"
+                >
+                  <option value="all">⚡ All Departments</option>
+                  <option value="furniture">🛋️ Furniture</option>
+                  <option value="electronics">📺 Electronics</option>
+                  <option value="appliances">🍳 Home Appliances</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Categories Cards Grid with Live Counts & Actions */}
+            {(() => {
+              const term = categorySearch.toLowerCase().trim();
+              const filtered = categoriesList.filter((cat) => {
+                const matchesSearch = !term ||
+                  (cat.name || '').toLowerCase().includes(term) ||
+                  (cat.id || '').toLowerCase().includes(term) ||
+                  (cat.badge || '').toLowerCase().includes(term) ||
+                  (cat.category || '').toLowerCase().includes(term);
+
+                const matchesDept = categoryDeptFilter === 'all' || 
+                  (cat.category || '').toLowerCase() === categoryDeptFilter.toLowerCase();
+
+                return matchesSearch && matchesDept;
+              });
+
+              if (filtered.length === 0) {
+                return (
+                  <div style={{ textAlign: 'center', padding: '48px 20px', background: '#f8fafc', borderRadius: '14px', border: '1px dashed #cbd5e1' }}>
+                    <Layers size={40} style={{ color: '#94a3b8', margin: '0 auto 12px', display: 'block' }} />
+                    <h4 style={{ margin: '0 0 6px', color: '#1e293b' }}>No Categories Found</h4>
+                    <p style={{ color: '#64748b', fontSize: '0.88rem', margin: '0 0 18px' }}>
+                      {categoriesList.length === 0 
+                        ? 'No categories exist in Cloud Firestore yet. Click "Add New Category" or "Restore Defaults" above.'
+                        : 'No categories matched your filter criteria.'}
+                    </p>
+                    <button
+                      type="button"
+                      className="add-quick-product-btn"
+                      onClick={handleOpenAddCategory}
+                      style={{ margin: '0 auto' }}
+                    >
+                      <Plus size={16} /> Add First Category
+                    </button>
+                  </div>
+                );
+              }
+
+              return (
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', 
+                  gap: '18px' 
+                }}>
+                  {filtered.map((cat) => {
+                    const catId = (cat.id || '').toLowerCase().trim();
+                    const catName = (cat.name || '').toLowerCase().trim();
+                    const catDept = (cat.category || '').toLowerCase().trim();
+
+                    // Calculate live models count directly from Firestore products
+                    const liveCount = products.filter((p) => {
+                      const pSub = (p.subcategory || '').toLowerCase().trim();
+                      const pCat = (p.category || '').toLowerCase().trim();
+                      const pName = (p.name || '').toLowerCase().trim();
+
+                      if (pSub && (pSub === catId || pSub === catName)) return true;
+                      if (pCat && (pCat === catId || pCat === catName)) return true;
+                      if (catDept && pCat === catDept && pSub && pSub === catId) return true;
+                      if (catId && pSub.includes(catId)) return true;
+                      if (catName && (pSub.includes(catName) || (p.name || '').toLowerCase().includes(catName))) return true;
+                      return false;
+                    }).length;
+
+                    const deptBadgeColor = catDept === 'furniture' 
+                      ? { bg: '#fef3c7', text: '#92400e', border: '#fde68a', label: 'Furniture' }
+                      : catDept === 'electronics'
+                        ? { bg: '#e0f2fe', text: '#0369a1', border: '#bae6fd', label: 'Electronics' }
+                        : { bg: '#fce7f3', text: '#9d174d', border: '#fbcfe8', label: 'Appliances' };
+
+                    return (
+                      <div 
+                        key={cat.id} 
+                        style={{
+                          background: '#ffffff',
+                          borderRadius: '16px',
+                          border: '1.5px solid #e2e8f0',
+                          padding: '16px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '14px',
+                          boxShadow: '0 4px 12px rgba(15, 23, 42, 0.04)',
+                          transition: 'transform 0.2s, box-shadow 0.2s',
+                          position: 'relative'
+                        }}
+                      >
+                        {/* Top: Image Circle Preview + Badges */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                          <div style={{
+                            position: 'relative',
+                            width: '76px',
+                            height: '76px',
+                            minWidth: '76px',
+                            borderRadius: '50%',
+                            padding: '3px',
+                            background: '#ffffff',
+                            border: '2px solid #ecd8cb',
+                            boxShadow: '0 4px 10px rgba(42, 24, 16, 0.1)',
+                            overflow: 'hidden'
+                          }}>
+                            <img 
+                              src={cat.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80'} 
+                              alt={cat.name} 
+                              style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                            />
+                            {cat.badge && (
+                              <span style={{
+                                position: 'absolute',
+                                bottom: '2px',
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                background: '#78350f',
+                                color: '#ffffff',
+                                fontSize: '0.58rem',
+                                fontWeight: 800,
+                                padding: '1px 6px',
+                                borderRadius: '10px',
+                                whiteSpace: 'nowrap',
+                                textTransform: 'uppercase'
+                              }}>
+                                {cat.badge}
+                              </span>
+                            )}
+                          </div>
+
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '4px' }}>
+                              <span style={{
+                                fontSize: '0.7rem',
+                                fontWeight: 700,
+                                padding: '2px 8px',
+                                borderRadius: '10px',
+                                background: deptBadgeColor.bg,
+                                color: deptBadgeColor.text,
+                                border: `1px solid ${deptBadgeColor.border}`
+                              }}>
+                                {deptBadgeColor.label}
+                              </span>
+                              <code style={{ fontSize: '0.72rem', background: '#f1f5f9', color: '#475569', padding: '1px 6px', borderRadius: '4px' }}>
+                                #{cat.id}
+                              </code>
+                            </div>
+
+                            <h4 style={{ margin: '0 0 4px', fontSize: '1.05rem', fontWeight: 800, color: '#1e293b' }}>
+                              {cat.name}
+                            </h4>
+
+                            {/* Live Model Count Badge */}
+                            <div style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '5px',
+                              fontSize: '0.78rem',
+                              fontWeight: 700,
+                              color: liveCount > 0 ? '#15803d' : '#94a3b8',
+                              background: liveCount > 0 ? '#f0fdf4' : '#f8fafc',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              border: `1px solid ${liveCount > 0 ? '#bbf7d0' : '#e2e8f0'}`
+                            }}>
+                              <Package size={12} />
+                              <span>{liveCount > 0 ? `${liveCount}+ Live Models in Firestore` : '0 Models (Empty)'}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons Row */}
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'space-between', 
+                          borderTop: '1px solid #f1f5f9', 
+                          paddingTop: '10px',
+                          marginTop: 'auto'
+                        }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onBackToStore && onBackToStore();
+                            }}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#64748b',
+                              fontSize: '0.78rem',
+                              fontWeight: 600,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              cursor: 'pointer'
+                            }}
+                            title="View on Storefront"
+                          >
+                            <ExternalLink size={12} /> Storefront
+                          </button>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditCategory(cat)}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                background: '#fef3c7',
+                                color: '#92400e',
+                                border: '1px solid #fde68a',
+                                padding: '5px 10px',
+                                borderRadius: '6px',
+                                fontSize: '0.78rem',
+                                fontWeight: 700,
+                                cursor: 'pointer'
+                              }}
+                              title="Edit Category Details"
+                            >
+                              <Edit3 size={13} /> Edit
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                background: '#fee2e2',
+                                color: '#dc2626',
+                                border: '1px solid #fecaca',
+                                padding: '5px 8px',
+                                borderRadius: '6px',
+                                fontSize: '0.78rem',
+                                fontWeight: 700,
+                                cursor: 'pointer'
+                              }}
+                              title="Delete Category"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -3994,6 +4455,20 @@ export default function AdminPanel({
                     <option value="Confirmed">Confirmed</option>
                     <option value="Processing">Processing</option>
                   </select>
+                </div>
+
+                <div className="form-field-group">
+                  <label>Display Discount % on Storefront</label>
+                  <select
+                    value={storeSettings.showDiscountPercentage === true ? 'yes' : 'no'}
+                    onChange={(e) => setStoreSettings({ ...storeSettings, showDiscountPercentage: e.target.value === 'yes' })}
+                  >
+                    <option value="no">Disabled (Hide discount % badges on storefront)</option>
+                    <option value="yes">Enabled (Show discount % badges on cards)</option>
+                  </select>
+                  <small style={{ color: '#64748b', fontSize: '0.72rem', marginTop: '4px', display: 'block' }}>
+                    Controls whether '% OFF' badges appear on product cards across the website.
+                  </small>
                 </div>
               </div>
             </div>
@@ -5337,6 +5812,408 @@ export default function AdminPanel({
         </div>
       )}
 
+      {/* MODAL: ADD / EDIT CATEGORY (SYNCED WITH CLOUD FIRESTORE) */}
+      {isCategoryModalOpen && (
+        <div 
+          className="admin-modal-overlay" 
+          onClick={() => setIsCategoryModalOpen(false)}
+          style={{ overflowY: 'auto', padding: '20px 12px' }}
+        >
+          <div 
+            className="admin-dialog-card category-modal-dialog" 
+            style={{ 
+              maxWidth: '680px', 
+              width: '100%', 
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              borderRadius: '16px', 
+              overflow: 'hidden', 
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.45)',
+              background: '#ffffff',
+              margin: 'auto',
+              position: 'relative'
+            }} 
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header (Fixed at top) */}
+            <div 
+              className="dialog-header" 
+              style={{ 
+                flexShrink: 0,
+                padding: '18px 24px', 
+                background: 'linear-gradient(135deg, #2b170e 0%, #451a03 100%)', 
+                color: '#ffffff', 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                zIndex: 10
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ background: 'rgba(251, 191, 36, 0.2)', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center' }}>
+                  <Layers size={20} color="#fbbf24" />
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: '#ffffff' }}>
+                    {editingCategory ? `Edit Category: ${editingCategory.name}` : 'Add New Category'}
+                  </h4>
+                  <small style={{ color: '#d6d3d1', fontSize: '0.78rem' }}>
+                    Syncs immediately to Cloud Firestore and storefront "Shop by Category"
+                  </small>
+                </div>
+              </div>
+              <button 
+                type="button"
+                className="dialog-close-btn" 
+                onClick={() => setIsCategoryModalOpen(false)}
+                style={{ 
+                  background: 'rgba(255, 255, 255, 0.15)', 
+                  border: 'none', 
+                  color: '#ffffff', 
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer' 
+                }}
+                title="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Form with Scrollable Middle Body & Sticky Bottom Footer */}
+            <form 
+              onSubmit={handleSaveCategory} 
+              style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                flex: 1, 
+                minHeight: 0, 
+                overflow: 'hidden',
+                margin: 0
+              }}
+            >
+              {/* Scrollable Form Body Container (Top to Bottom Scroller) */}
+              <div 
+                className="category-modal-scrollable-body" 
+                style={{ 
+                  flex: 1, 
+                  overflowY: 'auto', 
+                  padding: '24px 28px',
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#b45309 #f1f5f9'
+                }}
+              >
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  
+                  {/* Category Name */}
+                  <div className="form-field-group" style={{ gridColumn: 'span 2' }}>
+                    <label style={{ display: 'block', fontSize: '0.86rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                      Category Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Dining Sets, Recliners, Air Conditioners"
+                      value={categoryForm.name}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setCategoryForm(prev => ({
+                          ...prev,
+                          name: val,
+                          id: editingCategory ? prev.id : val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+                        }));
+                      }}
+                      style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '0.95rem' }}
+                    />
+                  </div>
+
+                  {/* Parent Department */}
+                  <div className="form-field-group">
+                    <label style={{ display: 'block', fontSize: '0.86rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                      Parent Department *
+                    </label>
+                    <select
+                      value={categoryForm.category}
+                      onChange={(e) => setCategoryForm({ ...categoryForm, category: e.target.value })}
+                      style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '0.95rem' }}
+                    >
+                      <option value="furniture">🛋️ Furniture</option>
+                      <option value="electronics">📺 Electronics</option>
+                      <option value="appliances">🍳 Home Appliances</option>
+                    </select>
+                  </div>
+
+                  {/* Subcategory Slug / ID */}
+                  <div className="form-field-group">
+                    <label style={{ display: 'block', fontSize: '0.86rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                      Subcategory Slug (ID) *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. dining, sofas, tvs"
+                      value={categoryForm.id}
+                      disabled={!!editingCategory}
+                      onChange={(e) => setCategoryForm({ ...categoryForm, id: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+                      style={{ 
+                        width: '100%', 
+                        padding: '10px 14px', 
+                        borderRadius: '8px', 
+                        border: '1.5px solid #cbd5e1', 
+                        fontSize: '0.95rem',
+                        background: editingCategory ? '#f1f5f9' : '#ffffff',
+                        cursor: editingCategory ? 'not-allowed' : 'text'
+                      }}
+                    />
+                    <small style={{ color: '#64748b', fontSize: '0.72rem', marginTop: '4px', display: 'block' }}>
+                      Used in database mapping and URL filters
+                    </small>
+                  </div>
+
+                  {/* Micro Badge */}
+                  <div className="form-field-group" style={{ gridColumn: 'span 2' }}>
+                    <label style={{ display: 'block', fontSize: '0.86rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                      Micro Badge Tag (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Popular, Hot, Trending, Solid Wood, 4K OLED, Up to 40% Off"
+                      value={categoryForm.badge}
+                      onChange={(e) => setCategoryForm({ ...categoryForm, badge: e.target.value })}
+                      style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '0.95rem' }}
+                    />
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+                      {['Popular', 'Hot', 'Trending', 'Solid Wood', '4K OLED', 'Inverter', 'Eco Wash', 'Up to 40% Off', 'New Arrival'].map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => setCategoryForm({ ...categoryForm, badge: preset })}
+                          style={{
+                            background: categoryForm.badge === preset ? '#78350f' : '#f1f5f9',
+                            color: categoryForm.badge === preset ? '#ffffff' : '#475569',
+                            border: 'none',
+                            padding: '3px 9px',
+                            borderRadius: '12px',
+                            fontSize: '0.74rem',
+                            fontWeight: 600,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {preset}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Category Image URL */}
+                  <div className="form-field-group" style={{ gridColumn: 'span 2' }}>
+                    <label style={{ display: 'block', fontSize: '0.86rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                      Image URL *
+                    </label>
+                    <input
+                      type="url"
+                      required
+                      placeholder="https://images.unsplash.com/..."
+                      value={categoryForm.image}
+                      onChange={(e) => setCategoryForm({ ...categoryForm, image: e.target.value })}
+                      style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '0.95rem' }}
+                    />
+
+                    {/* Preset Image Options */}
+                    <div style={{ marginTop: '10px' }}>
+                      <small style={{ fontWeight: 700, color: '#64748b', fontSize: '0.74rem', display: 'block', marginBottom: '6px' }}>
+                        Quick Showroom Presets (click to apply):
+                      </small>
+                      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px' }}>
+                        {[
+                          { label: 'Sofas', url: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80' },
+                          { label: 'Beds', url: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=600&q=80' },
+                          { label: 'Dining Sets', url: 'https://images.unsplash.com/photo-1617806118233-18e1de247200?auto=format&fit=crop&w=600&q=80' },
+                          { label: 'Wardrobes', url: 'https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&w=600&q=80' },
+                          { label: 'TV & Audio', url: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=600&q=80' },
+                          { label: 'Refrigerators', url: 'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?auto=format&fit=crop&w=600&q=80' },
+                          { label: 'Washing Machines', url: 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=600&q=80' },
+                          { label: 'Kitchen Appliances', url: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=600&q=80' },
+                          { label: 'Air Conditioners', url: 'https://images.unsplash.com/photo-1621905251918-48416bd8575a?auto=format&fit=crop&w=600&q=80' },
+                          { label: 'Study Chairs', url: 'https://images.unsplash.com/photo-1580481077195-c329a356497f?auto=format&fit=crop&w=600&q=80' }
+                        ].map((item) => (
+                          <button
+                            key={item.label}
+                            type="button"
+                            onClick={() => setCategoryForm(prev => ({ ...prev, image: item.url }))}
+                            style={{
+                              flexShrink: 0,
+                              padding: '4px 10px',
+                              borderRadius: '6px',
+                              background: '#f8fafc',
+                              border: categoryForm.image === item.url ? '1.5px solid #854d0e' : '1px solid #cbd5e1',
+                              fontSize: '0.74rem',
+                              fontWeight: 600,
+                              color: categoryForm.image === item.url ? '#854d0e' : '#334155',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Circular preview box */}
+                    {categoryForm.image && (
+                      <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '14px', background: '#fafaf9', padding: '10px 14px', borderRadius: '10px', border: '1px solid #e7e5e4' }}>
+                        <div style={{
+                          position: 'relative',
+                          width: '64px',
+                          height: '64px',
+                          borderRadius: '50%',
+                          padding: '2px',
+                          background: '#ffffff',
+                          border: '2px solid #ecd8cb',
+                          overflow: 'hidden'
+                        }}>
+                          <img 
+                            src={categoryForm.image} 
+                            alt="Category preview" 
+                            style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                            onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80'; }}
+                          />
+                          {categoryForm.badge && (
+                            <span style={{
+                              position: 'absolute',
+                              bottom: '2px',
+                              left: '50%',
+                              transform: 'translateX(-50%)',
+                              background: '#78350f',
+                              color: '#ffffff',
+                              fontSize: '0.52rem',
+                              fontWeight: 800,
+                              padding: '1px 5px',
+                              borderRadius: '8px'
+                            }}>
+                              {categoryForm.badge}
+                            </span>
+                          )}
+                        </div>
+                        <div>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#78716c', textTransform: 'uppercase' }}>Storefront Circle Preview</span>
+                          <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#1c1917' }}>{categoryForm.name || 'Category Name'}</div>
+                          <span style={{ fontSize: '0.74rem', color: '#854d0e' }}>Models will be counted dynamically from database</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Display Sort Order */}
+                  <div className="form-field-group">
+                    <label style={{ display: 'block', fontSize: '0.86rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                      Display Order Priority
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={categoryForm.order}
+                      onChange={(e) => setCategoryForm({ ...categoryForm, order: e.target.value })}
+                      style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '0.95rem' }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Sticky Dialog Footer Actions (Always 100% visible on screen) */}
+              <div 
+                className="dialog-footer-actions category-modal-footer" 
+                style={{ 
+                  flexShrink: 0,
+                  position: 'sticky',
+                  bottom: 0,
+                  background: '#ffffff',
+                  borderTop: '2px solid #f1f5f9',
+                  boxShadow: '0 -6px 20px rgba(0, 0, 0, 0.08)',
+                  padding: '16px 24px',
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  zIndex: 20
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ 
+                    fontSize: '0.78rem', 
+                    fontWeight: 700, 
+                    color: '#15803d', 
+                    background: '#dcfce7', 
+                    padding: '4px 10px', 
+                    borderRadius: '12px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    <CheckCircle size={13} /> Firestore Live Sync
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <button
+                    type="button"
+                    className="btn-cancel"
+                    onClick={() => setIsCategoryModalOpen(false)}
+                    disabled={savingCategory}
+                    style={{ 
+                      padding: '11px 22px', 
+                      borderRadius: '8px', 
+                      fontWeight: 700, 
+                      fontSize: '0.9rem',
+                      border: '1.5px solid #cbd5e1', 
+                      background: '#ffffff', 
+                      color: '#475569',
+                      cursor: 'pointer' 
+                    }}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={savingCategory}
+                    style={{ 
+                      background: 'linear-gradient(135deg, #854d0e 0%, #a16207 100%)', 
+                      color: '#ffffff', 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '8px',
+                      padding: '11px 26px',
+                      borderRadius: '8px',
+                      fontWeight: 800,
+                      fontSize: '0.95rem',
+                      border: 'none',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 14px rgba(133, 77, 14, 0.35)',
+                      letterSpacing: '0.3px'
+                    }}
+                  >
+                    {savingCategory ? (
+                      <>
+                        <Loader2 size={18} className="animate-spin" /> Saving to Firestore...
+                      </>
+                    ) : (
+                      <>
+                        <Check size={18} /> {editingCategory ? 'Update Category' : 'Save & Publish Category'}
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Responsive Bottom Navigation Bar Matching Reference UI */}
       <AdminMobileNav
         activeTab={activeTab}
@@ -5534,10 +6411,10 @@ export default function AdminPanel({
           display: flex;
           flex-direction: column;
           min-width: 0;
-          overflow-x: hidden;
+          position: relative;
         }
 
-        /* Top Header */
+        /* Top Header (Navbar - Firmly Sticky at the top) */
         .admin-top-header {
           height: 68px;
           background: #ffffff;
@@ -5548,7 +6425,10 @@ export default function AdminPanel({
           justify-content: space-between;
           position: sticky;
           top: 0;
-          z-index: 90;
+          z-index: 900;
+          box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
         }
         .header-left-group {
           display: flex;
@@ -5997,10 +6877,13 @@ export default function AdminPanel({
         }
 
         /* Bottom Row Tables Grid */
+        /* Bottom Row Tables Grid */
         .recent-data-tables-grid {
           display: grid;
           grid-template-columns: 1.5fr 1.3fr;
           gap: 20px;
+          min-width: 0;
+          width: 100%;
         }
         .data-table-card {
           background: #ffffff;
@@ -6008,6 +6891,9 @@ export default function AdminPanel({
           border-radius: 12px;
           padding: 20px;
           box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+          min-width: 0;
+          max-width: 100%;
+          overflow: hidden;
         }
         .data-table-header {
           display: flex;
@@ -6039,6 +6925,48 @@ export default function AdminPanel({
         /* Admin Table Styling */
         .admin-table-wrap {
           overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          width: 100%;
+          max-width: 100%;
+        }
+
+        /* Visible horizontal scrollbars specifically for Recent Orders & Latest Enquiries */
+        .scrollable-recent-table {
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow-x: scroll !important;
+          overflow-y: hidden !important;
+          -webkit-overflow-scrolling: touch !important;
+          touch-action: pan-x pan-y !important;
+          padding-bottom: 10px !important;
+          margin-bottom: 4px;
+          scrollbar-width: auto !important;
+          scrollbar-color: #94a3b8 #f1f5f9 !important;
+        }
+        .scrollable-recent-table::-webkit-scrollbar {
+          height: 10px !important;
+          display: block !important;
+        }
+        .scrollable-recent-table::-webkit-scrollbar-track {
+          background: #f1f5f9 !important;
+          border-radius: 8px;
+        }
+        .scrollable-recent-table::-webkit-scrollbar-thumb {
+          background: #854d0e !important;
+          border-radius: 8px;
+          border: 2px solid #f1f5f9;
+        }
+        .scrollable-recent-table::-webkit-scrollbar-thumb:hover {
+          background: #713f12 !important;
+        }
+
+        .recent-orders-table {
+          min-width: 700px !important;
+          width: 100%;
+        }
+        .recent-enquiries-table {
+          min-width: 600px !important;
+          width: 100%;
         }
         .admin-table {
           width: 100%;
@@ -7844,8 +8772,64 @@ export default function AdminPanel({
             grid-template-columns: 1fr;
             gap: 10px;
           }
+          /* Settings Page Mobile Responsive Layout */
           .settings-section-panel {
-            padding: 14px 10px;
+            padding: 16px 12px !important;
+            border-radius: 12px;
+            margin-bottom: 16px;
+          }
+          .settings-section-head {
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+          }
+          .settings-section-head h4 {
+            font-size: 0.96rem;
+            line-height: 1.25;
+          }
+          .settings-section-head small {
+            font-size: 0.74rem;
+            display: block;
+            margin-top: 2px;
+          }
+          .settings-form-grid,
+          .content-form-grid {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+            margin-bottom: 12px;
+          }
+          .form-field-group {
+            width: 100% !important;
+          }
+          .form-field-group input,
+          .form-field-group select {
+            width: 100% !important;
+            box-sizing: border-box !important;
+            font-size: 0.85rem !important;
+            padding: 10px 12px !important;
+          }
+          .subpage-header-row {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 12px !important;
+            margin-bottom: 16px !important;
+          }
+          .subpage-header-row h3 {
+            font-size: 1.15rem !important;
+          }
+          .subpage-header-row p {
+            font-size: 0.78rem !important;
+          }
+          .save-content-btn {
+            width: 100% !important;
+            justify-content: center !important;
+            padding: 12px 16px !important;
+            font-size: 0.88rem !important;
+          }
+          .password-change-box {
+            padding: 12px !important;
           }
           .footer-brand-editor-box {
             padding: 14px 10px;

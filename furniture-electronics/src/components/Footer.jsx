@@ -457,7 +457,7 @@ export default function Footer({ onNavigate, onOpenAdmin, onOpenTrackOrder, stor
               © {new Date().getFullYear()} <strong>Sardar Mart</strong> Furniture and Home Appliances. All rights reserved.
             </p>
             <span className="powered-by-divider">•</span>
-            <span className="gstin-badge">GSTIN: 33AAAAH1234A1Z5</span>
+            <span className="gstin-badge">GSTIN: 33DVKPR2334L1Z9</span>
             <span className="powered-by-divider">•</span>
             <p className="powered-by-text">
               Engineered by{' '}

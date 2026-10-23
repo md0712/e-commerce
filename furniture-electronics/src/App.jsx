@@ -39,8 +39,9 @@ import {
   subscribeToOrdersAdmin 
 } from './services/orderService';
 import { subscribeToPromoCodes } from './services/promoService';
+import { subscribeToCategories } from './services/categoryService';
 
-import { products as initialProducts } from './data/products';
+import { products as initialProducts, categories as initialCategories } from './data/products';
 import { MessageCircle, ArrowUp } from 'lucide-react';
 
 
@@ -153,6 +154,28 @@ function AppContent() {
   useEffect(() => {
     const unsub = subscribeToPromoCodes((livePromos) => {
       setPromoCodes(livePromos || []);
+    });
+    return () => unsub();
+  }, []);
+
+  // Real-time listener for categories from Cloud Firestore database
+  const [categories, setCategories] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sef_categories');
+      return saved ? JSON.parse(saved) : initialCategories;
+    } catch {
+      return initialCategories;
+    }
+  });
+
+  useEffect(() => {
+    const unsub = subscribeToCategories((liveCats) => {
+      if (liveCats && liveCats.length > 0) {
+        setCategories(liveCats);
+        try {
+          localStorage.setItem('sef_categories', JSON.stringify(liveCats));
+        } catch (e) {}
+      }
     });
     return () => unsub();
   }, []);
@@ -429,6 +452,7 @@ function AppContent() {
       <>
         <AdminPanel
           products={catalogProducts}
+          categories={categories}
           orders={orders}
           promoCodes={promoCodes}
           onAddProduct={handleAddProductAdmin}
@@ -516,6 +540,7 @@ function AppContent() {
             cart={cart}
             onUpdateQuantity={handleUpdateQuantity}
             products={catalogProducts}
+            categories={categories}
           />
         )}
 

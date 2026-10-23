@@ -54,6 +54,7 @@ export default function Billing({
   // Adjustments & Pricing inputs
   const [discountInput, setDiscountInput] = useState(0);
   const [deliveryFeeInput, setDeliveryFeeInput] = useState(0);
+  const [gstRate, setGstRate] = useState(18); // Selectable GST: 0%, 9%, 12%, 18%
 
   // Payment & Order Status states matching the exact options in the reference image
   const [paymentMethod, setPaymentMethod] = useState('upi');
@@ -86,14 +87,24 @@ export default function Billing({
     }).format(val || 0);
   };
 
-  // Pricing Calculations
+  // Pricing Calculations (Dynamic GST: Base Subtotal + selectable GST % added separately)
   const subtotal = billItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const totalItemCount = billItems.reduce((acc, item) => acc + item.quantity, 0);
-  const calculatedGrandTotal = Math.max(0, subtotal - Number(discountInput) + Number(deliveryFeeInput));
-  const taxableAmount = Math.round(calculatedGrandTotal / 1.18);
-  const gstAmount = calculatedGrandTotal - taxableAmount;
-  const cgst = Math.round(gstAmount / 2);
-  const sgst = gstAmount - cgst;
+  const discountAmount = Math.min(subtotal, Math.max(0, Number(discountInput) || 0));
+  const deliveryAmount = Math.max(0, Number(deliveryFeeInput) || 0);
+
+  // Taxable Base amount after discount
+  const taxableAmount = Math.max(0, subtotal - discountAmount);
+
+  // Dynamic GST split: half CGST, half SGST
+  const numGstRate = Number(gstRate) || 0;
+  const halfGstRate = numGstRate / 2;
+  const cgst = numGstRate > 0 ? Math.round(taxableAmount * (halfGstRate / 100)) : 0;
+  const sgst = numGstRate > 0 ? Math.round(taxableAmount * (halfGstRate / 100)) : 0;
+  const gstAmount = cgst + sgst; // Total dynamic GST added
+
+  // Final Total Amount
+  const calculatedGrandTotal = taxableAmount + gstAmount + deliveryAmount;
 
   // Handle Input Changes
   const handleInputChange = (e) => {
@@ -618,6 +629,49 @@ export default function Billing({
                 />
               </div>
 
+              {/* Taxable Base Amount */}
+              <div className="pos-price-row pos-taxable-row">
+                <span className="price-label">Taxable Amount:</span>
+                <span className="price-val">{formatPrice(taxableAmount)}</span>
+              </div>
+
+              {/* GST Rate Selector Control Row */}
+              <div className="pos-price-row pos-gst-selector-row">
+                <div className="gst-label-with-select">
+                  <span className="price-label">GST Tax Rate:</span>
+                  <select
+                    value={gstRate}
+                    onChange={(e) => setGstRate(Number(e.target.value))}
+                    className="pos-gst-dropdown"
+                    aria-label="Select GST rate percentage"
+                  >
+                    <option value={18}>18% GST (Standard)</option>
+                    <option value={12}>12% GST</option>
+                    <option value={9}>9% GST</option>
+                    <option value={0}>0% GST (Exempt)</option>
+                  </select>
+                </div>
+                <span className="gst-rate-active-pill">{gstRate}%</span>
+              </div>
+
+              {/* Separate CGST */}
+              <div className="pos-price-row pos-gst-row">
+                <span className="price-label">CGST ({halfGstRate}%):</span>
+                <span className="price-val text-gst">+{formatPrice(cgst)}</span>
+              </div>
+
+              {/* Separate SGST */}
+              <div className="pos-price-row pos-gst-row">
+                <span className="price-label">SGST ({halfGstRate}%):</span>
+                <span className="price-val text-gst">+{formatPrice(sgst)}</span>
+              </div>
+
+              {/* Total GST Tag */}
+              <div className="pos-price-row pos-total-gst-row">
+                <span className="price-label">Total GST ({gstRate}% Added):</span>
+                <span className="price-val text-gst-total">+{formatPrice(gstAmount)}</span>
+              </div>
+
               <div className="pos-price-row with-input-box">
                 <span className="price-label">Delivery &amp; White-Glove Assembly:</span>
                 <input 
@@ -634,7 +688,11 @@ export default function Billing({
               <div className="pos-grand-total-lavender-banner">
                 <div className="grand-title-column">
                   <h4 className="grand-title-text">Grand Total Payable</h4>
-                  <span className="grand-gst-subtitle">Inclusive of all showroom taxes (GST)</span>
+                  <span className="grand-gst-subtitle">
+                    {gstRate > 0 
+                      ? `Total amount including ${gstRate}% GST (CGST ${halfGstRate}% + SGST ${halfGstRate}%)`
+                      : 'Total amount (0% GST Exempt)'}
+                  </span>
                 </div>
                 <div className="grand-amount-number">
                   {formatPrice(calculatedGrandTotal)}

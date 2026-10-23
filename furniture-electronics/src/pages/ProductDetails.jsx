@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import { products } from '../data/products';
+import { subscribeToStoreSettings, DEFAULT_STORE_CONFIG } from '../services/settingsService';
 
 export default function ProductDetails({ 
   product, 
@@ -42,6 +43,18 @@ export default function ProductDetails({
   const [localAddedQty, setLocalAddedQty] = useState(0);
   const [pincode, setPincode] = useState('');
   const [deliveryStatus, setDeliveryStatus] = useState(null);
+  const [showDiscount, setShowDiscount] = useState(() => {
+    return Boolean(DEFAULT_STORE_CONFIG.showDiscountPercentage);
+  });
+
+  React.useEffect(() => {
+    const unsub = subscribeToStoreSettings((settings) => {
+      if (settings && typeof settings.showDiscountPercentage !== 'undefined') {
+        setShowDiscount(Boolean(settings.showDiscountPercentage));
+      }
+    });
+    return () => unsub();
+  }, []);
 
   // Sync with cart item quantity
   const currentQty = cartItem ? cartItem.quantity : localAddedQty;
@@ -156,7 +169,7 @@ export default function ProductDetails({
                 }}
               />
               {badge && <span className="detail-badge">{badge}</span>}
-              {discount > 0 && <span className="detail-discount">{discount}% OFF</span>}
+              {discount > 0 && showDiscount && <span className="detail-discount">{discount}% OFF</span>}
               <button 
                 className={`detail-wish-btn ${isWishlisted ? 'active' : ''}`}
                 onClick={() => onToggleWishlist(product)}
@@ -238,7 +251,7 @@ export default function ProductDetails({
                 {originalPrice && originalPrice > price && (
                   <span className="big-mrp">{formatPrice(originalPrice)}</span>
                 )}
-                {discount > 0 && (
+                {discount > 0 && showDiscount && (
                   <span className="save-tag">You Save {discount}%</span>
                 )}
               </div>

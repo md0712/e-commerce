@@ -2,10 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, Heart, ShoppingBag, Phone, MapPin, 
   Menu, X, ChevronDown, Sparkles, MessageCircle, 
-  ShieldCheck, Truck, User, ArrowRight, Package,
+  ShieldCheck, Truck, ArrowRight, Package,
   Flame, Check, Headphones, Compass, Tag
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 
 export default function Navbar({ 
   currentPage, 
@@ -24,8 +23,6 @@ export default function Navbar({
   onOpenTrackOrder,
   onNavigateSubcategory
 }) {
-  const { currentUser, userProfile, logout, isAdmin } = useAuth();
-  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchVisible, setMobileSearchVisible] = useState(false);
   const [announcementIndex, setAnnouncementIndex] = useState(0);
@@ -35,19 +32,6 @@ export default function Navbar({
     furniture: false,
     electronics: false
   });
-
-  const accountRef = useRef(null);
-
-  // Close account dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (accountRef.current && !accountRef.current.contains(e.target)) {
-        setIsAccountDropdownOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   // Prevent background scroll when mobile drawer is open
   useEffect(() => {
@@ -261,62 +245,6 @@ export default function Navbar({
             >
               <Search size={21} />
             </button>
-
-            {/* Account / User Menu */}
-            <div className="sardar-account-dropdown-wrapper" ref={accountRef}>
-              <button 
-                className="sardar-action-item"
-                onClick={currentUser ? () => setIsAccountDropdownOpen(!isAccountDropdownOpen) : onOpenAuth}
-                title={currentUser ? `Signed in as ${userProfile?.name || currentUser.displayName || currentUser.email}` : "Sign In or Register"}
-              >
-                <div className="sardar-action-icon-box">
-                  <User size={20} />
-                  {currentUser && (
-                    <span className="sardar-auth-indicator">
-                      <Check size={9} strokeWidth={3} />
-                    </span>
-                  )}
-                </div>
-                <div className="sardar-action-textbox">
-                  <span className="sardar-action-micro">
-                    {currentUser ? 'Welcome' : 'Hello,'}
-                  </span>
-                  <span className="sardar-action-bold">
-                    {currentUser ? (userProfile?.name?.split(' ')[0] || currentUser.displayName?.split(' ')[0] || 'Account') : 'Sign In'}
-                  </span>
-                </div>
-              </button>
-
-              {/* Popover Menu */}
-              {currentUser && isAccountDropdownOpen && (
-                <div className="sardar-account-popover animate-fade-in">
-                  <div className="sardar-popover-header">
-                    <span className="sardar-popover-greeting">Welcome Back</span>
-                    <strong className="sardar-popover-user">{userProfile?.name || currentUser.displayName || 'Customer'}</strong>
-                    <span className="sardar-popover-email">{currentUser.email}</span>
-                    {isAdmin && (
-                      <span className="sardar-popover-admin-badge">
-                        <ShieldCheck size={12} /> Store Administrator
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="sardar-popover-links">
-                    <button onClick={() => { setIsAccountDropdownOpen(false); onOpenTrackOrder(); }} className="sardar-popover-item">
-                      <Package size={15} /> Track My Orders
-                    </button>
-                    {isAdmin && (
-                      <button onClick={() => { setIsAccountDropdownOpen(false); onOpenAdmin(); }} className="sardar-popover-item admin">
-                        <ShieldCheck size={15} /> Admin Dashboard
-                      </button>
-                    )}
-                    <button onClick={() => { setIsAccountDropdownOpen(false); logout(); }} className="sardar-popover-item signout">
-                      <X size={15} /> Sign Out
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
 
             {/* Wishlist Button */}
             <button 

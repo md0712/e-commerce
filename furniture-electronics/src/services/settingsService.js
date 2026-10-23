@@ -29,7 +29,7 @@ export const DEFAULT_STORE_CONFIG = {
 
   // Legal & Tax Settings
   storeLegalName: 'Sardar Mart Furniture and Home Appliances Pvt Ltd',
-  gstNumber: '33AAAAH1234A1Z5',
+  gstNumber: '33DVKPR2334L1Z9',
   currency: 'INR (₹)',
   taxGst: '18%',
   invoicePrefix: 'SEF-2026-',
@@ -37,6 +37,7 @@ export const DEFAULT_STORE_CONFIG = {
   standardDeliveryFee: '0',
   courierPartner: 'Sardar White-Glove Fleet',
   defaultOrderStatus: 'Order Placed',
+  showDiscountPercentage: false, // Control display of discount % in storefront (default disabled as requested)
   whatsappAlerts: true,
   smsAlerts: true,
   emailReports: true,

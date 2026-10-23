@@ -73,30 +73,53 @@ export default function MobileBottomNav({
           bottom: 0;
           left: 0;
           right: 0;
+          width: 100%;
+          max-width: 100vw;
+          box-sizing: border-box;
           background: #ffffff;
           border-top: 1px solid var(--color-border);
           box-shadow: 0 -4px 18px rgba(42, 24, 16, 0.08);
           z-index: 950;
-          padding: 6px 12px calc(6px + env(safe-area-inset-bottom, 0px));
+          padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
           justify-content: space-around;
           align-items: center;
+          overflow: hidden;
+          touch-action: none;
+          overscroll-behavior: none;
+          user-select: none;
+          -webkit-user-select: none;
         }
 
         .mob-nav-btn {
           display: flex;
           flex-direction: column;
           align-items: center;
+          justify-content: center;
           gap: 3px;
           background: none;
           border: none;
           color: #785949;
           font-size: 0.68rem;
           font-weight: 600;
-          padding: 4px 10px;
+          padding: 4px 2px;
           border-radius: var(--radius-md);
           position: relative;
           transition: all var(--transition-fast);
-          min-width: 58px;
+          flex: 1;
+          min-width: 0;
+          max-width: 20%;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .mob-nav-btn span {
+          display: block;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 100%;
+          text-align: center;
+          line-height: 1.1;
         }
 
         .mob-nav-btn:hover,
@@ -113,6 +136,7 @@ export default function MobileBottomNav({
           display: flex;
           align-items: center;
           justify-content: center;
+          flex-shrink: 0;
         }
 
         .mob-badge {
@@ -153,6 +177,10 @@ export default function MobileBottomNav({
         @media (max-width: 768px) {
           .mobile-bottom-nav {
             display: flex;
+            width: 100% !important;
+            max-width: 100vw !important;
+            left: 0 !important;
+            right: 0 !important;
           }
         }
       `}</style>

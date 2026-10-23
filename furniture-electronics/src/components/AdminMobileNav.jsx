@@ -148,6 +148,9 @@ export default function AdminMobileNav({
           bottom: 0;
           left: 0;
           right: 0;
+          width: 100%;
+          max-width: 100vw;
+          box-sizing: border-box;
           background: #ffffff;
           border-top: 1px solid #e2e8f0;
           border-top-left-radius: 18px;
@@ -158,6 +161,8 @@ export default function AdminMobileNav({
           justify-content: space-around;
           align-items: center;
           user-select: none;
+          -webkit-user-select: none;
+          touch-action: none;
           -webkit-tap-highlight-color: transparent;
         }
 

@@ -77,7 +77,7 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
                 Sardar Mart Private Limited (Furniture &amp; Home Appliances)<br />
                 No. 192, E.H Road, Cholan nagar, Vyasarpadi, Erukancheri<br />
                 Chennai, Tamil Nadu - 600039<br />
-                <strong>GSTIN:</strong> 33AAACH1234F1Z5 | <strong>Phone:</strong> +91 6383056338 / +91 9344623632<br />
+                <strong>GSTIN:</strong> 33DVKPR2334L1Z9 | <strong>Phone:</strong> +91 6383056338 / +91 9344623632<br />
                 <strong>Email:</strong> sardarmart64@gmail.com | <strong>Instagram:</strong> @sardar_mart_ch_39
               </p>
             </div>
