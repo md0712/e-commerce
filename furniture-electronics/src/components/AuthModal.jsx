@@ -141,7 +141,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onSu
           </h3>
           <p>
             {mode === 'login' && 'Sign in to access your orders, wishlist, and exclusive member discounts'}
-            {mode === 'register' && 'Join Sardar Electricals and Furnitures for faster checkout, live tracking, and member pricing'}
+            {mode === 'register' && 'Join Sardar Mart Furniture and Home Appliances for faster checkout, live tracking, and member pricing'}
             {mode === 'forgot' && 'Enter your registered email address to receive password reset instructions'}
           </p>
         </div>
@@ -283,7 +283,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onSu
             ) : (
               <>
                 <span>
-                  {mode === 'login' && 'Sign In to Sardar Electricals and Furnitures'}
+                  {mode === 'login' && 'Sign In to Sardar Mart Furniture and Home Appliances'}
                   {mode === 'register' && 'Create Account'}
                   {mode === 'forgot' && 'Send Reset Link'}
                 </span>

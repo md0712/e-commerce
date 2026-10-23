@@ -171,7 +171,7 @@ export default function Navbar({
           <div className="sardar-logo-area" onClick={() => handleNavClick('home')}>
             <img 
               src="/logo.png" 
-              alt="Sardar Electricals and Furnitures Logo" 
+              alt="Sardar Mart Furniture and Home Appliances Logo" 
               className="sardar-logo-img" 
             />
             <div className="sardar-brand-titles">
@@ -179,7 +179,7 @@ export default function Navbar({
                 Sardar <span className="sardar-gold">Mart</span>
               </div>
               <div className="sardar-brand-secondary">
-                ELECTRICALS AND FURNITURES <span className="sardar-sub-dot">•</span> CHENNAI
+                FURNITURE AND HOME APPLIANCES <span className="sardar-sub-dot">•</span> CHENNAI
               </div>
             </div>
           </div>
@@ -237,7 +237,7 @@ export default function Navbar({
             
             {/* Showroom Direct WhatsApp Callout */}
             <a 
-              href="https://wa.me/916383056338?text=Hello%20Sardar%20Electricals%20and%20Furnitures!%20I%20would%20like%20to%20enquire%20about%20your%20products."
+              href="https://wa.me/916383056338?text=Hello%20Sardar%20Mart%20Furniture%20and%20Home%20Appliances!%20I%20would%20like%20to%20enquire%20about%20your%20products."
               target="_blank" 
               rel="noreferrer"
               className="sardar-helpline-card"
@@ -591,7 +591,7 @@ export default function Navbar({
                 <img src="/logo.png" alt="Sardar Logo" className="sardar-drawer-logo" />
                 <div>
                   <h3 className="sardar-drawer-brand-name">Sardar <span>Mart</span></h3>
-                  <small>ELECTRICALS AND FURNITURES • CHENNAI</small>
+                  <small>FURNITURE AND HOME APPLIANCES • CHENNAI</small>
                 </div>
               </div>
               <button 

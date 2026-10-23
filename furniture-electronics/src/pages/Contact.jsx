@@ -36,7 +36,7 @@ export default function Contact() {
 
   // Store information
   const storeData = {
-    name: 'Sardar Electricals and Furnitures',
+    name: 'Sardar Mart Furniture and Home Appliances',
     tagline: 'Your Home, Our Priority',
     primaryPhone: '6383056338',
     secondaryPhone: '9344623632',
@@ -100,7 +100,7 @@ export default function Contact() {
 
   const handleForwardToWhatsApp = () => {
     const text = encodeURIComponent(
-      `Hello Sardar Electricals and Furnitures! My name is ${formData.name}. Phone: ${formData.phone}. Email: ${formData.email || 'N/A'}. Rating: ${formData.rating} Stars. Feedback/Enquiry for ${formData.category}: ${formData.message || 'I would like to enquire about products and showroom consultation.'}`
+      `Hello Sardar Mart Furniture and Home Appliances! My name is ${formData.name}. Phone: ${formData.phone}. Email: ${formData.email || 'N/A'}. Rating: ${formData.rating} Stars. Feedback/Enquiry for ${formData.category}: ${formData.message || 'I would like to enquire about products and showroom consultation.'}`
     );
     window.open(`https://wa.me/91${storeData.whatsappNumber}?text=${text}`, '_blank');
   };
@@ -115,7 +115,7 @@ export default function Contact() {
               <Sparkles size={14} /> Official Showroom &amp; Customer Care
             </span>
             <h1 className="contact-hero-title">
-              Connect with <span>Sardar Electricals &amp; Furnitures</span>
+              Connect with <span>Sardar Mart Furniture and Home Appliances</span>
             </h1>
             <p className="contact-hero-sub">
               Visit our grand showroom in Chennai to experience solid-wood furniture, luxury sofas, smart TVs, and energy-efficient appliances. We are open all 7 days with dedicated consultants ready to assist you.
@@ -184,7 +184,7 @@ export default function Contact() {
                 <p className="channel-hint">Chat with store manager, get photos &amp; price quotes</p>
               </div>
               <a 
-                href={`https://wa.me/91${storeData.whatsappNumber}?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20would%20like%20to%20enquire%20about%20your%20products`}
+                href={`https://wa.me/91${storeData.whatsappNumber}?text=Hi%20Sardar%20Mart%20Furniture%20and%20Home%20Appliances%2C%20I%20would%20like%20to%20enquire%20about%20your%20products`}
                 target="_blank" 
                 rel="noreferrer"
                 className="channel-action-btn wa-btn"
@@ -258,7 +258,7 @@ export default function Contact() {
                   <span className="spotlight-city">Chennai</span>
                 </div>
 
-                <h2 className="spotlight-name">Sardar Electricals and Furnitures</h2>
+                <h2 className="spotlight-name">Sardar Mart Furniture and Home Appliances</h2>
                 
                 <div className="spotlight-address-box">
                   <div className="pin-circle">
@@ -557,7 +557,7 @@ export default function Contact() {
 
             <div className="map-iframe-wrapper">
               <iframe
-                title="Sardar Electricals and Furnitures Location"
+                title="Sardar Mart Furniture and Home Appliances Location"
                 src={storeData.mapEmbedUrl}
                 width="100%"
                 height="450"

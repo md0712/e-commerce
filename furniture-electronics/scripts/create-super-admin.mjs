@@ -37,7 +37,7 @@ const name = args[2] || 'Super Administrator';
 
 console.log(`
 =============================================================
-  Sardar Electricals & Furnitures - Super Admin Provisioner
+  Sardar Mart Furniture and Home Appliances - Super Admin Provisioner
 =============================================================
 Target Email:    ${email}
 Password:        ${password}

@@ -480,7 +480,7 @@ export default function Home({
                       )}
 
                       <p className="t-comment">
-                        "{rev.message || rev.feedback || 'Great shopping experience with Sardar Electricals & Furnitures.'}"
+                        "{rev.message || rev.feedback || 'Great shopping experience with Sardar Mart Furniture and Home Appliances.'}"
                       </p>
 
                       <div className="t-user-info" style={{ marginTop: 'auto', paddingTop: '14px', borderTop: '1px solid #f1f5f9' }}>
@@ -571,7 +571,7 @@ export default function Home({
                   <MapPin size={18} /> Get Showroom Directions
                 </button>
                 <a 
-                  href="https://wa.me/916383056338?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20would%20like%20to%20book%20a%20showroom%20visit" 
+                  href="https://wa.me/916383056338?text=Hi%20Sardar%20Mart%20Furniture%20and%20Home%20Appliances%2C%20I%20would%20like%20to%20book%20a%20showroom%20visit" 
                   target="_blank" 
                   rel="noreferrer"
                   className="btn-whatsapp"

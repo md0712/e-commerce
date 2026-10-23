@@ -673,7 +673,7 @@ function AppContent() {
         onClose={() => setIsAuthModalOpen(false)}
         initialMode={authModalMode}
         onSuccess={(mode) => {
-          showToast(mode === 'register' ? 'Account created! Welcome to Sardar Electricals and Furnitures.' : 'Signed in successfully!');
+          showToast(mode === 'register' ? 'Account created! Welcome to Sardar Mart Furniture and Home Appliances.' : 'Signed in successfully!');
         }}
       />
 
@@ -690,7 +690,7 @@ function AppContent() {
 
       {/* Floating WhatsApp Quick Action Button */}
       <a
-        href="https://wa.me/916383056338?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20am%20browsing%20your%20website%20and%20would%20like%20to%20enquire%20about%20your%20products"
+        href="https://wa.me/916383056338?text=Hi%20Sardar%20Mart%20Furniture%20and%20Home%20Appliances%2C%20I%20am%20browsing%20your%20website%20and%20would%20like%20to%20enquire%20about%20your%20products"
         target="_blank"
         rel="noreferrer"
         className="floating-wa-btn pulse-glow"

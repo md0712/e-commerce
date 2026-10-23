@@ -63,18 +63,18 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '8px' }}>
                 <img 
                   src="/logo.png" 
-                  alt="Sardar Electricals and Furnitures" 
+                  alt="Sardar Mart Furniture and Home Appliances" 
                   style={{ height: '52px', width: 'auto', objectFit: 'contain', borderRadius: '6px' }} 
                 />
                 <div>
                   <div className="invoice-brand-title" style={{ fontSize: '1.4rem' }}>
                     Sardar <span>Mart</span>
                   </div>
-                  <p className="invoice-brand-sub" style={{ margin: 0 }}>ELECTRICALS AND FURNITURES • CHENNAI</p>
+                  <p className="invoice-brand-sub" style={{ margin: 0 }}>FURNITURE AND HOME APPLIANCES • CHENNAI</p>
                 </div>
               </div>
               <p className="invoice-company-details">
-                Sardar Mart Private Limited (Electricals &amp; Furnitures)<br />
+                Sardar Mart Private Limited (Furniture &amp; Home Appliances)<br />
                 No. 192, E.H Road, Cholan nagar, Vyasarpadi, Erukancheri<br />
                 Chennai, Tamil Nadu - 600039<br />
                 <strong>GSTIN:</strong> 33AAACH1234F1Z5 | <strong>Phone:</strong> +91 6383056338 / +91 9344623632<br />
@@ -225,7 +225,7 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
               <h5>Terms &amp; Conditions:</h5>
               <ol>
                 <li>Goods once sold are covered under official manufacturer structural/component warranties.</li>
-                <li>Free doorstep installation and unpacking provided by Sardar Electricals and Furnitures certified technicians.</li>
+                <li>Free doorstep installation and unpacking provided by Sardar Mart Furniture and Home Appliances certified technicians.</li>
                 <li>7-day return/replacement policy applies for manufacturing transit damages.</li>
                 <li>Jurisdiction of all disputes shall be the courts of Chennai, Tamil Nadu.</li>
               </ol>
@@ -240,7 +240,7 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
           </div>
 
           <div className="invoice-footer-note">
-            *** This is a computer generated legal tax invoice issued by Sardar Mart (Electricals and Furnitures Private Limited) ***
+            *** This is a computer generated legal tax invoice issued by Sardar Mart Furniture and Home Appliances ***
           </div>
         </div>
       </div>

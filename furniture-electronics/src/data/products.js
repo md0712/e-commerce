@@ -710,7 +710,7 @@ export const specialOffers = [
 export const testimonials = [];
 
 export const storeInfo = {
-  name: 'Sardar Electricals and Furnitures',
+  name: 'Sardar Mart Furniture and Home Appliances',
   tagline: 'Your Home, Our Priority',
   phone: '+91 6383056338',
   secondaryPhone: '+91 9344623632',

@@ -107,7 +107,7 @@ export default function CartDrawer({
       .join('%0A');
 
     const message = encodeURIComponent(
-      `Hello Sardar Electricals and Furnitures, I want to confirm my order enquiry:%0A%0A${itemsList}%0A%0ASubtotal: ${formatPrice(subtotal)}%0ADiscount: ${formatPrice(discountAmount)}%0ANet Total: ${formatPrice(finalTotal)}%0A%0APlease provide delivery schedule and invoice confirmation.`
+      `Hello Sardar Mart Furniture and Home Appliances, I want to confirm my order enquiry:%0A%0A${itemsList}%0A%0ASubtotal: ${formatPrice(subtotal)}%0ADiscount: ${formatPrice(discountAmount)}%0ANet Total: ${formatPrice(finalTotal)}%0A%0APlease provide delivery schedule and invoice confirmation.`
     );
 
     window.open(`https://wa.me/916383056338?text=${message}`, '_blank');
@@ -465,7 +465,7 @@ export default function CartDrawer({
             <h2>Order Placed Successfully!</h2>
             <p className="order-num">Order Reference: <strong>#{lastPlacedOrder.id}</strong></p>
             <p className="success-msg">
-              Thank you for choosing Sardar Electricals and Furnitures, <strong>{lastPlacedOrder.customer?.name}</strong>. Your order is confirmed and our showroom fulfillment team in Chennai is preparing your items.
+              Thank you for choosing Sardar Mart Furniture and Home Appliances, <strong>{lastPlacedOrder.customer?.name}</strong>. Your order is confirmed and our showroom fulfillment team in Chennai is preparing your items.
             </p>
 
             <div className="order-status-card-preview">

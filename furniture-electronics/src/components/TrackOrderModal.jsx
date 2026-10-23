@@ -244,7 +244,7 @@ export default function TrackOrderModal({
                 <span>
                   Having trouble finding your bill?{' '}
                   <a 
-                    href="https://wa.me/916383056338?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20need%20help%20tracking%20my%20order%20status." 
+                    href="https://wa.me/916383056338?text=Hi%20Sardar%20Mart%20Furniture%20and%20Home%20Appliances%2C%20I%20need%20help%20tracking%20my%20order%20status." 
                     target="_blank" 
                     rel="noreferrer"
                     className="wa-help-link"
@@ -374,7 +374,7 @@ export default function TrackOrderModal({
                     <FileText size={14} /> View &amp; Print Tax Invoice (Bill)
                   </button>
                   <a 
-                    href={`https://wa.me/916383056338?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20am%20inquiring%20about%20my%20Bill%20%23${searchedOrder.id}`}
+                    href={`https://wa.me/916383056338?text=Hi%20Sardar%20Mart%20Furniture%20and%20Home%20Appliances%2C%20I%20am%20inquiring%20about%20my%20Bill%20%23${searchedOrder.id}`}
                     target="_blank" 
                     rel="noreferrer"
                     className="btn-order-wa"

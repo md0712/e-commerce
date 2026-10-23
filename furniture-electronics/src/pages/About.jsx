@@ -22,7 +22,7 @@ export default function About({ onNavigate }) {
               Crafting Beautiful Homes with Elegance &amp; Innovation
             </h1>
             <p className="about-sub">
-              For over a decade, Sardar Electricals and Furnitures has stood as South India's premier integrated furniture and consumer electronics destination.
+              For over a decade, Sardar Mart Furniture and Home Appliances has stood as South India's premier integrated furniture and consumer electronics destination.
             </p>
           </div>
         </div>
@@ -59,7 +59,7 @@ export default function About({ onNavigate }) {
             <div className="story-img-box">
               <img 
                 src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=800&q=80" 
-                alt="Sardar Electricals and Furnitures Showroom Interior" 
+                alt="Sardar Mart Furniture and Home Appliances Showroom Interior" 
                 className="story-img"
               />
               <div className="story-experience-badge">
@@ -72,7 +72,7 @@ export default function About({ onNavigate }) {
               <span className="section-pill">Our Heritage</span>
               <h2 className="story-heading">From a Modest Studio to South India’s Most Trusted Mega Store</h2>
               <p>
-                Sardar Electricals and Furnitures began with a simple belief: a home should be an inspiring sanctuary of comfort, style, and effortless modern convenience. Homeowners shouldn't have to visit five different stores across town just to coordinate their living room sofa, dining suite, and 4K entertainment system.
+                Sardar Mart Furniture and Home Appliances began with a simple belief: a home should be an inspiring sanctuary of comfort, style, and effortless modern convenience. Homeowners shouldn't have to visit five different stores across town just to coordinate their living room sofa, dining suite, and 4K entertainment system.
               </p>
               <p>
                 By bringing together master carpentry with authorized tier-1 electronics dealerships, we give homeowners a seamless one-stop experience with unified delivery, single-invoice financing, and unified warranty assurance.
@@ -105,7 +105,7 @@ export default function About({ onNavigate }) {
       <section className="pillars-section">
         <div className="container">
           <div className="section-header-center">
-            <h2 className="section-main-heading">Why Choose Sardar Electricals and Furnitures?</h2>
+            <h2 className="section-main-heading">Why Choose Sardar Mart Furniture and Home Appliances?</h2>
             <p className="section-sub-heading">Built upon four core promises to make home improvement enjoyable and stress-free</p>
           </div>
 
@@ -193,7 +193,7 @@ export default function About({ onNavigate }) {
                 View Full Map &amp; Directions
               </button>
               <a 
-                href="https://wa.me/916383056338?text=Hi%20Sardar%20Electricals%20and%20Furnitures%2C%20I%20would%20like%20to%20visit%20your%20Chennai%20showroom"
+                href="https://wa.me/916383056338?text=Hi%20Sardar%20Mart%20Furniture%20and%20Home%20Appliances%2C%20I%20would%20like%20to%20visit%20your%20Chennai%20showroom"
                 target="_blank"
                 rel="noreferrer"
                 className="btn-whatsapp"

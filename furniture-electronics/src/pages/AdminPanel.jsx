@@ -774,7 +774,7 @@ export default function AdminPanel({
               </div>
               <div className="brand-text">
                 <h1>Sardar Mart</h1>
-                <span>ELECTRICALS AND FURNITURES</span>
+                <span>FURNITURE AND HOME APPLIANCES</span>
               </div>
             </div>
 
@@ -1369,14 +1369,14 @@ export default function AdminPanel({
           <div className="sidebar-brand-icon">
             <img 
               src="/logo.png" 
-              alt="Sardar Electricals and Furnitures" 
+              alt="Sardar Mart Furniture and Home Appliances" 
               style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '6px' }} 
             />
           </div>
           {!sidebarCollapsed && (
             <div className="sidebar-brand-title">
               <h3>Sardar Mart</h3>
-              <small>ELECTRICALS AND FURNITURES</small>
+              <small>FURNITURE AND HOME APPLIANCES</small>
             </div>
           )}
           <button 
@@ -1886,7 +1886,7 @@ export default function AdminPanel({
                             <td>
                               {enq.contact ? (
                                 <a
-                                  href={`https://wa.me/${String(enq.contact).replace(/\D/g, '')}?text=Hi%20${encodeURIComponent(enq.name || '')}%2C%20thank%20you%20for%20your%20enquiry%20with%20Sardar%20Electricals%20%26%20Furnitures.`}
+                                  href={`https://wa.me/${String(enq.contact).replace(/\D/g, '')}?text=Hi%20${encodeURIComponent(enq.name || '')}%2C%20thank%20you%20for%20your%20enquiry%20with%20Sardar%20Mart%20Furniture%20and%20Home%20Appliances.`}
                                   target="_blank"
                                   rel="noreferrer"
                                   className="table-whatsapp-reply-btn"
@@ -2674,7 +2674,7 @@ export default function AdminPanel({
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             {enq.contact && (
                               <a
-                                href={`https://wa.me/${String(enq.contact).replace(/\D/g, '')}?text=Hi%20${encodeURIComponent(enq.name || '')}%2C%20thank%20you%20for%20contacting%20Sardar%20Electricals%20%26%20Furnitures.`}
+                                href={`https://wa.me/${String(enq.contact).replace(/\D/g, '')}?text=Hi%20${encodeURIComponent(enq.name || '')}%2C%20thank%20you%20for%20contacting%20Sardar%20Mart%20Furniture%20and%20Home%20Appliances.`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="table-whatsapp-reply-btn"
@@ -2983,7 +2983,7 @@ export default function AdminPanel({
                       id="admin-footer-fb"
                       name="facebookUrl"
                       type="url"
-                      placeholder="https://facebook.com/sardarelectricals"
+                      placeholder="https://facebook.com/sardarmart"
                       value={siteContent.facebookUrl}
                       onChange={(e) => setSiteContent({ ...siteContent, facebookUrl: e.target.value })}
                     />
@@ -2995,7 +2995,7 @@ export default function AdminPanel({
                       id="admin-footer-yt"
                       name="youtubeUrl"
                       type="url"
-                      placeholder="https://youtube.com/@sardarelectricals"
+                      placeholder="https://youtube.com/@sardarmart"
                       value={siteContent.youtubeUrl}
                       onChange={(e) => setSiteContent({ ...siteContent, youtubeUrl: e.target.value })}
                     />
@@ -3021,8 +3021,8 @@ export default function AdminPanel({
                     <div className="preview-logo-row">
                       <div className="preview-logo-icon">⚡</div>
                       <div className="preview-logo-text">
-                        <span><strong>{siteContent.storeName || 'Sardar Electricals & Furnitures'}</strong></span>
-                        <small>PREMIUM FURNITURE &amp; ELECTRONICS</small>
+                        <span><strong>{siteContent.storeName || 'Sardar Mart Furniture and Home Appliances'}</strong></span>
+                        <small>PREMIUM FURNITURE &amp; HOME APPLIANCES</small>
                       </div>
                     </div>
                     <p className="preview-desc-text">
@@ -3386,7 +3386,7 @@ export default function AdminPanel({
                       {filteredFeedbacks.map((item) => {
                         const cleanPhone = (item.phone || item.contact || '').replace(/\D/g, '');
                         const waText = encodeURIComponent(
-                          `Hello ${item.name}! This is Sardar Electricals and Furnitures regarding your feedback on ${item.category || 'our showroom'}. Thank you for reaching out to us!`
+                          `Hello ${item.name}! This is Sardar Mart Furniture and Home Appliances regarding your feedback on ${item.category || 'our showroom'}. Thank you for reaching out to us!`
                         );
 
                         return (
@@ -4502,7 +4502,7 @@ export default function AdminPanel({
                     <input
                       type="email"
                       required
-                      placeholder="e.g. ramesh@sardarelectricals.com"
+                      placeholder="e.g. ramesh@sardarmart.com"
                       value={newStaffForm.email}
                       onChange={(e) => setNewStaffForm({ ...newStaffForm, email: e.target.value })}
                     />
@@ -5016,7 +5016,7 @@ export default function AdminPanel({
                     Create New Promo Code
                   </h4>
                   <small style={{ color: '#d6d3d1', fontSize: '0.78rem' }}>
-                    Sardar Electricals and Furnitures Discount Manager
+                    Sardar Mart Furniture and Home Appliances Discount Manager
                   </small>
                 </div>
               </div>

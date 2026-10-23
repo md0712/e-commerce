@@ -153,7 +153,7 @@ export default function Footer({ onNavigate, onOpenAdmin, onOpenTrackOrder, stor
               <div className="footer-logo" onClick={() => handleLink('home')}>
                 <img 
                   src="/logo.png" 
-                  alt="Sardar Electricals and Furnitures" 
+                  alt="Sardar Mart Furniture and Home Appliances" 
                   className="footer-logo-img" 
                 />
                 <div className="footer-logo-text">
@@ -161,7 +161,7 @@ export default function Footer({ onNavigate, onOpenAdmin, onOpenTrackOrder, stor
                     Sardar <span className="gold-accent">Mart</span>
                   </div>
                   <div className="footer-brand-tagline">
-                    ELECTRICALS AND FURNITURES • CHENNAI
+                    FURNITURE AND HOME APPLIANCES • CHENNAI
                   </div>
                 </div>
               </div>
@@ -418,7 +418,7 @@ export default function Footer({ onNavigate, onOpenAdmin, onOpenTrackOrder, stor
                     <span className="card-label">Flagship Showroom Address</span>
                     <p className="showroom-address-text">{storeAddress}</p>
                     <a 
-                      href="https://maps.google.com/?q=Sardar+Electricals+and+Furnitures+Vyasarpadi+Chennai" 
+                      href="https://maps.google.com/?q=Sardar+Mart+Furniture+and+Home+Appliances+Vyasarpadi+Chennai" 
                       target="_blank" 
                       rel="noreferrer"
                       className="maps-direction-btn"
@@ -454,7 +454,7 @@ export default function Footer({ onNavigate, onOpenAdmin, onOpenTrackOrder, stor
           {/* Left: Copyright & Legal Entity */}
           <div className="copyright-group">
             <p className="copyright-text">
-              © {new Date().getFullYear()} Sardar Electricals and Furnitures. All rights reserved.
+              © {new Date().getFullYear()} Sardar Mart Furniture and Home Appliances. All rights reserved.
             </p>
             <span className="powered-by-divider">•</span>
             <span className="gstin-badge">GSTIN: 33AAAAH1234A1Z5</span>

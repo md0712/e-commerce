@@ -268,7 +268,7 @@ export default function ProductCard({
   const handleWhatsAppEnquiry = (e) => {
     e.stopPropagation();
     const message = encodeURIComponent(
-      `Hello Sardar Electricals and Furnitures, I'm interested in inquiring about "${name}" (SKU: ${id}) priced at ${formatPrice(price)}. Is it available for immediate delivery?`
+      `Hello Sardar Mart Furniture and Home Appliances, I'm interested in inquiring about "${name}" (SKU: ${id}) priced at ${formatPrice(price)}. Is it available for immediate delivery?`
     );
     window.open(`https://wa.me/916383056338?text=${message}`, '_blank');
   };

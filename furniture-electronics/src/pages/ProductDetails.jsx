@@ -103,7 +103,7 @@ export default function ProductDetails({
 
   const handleWhatsAppChat = () => {
     const msg = encodeURIComponent(
-      `Hello Sardar Electricals and Furnitures Team! I am looking at "${name}" (ID: ${id}) priced at ${formatPrice(price)}. Can you please share showroom availability, fabric swatches / color options, and delivery timeline?`
+      `Hello Sardar Mart Furniture and Home Appliances Team! I am looking at "${name}" (ID: ${id}) priced at ${formatPrice(price)}. Can you please share showroom availability, fabric swatches / color options, and delivery timeline?`
     );
     window.open(`https://wa.me/916383056338?text=${msg}`, '_blank');
   };
@@ -111,8 +111,8 @@ export default function ProductDetails({
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: `${name} | Sardar Electricals and Furnitures`,
-        text: `Check out ${name} at Sardar Electricals and Furnitures:`,
+        title: `${name} | Sardar Mart Furniture and Home Appliances`,
+        text: `Check out ${name} at Sardar Mart Furniture and Home Appliances:`,
         url: window.location.href,
       }).catch(() => {});
     } else {

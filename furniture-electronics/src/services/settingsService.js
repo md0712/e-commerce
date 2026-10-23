@@ -20,7 +20,7 @@ export const DEFAULT_STORE_CONFIG = {
   timing: '9:30 AM – 9:30 PM (All 7 Days Open)',
   announcement1: 'Free Express Delivery & 0% Easy EMI on All Products',
   announcement2: 'Festive Mega Offer: Special Discounts on Complete Living Room & Appliance Combos',
-  footerDescription: 'Sardar Electricals & Furnitures is your trusted destination for luxury furniture, smart electronics, and top-tier home appliances. Delivering quality and comfort since 1998.',
+  footerDescription: 'Sardar Mart Furniture and Home Appliances is your trusted destination for luxury furniture, smart electronics, and top-tier home appliances. Delivering quality and comfort since 1998.',
   instagramUrl: 'https://www.instagram.com/sardar_mart_ch_39?xtok=N2c2cW8xYmdzM3Fy',
   instagramHandle: 'sardar_mart_ch_39',
   facebookUrl: 'https://facebook.com',
@@ -28,7 +28,7 @@ export const DEFAULT_STORE_CONFIG = {
   whatsappNumber: '+91 6383056338',
 
   // Legal & Tax Settings
-  storeLegalName: 'Sardar Electricals & Furnitures Pvt Ltd',
+  storeLegalName: 'Sardar Mart Furniture and Home Appliances Pvt Ltd',
   gstNumber: '33AAAAH1234A1Z5',
   currency: 'INR (₹)',
   taxGst: '18%',

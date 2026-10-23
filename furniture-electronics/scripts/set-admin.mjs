@@ -1,5 +1,5 @@
 /**
- * Admin Provisioning Script for Sardar Electricals and Furnitures
+ * Admin Provisioning Script for Sardar Mart Furniture and Home Appliances
  * 
  * Securely assigns the verified Firebase Auth custom user claim { admin: true }
  * to a designated user. This is executed server-side via the Firebase Admin SDK.
@@ -29,7 +29,7 @@ const args = process.argv.slice(2);
 if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
   console.log(`
 =============================================================
-  Sardar Electricals and Furnitures - Admin Provisioning Script
+  Sardar Mart Furniture and Home Appliances - Admin Provisioning Script
 =============================================================
 Usage:
   node scripts/set-admin.mjs <user-email-or-uid> [--key <path>]

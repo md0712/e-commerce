@@ -1,6 +1,6 @@
-# Sardar Electricals and Furnitures — Premium E-Commerce Web Application
+# Sardar Mart Furniture and Home Appliances — Premium E-Commerce Web Application
 
-A modern, responsive, and aesthetic web platform for **Sardar Electricals and Furnitures**, modeled after luxury showroom retail and modern Indian e-commerce standards. Built with **React**, **Vite**, **Vanilla CSS Design Tokens**, and **Lucide Icons**.
+A modern, responsive, and aesthetic web platform for **Sardar Mart Furniture and Home Appliances**, modeled after luxury showroom retail and modern Indian e-commerce standards. Built with **React**, **Vite**, **Vanilla CSS Design Tokens**, and **Lucide Icons**.
 
 ---
 

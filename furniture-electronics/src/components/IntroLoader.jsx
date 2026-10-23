@@ -20,7 +20,7 @@ export default function IntroLoader({ onComplete }) {
         } else if (next >= 65 && next < 95) {
           setStatusText('Connecting Modern Appliances...');
         } else if (next >= 95) {
-          setStatusText('Welcome to Sardar Electricals and Furnitures!');
+          setStatusText('Welcome to Sardar Mart Furniture and Home Appliances!');
         }
         return next;
       });
@@ -102,7 +102,7 @@ export default function IntroLoader({ onComplete }) {
             <div className="scene-image-card sofa-card">
               <img 
                 src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=650&q=80" 
-                alt="Sardar Electricals and Furnitures Living Room Furniture" 
+                alt="Sardar Mart Furniture and Home Appliances Living Room Furniture" 
                 className="scene-photo"
               />
               <div className="card-ambient-shadow"></div>
@@ -124,13 +124,13 @@ export default function IntroLoader({ onComplete }) {
             <div className="logo-icon-svg-wrap" style={{ background: 'transparent', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <img 
                 src="/logo.png" 
-                alt="Sardar Electricals and Furnitures" 
+                alt="Sardar Mart Furniture and Home Appliances" 
                 style={{ width: '84px', height: '84px', objectFit: 'contain', borderRadius: '14px' }} 
               />
             </div>
 
-            <h1 className="brand-logo-text" style={{ fontSize: '1.8rem', textAlign: 'center' }}>Sardar Electricals and Furnitures</h1>
-            <span className="brand-logo-subtitle">PREMIUM FURNITURE &amp; ELECTRONICS</span>
+            <h1 className="brand-logo-text" style={{ fontSize: '1.8rem', textAlign: 'center' }}>Sardar Mart Furniture and Home Appliances</h1>
+            <span className="brand-logo-subtitle">PREMIUM FURNITURE &amp; HOME APPLIANCES</span>
             
             <div className="brand-tagline-row">
               <span>Better Home</span>
