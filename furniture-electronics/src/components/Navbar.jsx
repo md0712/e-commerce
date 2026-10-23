@@ -875,18 +875,20 @@ export default function Navbar({
           flex-direction: column;
         }
         .sardar-brand-primary {
+          font-family: var(--font-heading);
           font-size: 1.55rem;
-          font-weight: 900;
+          font-weight: 800;
           color: #1c0e08;
           line-height: 1.1;
           letter-spacing: -0.6px;
         }
         .sardar-gold {
           color: #b45309;
+          font-weight: 800;
         }
         .sardar-brand-secondary {
           font-size: 0.58rem;
-          font-weight: 800;
+          font-weight: 500;
           letter-spacing: 1.2px;
           color: #8c766b;
           margin-top: 2px;

@@ -465,7 +465,7 @@ export default function CartDrawer({
             <h2>Order Placed Successfully!</h2>
             <p className="order-num">Order Reference: <strong>#{lastPlacedOrder.id}</strong></p>
             <p className="success-msg">
-              Thank you for choosing Sardar Mart Furniture and Home Appliances, <strong>{lastPlacedOrder.customer?.name}</strong>. Your order is confirmed and our showroom fulfillment team in Chennai is preparing your items.
+              Thank you for choosing <strong>Sardar Mart</strong> Furniture and Home Appliances, <strong>{lastPlacedOrder.customer?.name}</strong>. Your order is confirmed and our showroom fulfillment team in Chennai is preparing your items.
             </p>
 
             <div className="order-status-card-preview">

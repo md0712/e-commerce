@@ -225,7 +225,7 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
               <h5>Terms &amp; Conditions:</h5>
               <ol>
                 <li>Goods once sold are covered under official manufacturer structural/component warranties.</li>
-                <li>Free doorstep installation and unpacking provided by Sardar Mart Furniture and Home Appliances certified technicians.</li>
+                <li>Free doorstep installation and unpacking provided by <strong>Sardar Mart</strong> Furniture and Home Appliances certified technicians.</li>
                 <li>7-day return/replacement policy applies for manufacturing transit damages.</li>
                 <li>Jurisdiction of all disputes shall be the courts of Chennai, Tamil Nadu.</li>
               </ol>
@@ -240,7 +240,7 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
           </div>
 
           <div className="invoice-footer-note">
-            *** This is a computer generated legal tax invoice issued by Sardar Mart Furniture and Home Appliances ***
+            *** This is a computer generated legal tax invoice issued by <strong>Sardar Mart</strong> Furniture and Home Appliances ***
           </div>
         </div>
       </div>
@@ -358,18 +358,20 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
           gap: 20px;
         }
         .invoice-brand-title {
+          font-family: var(--font-heading);
           font-size: 1.8rem;
-          font-weight: 900;
+          font-weight: 800;
           color: #2b170e;
           letter-spacing: -0.5px;
         }
         .invoice-brand-title span {
           color: #d97706;
+          font-weight: 800;
         }
         .invoice-brand-sub {
           font-size: 0.72rem;
           letter-spacing: 1px;
-          font-weight: 800;
+          font-weight: 500;
           color: #6b7280;
           margin-bottom: 8px;
         }

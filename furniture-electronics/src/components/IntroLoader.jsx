@@ -129,7 +129,9 @@ export default function IntroLoader({ onComplete }) {
               />
             </div>
 
-            <h1 className="brand-logo-text" style={{ fontSize: '1.8rem', textAlign: 'center' }}>Sardar Mart Furniture and Home Appliances</h1>
+            <h1 className="brand-logo-text" style={{ fontSize: '1.8rem', textAlign: 'center', fontWeight: 500 }}>
+              <strong style={{ fontWeight: 800 }}>Sardar Mart</strong> Furniture and Home Appliances
+            </h1>
             <span className="brand-logo-subtitle">PREMIUM FURNITURE &amp; HOME APPLIANCES</span>
             
             <div className="brand-tagline-row">

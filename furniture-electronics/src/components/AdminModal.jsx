@@ -164,7 +164,7 @@ export default function AdminModal({
             <img src="/logo.png" alt="Sardar Logo" style={{ height: '36px', width: 'auto', objectFit: 'contain', borderRadius: '6px' }} />
             <div>
               <span className="admin-portal-pill">Staff &amp; Store Management Portal</span>
-              <h2>Sardar Mart Furniture and Home Appliances Operations CMS</h2>
+              <h2><strong>Sardar Mart</strong> Furniture and Home Appliances Operations CMS</h2>
             </div>
           </div>
 

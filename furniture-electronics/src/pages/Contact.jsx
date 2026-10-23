@@ -115,7 +115,7 @@ export default function Contact() {
               <Sparkles size={14} /> Official Showroom &amp; Customer Care
             </span>
             <h1 className="contact-hero-title">
-              Connect with <span>Sardar Mart Furniture and Home Appliances</span>
+              Connect with <span><strong>Sardar Mart</strong> Furniture and Home Appliances</span>
             </h1>
             <p className="contact-hero-sub">
               Visit our grand showroom in Chennai to experience solid-wood furniture, luxury sofas, smart TVs, and energy-efficient appliances. We are open all 7 days with dedicated consultants ready to assist you.
@@ -258,7 +258,7 @@ export default function Contact() {
                   <span className="spotlight-city">Chennai</span>
                 </div>
 
-                <h2 className="spotlight-name">Sardar Mart Furniture and Home Appliances</h2>
+                <h2 className="spotlight-name"><strong>Sardar Mart</strong> Furniture and Home Appliances</h2>
                 
                 <div className="spotlight-address-box">
                   <div className="pin-circle">

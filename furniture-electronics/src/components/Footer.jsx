@@ -454,7 +454,7 @@ export default function Footer({ onNavigate, onOpenAdmin, onOpenTrackOrder, stor
           {/* Left: Copyright & Legal Entity */}
           <div className="copyright-group">
             <p className="copyright-text">
-              © {new Date().getFullYear()} Sardar Mart Furniture and Home Appliances. All rights reserved.
+              © {new Date().getFullYear()} <strong>Sardar Mart</strong> Furniture and Home Appliances. All rights reserved.
             </p>
             <span className="powered-by-divider">•</span>
             <span className="gstin-badge">GSTIN: 33AAAAH1234A1Z5</span>
@@ -675,7 +675,7 @@ export default function Footer({ onNavigate, onOpenAdmin, onOpenTrackOrder, stor
         }
         .footer-brand-tagline {
           font-size: 0.62rem;
-          font-weight: 700;
+          font-weight: 500;
           letter-spacing: 1.8px;
           color: #a89487;
           margin-top: 2px;

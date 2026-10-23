@@ -480,7 +480,7 @@ export default function Home({
                       )}
 
                       <p className="t-comment">
-                        "{rev.message || rev.feedback || 'Great shopping experience with Sardar Mart Furniture and Home Appliances.'}"
+                        "{rev.message || rev.feedback || <>Great shopping experience with <strong>Sardar Mart</strong> Furniture and Home Appliances.</>}"
                       </p>
 
                       <div className="t-user-info" style={{ marginTop: 'auto', paddingTop: '14px', borderTop: '1px solid #f1f5f9' }}>

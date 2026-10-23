@@ -5016,7 +5016,7 @@ export default function AdminPanel({
                     Create New Promo Code
                   </h4>
                   <small style={{ color: '#d6d3d1', fontSize: '0.78rem' }}>
-                    Sardar Mart Furniture and Home Appliances Discount Manager
+                    <strong>Sardar Mart</strong> Furniture and Home Appliances Discount Manager
                   </small>
                 </div>
               </div>
@@ -5425,7 +5425,7 @@ export default function AdminPanel({
         .sidebar-brand-title small {
           font-size: 0.62rem;
           color: #fde68a;
-          font-weight: 700;
+          font-weight: 500;
           letter-spacing: 1px;
           display: block;
         }
