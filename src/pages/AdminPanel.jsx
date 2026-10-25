@@ -167,9 +167,9 @@ export default function AdminPanel({
       const saved = localStorage.getItem('hk_site_content');
       const defaultContent = {
         storeName: 'Sardar Mart Furniture & Electronics',
-        phone: '+91 98765 43210',
+        phone: '+91 63830 56338',
         email: 'care@sardarmart.com',
-        address: '42, Grand Southern Trunk Rd, Chromepet, Chennai, Tamil Nadu 600044',
+        address: '190, Erukkenchery High Rd, Anbalagan Colony, Vyasarpadi, Chennai, Tamil Nadu 600039',
         timing: '10:00 AM – 09:30 PM (All 7 Days)',
         announcement1: 'Free Express Delivery & 0% Easy EMI All Over India',
         announcement2: 'Festive Mega Sale: Flat ₹5,000 OFF on Orders Above ₹40,000',
@@ -177,15 +177,15 @@ export default function AdminPanel({
         instagramUrl: 'https://instagram.com',
         facebookUrl: 'https://facebook.com',
         youtubeUrl: 'https://youtube.com',
-        whatsappNumber: '+91 98765 43210'
+        whatsappNumber: '+91 63830 56338'
       };
       return saved ? { ...defaultContent, ...JSON.parse(saved) } : defaultContent;
     } catch {
       return {
         storeName: 'Sardar Mart Furniture & Electronics',
-        phone: '+91 98765 43210',
+        phone: '+91 63830 56338',
         email: 'care@sardarmart.com',
-        address: '42, Grand Southern Trunk Rd, Chromepet, Chennai, Tamil Nadu 600044',
+        address: '190, Erukkenchery High Rd, Anbalagan Colony, Vyasarpadi, Chennai, Tamil Nadu 600039',
         timing: '10:00 AM – 09:30 PM (All 7 Days)',
         announcement1: 'Free Express Delivery & 0% Easy EMI All Over India',
         announcement2: 'Festive Mega Sale: Flat ₹5,000 OFF on Orders Above ₹40,000',
@@ -193,7 +193,7 @@ export default function AdminPanel({
         instagramUrl: 'https://instagram.com',
         facebookUrl: 'https://facebook.com',
         youtubeUrl: 'https://youtube.com',
-        whatsappNumber: '+91 98765 43210'
+        whatsappNumber: '+91 63830 56338'
       };
     }
   });
@@ -274,14 +274,14 @@ export default function AdminPanel({
         name: 'Rahim Baig',
         email: 'admin@sardarmart.com',
         role: 'Super Admin / Owner',
-        phone: '+91 98765 43210'
+        phone: '+91 63830 56338'
       };
     } catch {
       return {
         name: 'Rahim Baig',
         email: 'admin@sardarmart.com',
         role: 'Super Admin / Owner',
-        phone: '+91 98765 43210'
+        phone: '+91 63830 56338'
       };
     }
   });
@@ -415,6 +415,42 @@ export default function AdminPanel({
     } catch {
       window.print();
     }
+  };
+
+  // -------------------------------------------------------------
+  // OFFERS & COUPONS STATE (Active / Inactive Disabled Toggle)
+  // -------------------------------------------------------------
+  const [coupons, setCoupons] = useState(() => {
+    const defaultCoupons = [
+      { code: 'FESTIVE50', desc: 'Flat ₹5,000 OFF on orders above ₹40,000', discount: 'Flat ₹5,000', status: 'Active' },
+      { code: 'COMBOBEST', desc: '10% OFF on all Living Room & Dining Combos', discount: '10% OFF', status: 'Active' },
+      { code: 'HOME5', desc: '5% Instant Savings for Showroom Pickups', discount: '5% OFF', status: 'Active' }
+    ];
+    try {
+      const saved = localStorage.getItem('hk_admin_coupons');
+      return saved ? JSON.parse(saved) : defaultCoupons;
+    } catch {
+      return defaultCoupons;
+    }
+  });
+
+  const toggleCouponStatus = (code) => {
+    setCoupons(prev => {
+      const updated = prev.map(c => {
+        if (c.code === code) {
+          const nextStatus = c.status === 'Active' ? 'Inactive' : 'Active';
+          return { ...c, status: nextStatus };
+        }
+        return c;
+      });
+      try {
+        localStorage.setItem('hk_admin_coupons', JSON.stringify(updated));
+        window.dispatchEvent(new CustomEvent('hk_coupons_changed', { detail: updated }));
+      } catch {}
+      const target = updated.find(c => c.code === code);
+      showToast(`Coupon ${code} is now ${target.status === 'Active' ? 'Active' : 'Disabled (Inactive)'}`);
+      return updated;
+    });
   };
 
   // -------------------------------------------------------------
@@ -1575,7 +1611,7 @@ export default function AdminPanel({
         {/* Brand Header */}
         <div className="sidebar-brand-header">
           <div className="sidebar-brand-icon">
-            <Home size={22} />
+            <Home size={18} />
           </div>
           {!sidebarCollapsed && (
             <div className="sidebar-brand-title">
@@ -1587,7 +1623,7 @@ export default function AdminPanel({
             className="mobile-close-sidebar" 
             onClick={() => setMobileSidebarOpen(false)}
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
@@ -1598,7 +1634,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('dashboard'); setMobileSidebarOpen(false); }}
             title="Dashboard"
           >
-            <LayoutDashboard size={19} />
+            <LayoutDashboard size={16} />
             {!sidebarCollapsed && <span>Dashboard</span>}
           </button>
 
@@ -1608,7 +1644,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('invoices'); setMobileSidebarOpen(false); }}
             title="Invoices & Tax Bills (Dashboard > Invoices)"
           >
-            <FileText size={19} />
+            <FileText size={16} />
             {!sidebarCollapsed && <span>Invoices</span>}
             {!sidebarCollapsed && <span className="sidebar-count-badge gold">{orders.length}</span>}
           </button>
@@ -1618,7 +1654,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('products'); setMobileSidebarOpen(false); }}
             title="Products"
           >
-            <Package size={19} />
+            <Package size={16} />
             {!sidebarCollapsed && <span>Products</span>}
             {!sidebarCollapsed && <span className="sidebar-count-badge">{products.length}</span>}
           </button>
@@ -1628,7 +1664,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('categories'); setMobileSidebarOpen(false); }}
             title="Categories"
           >
-            <Layers size={19} />
+            <Layers size={16} />
             {!sidebarCollapsed && <span>Categories</span>}
           </button>
 
@@ -1641,18 +1677,18 @@ export default function AdminPanel({
               background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
               color: '#ffffff',
               fontWeight: 800,
-              boxShadow: '0 4px 14px rgba(109, 40, 217, 0.4)'
+              boxShadow: '0 3px 10px rgba(109, 40, 217, 0.4)'
             } : {
               background: 'rgba(139, 92, 246, 0.12)',
               color: '#c4b5fd',
               border: '1px solid rgba(139, 92, 246, 0.28)',
-              margin: '3px 0'
+              margin: '1px 0'
             }}
           >
-            <Receipt size={19} style={{ color: activeTab === 'create-billing' ? '#ffffff' : '#a78bfa' }} />
+            <Receipt size={16} style={{ color: activeTab === 'create-billing' ? '#ffffff' : '#a78bfa' }} />
             {!sidebarCollapsed && <span style={{ fontWeight: 700 }}>Create Billing</span>}
             {!sidebarCollapsed && (
-              <span className="sidebar-count-badge" style={{ background: '#7c3aed', color: '#ffffff', fontSize: '0.65rem', marginLeft: 'auto' }}>
+              <span className="sidebar-count-badge" style={{ background: '#7c3aed', color: '#ffffff', fontSize: '0.62rem', marginLeft: 'auto', padding: '1px 5px' }}>
                 POS
               </span>
             )}
@@ -1663,7 +1699,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('orders'); setMobileSidebarOpen(false); }}
             title="Orders & Billing"
           >
-            <ShoppingCart size={19} />
+            <ShoppingCart size={16} />
             {!sidebarCollapsed && <span>Orders</span>}
             {!sidebarCollapsed && <span className="sidebar-count-badge gold">{orders.length}</span>}
           </button>
@@ -1673,7 +1709,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('enquiries'); setMobileSidebarOpen(false); }}
             title="Enquiries"
           >
-            <MessageSquare size={19} />
+            <MessageSquare size={16} />
             {!sidebarCollapsed && <span>Enquiries</span>}
             {!sidebarCollapsed && (
               <span className="sidebar-count-badge orange">
@@ -1687,7 +1723,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('customers'); setMobileSidebarOpen(false); }}
             title="Customers"
           >
-            <Users size={19} />
+            <Users size={16} />
             {!sidebarCollapsed && <span>Customers</span>}
             {!sidebarCollapsed && (
               <span className="sidebar-count-badge brown">
@@ -1701,7 +1737,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('offers'); setMobileSidebarOpen(false); }}
             title="Offers & Banners"
           >
-            <Tag size={19} />
+            <Tag size={16} />
             {!sidebarCollapsed && <span>Offers &amp; Banners</span>}
           </button>
 
@@ -1710,7 +1746,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('content'); setMobileSidebarOpen(false); }}
             title="Website Content"
           >
-            <Globe size={19} />
+            <Globe size={16} />
             {!sidebarCollapsed && <span>Website Content</span>}
           </button>
 
@@ -1719,7 +1755,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('reviews'); setMobileSidebarOpen(false); }}
             title="Reviews"
           >
-            <Star size={19} />
+            <Star size={16} />
             {!sidebarCollapsed && <span>Reviews</span>}
           </button>
 
@@ -1728,7 +1764,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('reports'); setMobileSidebarOpen(false); }}
             title="Reports"
           >
-            <BarChart3 size={19} />
+            <BarChart3 size={16} />
             {!sidebarCollapsed && <span>Reports</span>}
           </button>
 
@@ -1737,7 +1773,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('settings'); setMobileSidebarOpen(false); }}
             title="Settings"
           >
-            <Settings size={19} />
+            <Settings size={16} />
             {!sidebarCollapsed && <span>Settings</span>}
           </button>
 
@@ -1746,7 +1782,7 @@ export default function AdminPanel({
             onClick={() => { setActiveTab('admin-users'); setMobileSidebarOpen(false); }}
             title="Admin Users"
           >
-            <ShieldCheck size={19} />
+            <ShieldCheck size={16} />
             {!sidebarCollapsed && <span>Admin Users</span>}
           </button>
         </nav>
@@ -1758,7 +1794,7 @@ export default function AdminPanel({
             onClick={onBackToStore}
             title="Return to customer store"
           >
-            <ExternalLink size={17} />
+            <ExternalLink size={15} />
             {!sidebarCollapsed && <span>View Storefront</span>}
           </button>
 
@@ -1767,7 +1803,7 @@ export default function AdminPanel({
             onClick={handleLogout}
             title="Logout"
           >
-            <LogOut size={17} />
+            <LogOut size={15} />
             {!sidebarCollapsed && <span>Logout</span>}
           </button>
         </div>
@@ -2949,103 +2985,111 @@ export default function AdminPanel({
 
                   {/* Customer Details Inputs (editable preview) */}
                   <div className="pos-customer-compact-grid">
-                    <div className="pos-form-field">
+                    <div className="pos-form-field pos-field-name">
                       <label>Customer Full Name *</label>
                       <input
                         type="text"
+                        className="pos-compact-small-input"
                         placeholder="Customer Name"
                         value={billingCustomer.name}
                         onChange={(e) => setBillingCustomer(prev => ({ ...prev, name: e.target.value }))}
                       />
                     </div>
-                    <div className="pos-form-field">
+                    <div className="pos-form-field pos-field-phone">
                       <label>Phone Number *</label>
                       <input
                         type="tel"
+                        className="pos-compact-small-input"
                         placeholder="+91 98765 43210"
                         value={billingCustomer.phone}
                         onChange={(e) => setBillingCustomer(prev => ({ ...prev, phone: e.target.value }))}
                       />
                     </div>
-                    <div className="pos-form-field">
+                    <div className="pos-form-field pos-field-address">
                       <label>Billing &amp; Delivery Address</label>
                       <input
                         type="text"
+                        className="pos-compact-small-input"
                         placeholder="Plot / Flat / Street address"
                         value={billingCustomer.address}
                         onChange={(e) => setBillingCustomer(prev => ({ ...prev, address: e.target.value }))}
                       />
                     </div>
-                    <div className="pos-form-field">
-                      <label>City &amp; Pincode</label>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <input
-                          type="text"
-                          placeholder="Chennai"
-                          value={billingCustomer.city}
-                          onChange={(e) => setBillingCustomer(prev => ({ ...prev, city: e.target.value }))}
-                          style={{ flex: 1.2 }}
-                        />
-                        <input
-                          type="text"
-                          placeholder="600001"
-                          value={billingCustomer.pincode}
-                          onChange={(e) => setBillingCustomer(prev => ({ ...prev, pincode: e.target.value }))}
-                          style={{ flex: 1 }}
-                        />
-                      </div>
+                    <div className="pos-form-field pos-field-city">
+                      <label>City</label>
+                      <input
+                        type="text"
+                        className="pos-compact-small-input"
+                        placeholder="Chennai"
+                        value={billingCustomer.city}
+                        onChange={(e) => setBillingCustomer(prev => ({ ...prev, city: e.target.value }))}
+                      />
+                    </div>
+                    <div className="pos-form-field pos-field-pincode">
+                      <label>Pincode</label>
+                      <input
+                        type="text"
+                        className="pos-compact-small-input"
+                        placeholder="600001"
+                        value={billingCustomer.pincode}
+                        onChange={(e) => setBillingCustomer(prev => ({ ...prev, pincode: e.target.value }))}
+                      />
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="pos-customer-compact-grid">
-                  <div className="pos-form-field">
+                  <div className="pos-form-field pos-field-name">
                     <label>Customer Full Name *</label>
                     <input
                       type="text"
+                      className="pos-compact-small-input"
                       placeholder="e.g. Anandha Krishnan"
                       value={billingCustomer.name}
                       onChange={(e) => setBillingCustomer(prev => ({ ...prev, name: e.target.value }))}
                       required
                     />
                   </div>
-                  <div className="pos-form-field">
+                  <div className="pos-form-field pos-field-phone">
                     <label>Phone Number *</label>
                     <input
                       type="tel"
+                      className="pos-compact-small-input"
                       placeholder="+91 98400 12345"
                       value={billingCustomer.phone}
                       onChange={(e) => setBillingCustomer(prev => ({ ...prev, phone: e.target.value }))}
                       required
                     />
                   </div>
-                  <div className="pos-form-field">
+                  <div className="pos-form-field pos-field-address">
                     <label>Billing &amp; Delivery Address</label>
                     <input
                       type="text"
+                      className="pos-compact-small-input"
                       placeholder="Door No, Street Name, Area (or Walk-In)"
                       value={billingCustomer.address}
                       onChange={(e) => setBillingCustomer(prev => ({ ...prev, address: e.target.value }))}
                     />
                   </div>
-                  <div className="pos-form-field">
-                    <label>City &amp; Pincode</label>
-                    <div style={{ display: 'flex', gap: '6px' }}>
-                      <input
-                        type="text"
-                        placeholder="Chennai"
-                        value={billingCustomer.city}
-                        onChange={(e) => setBillingCustomer(prev => ({ ...prev, city: e.target.value }))}
-                        style={{ flex: 1.2 }}
-                      />
-                      <input
-                        type="text"
-                        placeholder="600044"
-                        value={billingCustomer.pincode}
-                        onChange={(e) => setBillingCustomer(prev => ({ ...prev, pincode: e.target.value }))}
-                        style={{ flex: 1 }}
-                      />
-                    </div>
+                  <div className="pos-form-field pos-field-city">
+                    <label>City</label>
+                    <input
+                      type="text"
+                      className="pos-compact-small-input"
+                      placeholder="Chennai"
+                      value={billingCustomer.city}
+                      onChange={(e) => setBillingCustomer(prev => ({ ...prev, city: e.target.value }))}
+                    />
+                  </div>
+                  <div className="pos-form-field pos-field-pincode">
+                    <label>Pincode</label>
+                    <input
+                      type="text"
+                      className="pos-compact-small-input"
+                      placeholder="600044"
+                      value={billingCustomer.pincode}
+                      onChange={(e) => setBillingCustomer(prev => ({ ...prev, pincode: e.target.value }))}
+                    />
                   </div>
                 </div>
               )}
@@ -4093,20 +4137,28 @@ export default function AdminPanel({
             </div>
 
             <div className="coupons-admin-grid">
-              {[
-                { code: 'FESTIVE50', desc: 'Flat ₹5,000 OFF on orders above ₹40,000', discount: 'Flat ₹5,000', status: 'Active' },
-                { code: 'COMBOBEST', desc: '10% OFF on all Living Room & Dining Combos', discount: '10% OFF', status: 'Active' },
-                { code: 'HOME5', desc: '5% Instant Savings for Showroom Pickups', discount: '5% OFF', status: 'Active' }
-              ].map((c, idx) => (
-                <div key={idx} className="coupon-admin-card">
-                  <div className="coupon-code-pill">🏷️ {c.code}</div>
-                  <p>{c.desc}</p>
-                  <div className="coupon-card-footer">
-                    <strong>{c.discount}</strong>
-                    <span className="active-tag">{c.status}</span>
+              {coupons.map((c) => {
+                const isActive = c.status === 'Active';
+                return (
+                  <div key={c.code} className={`coupon-admin-card ${!isActive ? 'coupon-disabled' : ''}`}>
+                    <div className="coupon-code-pill">🏷️ {c.code}</div>
+                    <p>{c.desc}</p>
+                    <div className="coupon-card-footer">
+                      <strong className="coupon-discount-val">{c.discount}</strong>
+                      <button 
+                        type="button"
+                        onClick={() => toggleCouponStatus(c.code)}
+                        className={`coupon-toggle-btn ${isActive ? 'btn-active' : 'btn-disabled'}`}
+                        title={isActive ? "Click to Disable (make Inactive)" : "Click to Enable (make Active)"}
+                        aria-label={`Toggle ${c.code} status`}
+                      >
+                        <span className={`status-indicator-dot ${isActive ? 'dot-active' : 'dot-disabled'}`}></span>
+                        <span>{isActive ? 'Active' : 'Inactive'}</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -5946,7 +5998,7 @@ export default function AdminPanel({
           background: #f1f5f9;
           font-family: inherit;
           color: #1e293b;
-          overflow-x: hidden;
+          overflow-x: clip;
         }
 
         /* Toast */
@@ -5966,7 +6018,7 @@ export default function AdminPanel({
 
         /* LEFT SIDEBAR (Dark brand warm brown) */
         .admin-sidebar {
-          width: 250px;
+          width: 220px;
           background: #2b170e;
           color: #ffffff;
           display: flex;
@@ -5980,19 +6032,19 @@ export default function AdminPanel({
           z-index: 100;
         }
         .admin-sidebar.collapsed {
-          width: 72px;
+          width: 64px;
         }
         .sidebar-brand-header {
-          padding: 22px 18px;
+          padding: 12px 14px;
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
           border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
         .sidebar-brand-icon {
-          width: 38px;
-          height: 38px;
-          border-radius: 10px;
+          width: 32px;
+          height: 32px;
+          border-radius: 8px;
           background: rgba(255, 255, 255, 0.12);
           display: flex;
           align-items: center;
@@ -6001,17 +6053,17 @@ export default function AdminPanel({
           flex-shrink: 0;
         }
         .sidebar-brand-title h3 {
-          font-size: 1.15rem;
+          font-size: 1.02rem;
           font-weight: 800;
           margin: 0;
           color: #ffffff;
           letter-spacing: -0.3px;
         }
         .sidebar-brand-title small {
-          font-size: 0.62rem;
+          font-size: 0.58rem;
           color: #fde68a;
           font-weight: 700;
-          letter-spacing: 1px;
+          letter-spacing: 0.8px;
           display: block;
         }
         .mobile-close-sidebar {
@@ -6025,22 +6077,22 @@ export default function AdminPanel({
 
         /* Navigation items */
         .sidebar-nav-menu {
-          padding: 16px 12px;
+          padding: 8px 8px;
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          gap: 2px;
           flex: 1;
         }
         .nav-item-btn {
           display: flex;
           align-items: center;
-          gap: 12px;
-          padding: 10px 14px;
+          gap: 9px;
+          padding: 6.5px 10px;
           background: none;
           border: none;
           color: #cbd5e1;
-          border-radius: 8px;
-          font-size: 0.88rem;
+          border-radius: 6px;
+          font-size: 0.82rem;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s ease;
@@ -6055,15 +6107,15 @@ export default function AdminPanel({
           background: #854d0e;
           color: #ffffff;
           font-weight: 700;
-          box-shadow: 0 4px 12px rgba(133, 77, 14, 0.4);
+          box-shadow: 0 3px 10px rgba(133, 77, 14, 0.35);
         }
         .sidebar-count-badge {
           margin-left: auto;
           background: rgba(255, 255, 255, 0.18);
           color: #ffffff;
-          font-size: 0.72rem;
-          padding: 2px 7px;
-          border-radius: 12px;
+          font-size: 0.65rem;
+          padding: 1px 6px;
+          border-radius: 10px;
           font-weight: 700;
         }
         .sidebar-count-badge.gold {
@@ -6077,35 +6129,35 @@ export default function AdminPanel({
 
         /* Bottom Sidebar Actions */
         .sidebar-bottom-actions {
-          padding: 14px 12px 18px;
+          padding: 8px 8px 12px;
           border-top: 1px solid rgba(255, 255, 255, 0.08);
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 4px;
         }
         .sidebar-storefront-btn {
           display: flex;
           align-items: center;
-          gap: 10px;
-          padding: 9px 12px;
+          gap: 8px;
+          padding: 6px 10px;
           background: rgba(255, 255, 255, 0.08);
           border: 1px solid rgba(255, 255, 255, 0.14);
           color: #fde68a;
-          border-radius: 8px;
-          font-size: 0.82rem;
+          border-radius: 6px;
+          font-size: 0.78rem;
           font-weight: 700;
           cursor: pointer;
         }
         .sidebar-logout-btn {
           display: flex;
           align-items: center;
-          gap: 10px;
-          padding: 9px 12px;
+          gap: 8px;
+          padding: 6px 10px;
           background: none;
           border: none;
           color: #ef4444;
-          border-radius: 8px;
-          font-size: 0.82rem;
+          border-radius: 6px;
+          font-size: 0.78rem;
           font-weight: 700;
           cursor: pointer;
         }
@@ -6121,7 +6173,7 @@ export default function AdminPanel({
           width: 100%;
           max-width: 100vw;
           min-width: 0;
-          overflow-x: hidden;
+          overflow-x: clip;
           box-sizing: border-box;
         }
 
@@ -6138,12 +6190,11 @@ export default function AdminPanel({
           justify-content: space-between;
           position: sticky;
           top: 0;
-          z-index: 950;
+          z-index: 1000;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
           width: 100%;
           max-width: 100%;
           box-sizing: border-box;
-          overflow: hidden;
         }
         .header-left-group {
           display: flex;
@@ -8848,11 +8899,36 @@ export default function AdminPanel({
             padding: 14px 12px;
           }
         }
+        .coupon-admin-card {
+          background: #ffffff;
+          border: 1.5px dashed #cbd5e1;
+          border-radius: 10px;
+          padding: 16px;
+          transition: all 0.2s ease;
+          position: relative;
+        }
+        .coupon-admin-card:hover {
+          border-color: #94a3b8;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+        .coupon-admin-card.coupon-disabled {
+          background: #f8fafc;
+          border-style: solid;
+          border-color: #e2e8f0;
+          opacity: 0.78;
+        }
         .coupon-code-pill {
           font-size: 1rem;
           font-weight: 800;
           color: #854d0e;
           margin-bottom: 6px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .coupon-admin-card.coupon-disabled .coupon-code-pill {
+          color: #94a3b8;
+          text-decoration: line-through;
         }
         .coupon-admin-card p {
           font-size: 0.82rem;
@@ -8863,14 +8939,61 @@ export default function AdminPanel({
           display: flex;
           justify-content: space-between;
           align-items: center;
+          gap: 8px;
         }
-        .active-tag {
+        .coupon-discount-val {
+          font-size: 0.95rem;
+          font-weight: 800;
+          color: #1e293b;
+        }
+        .coupon-admin-card.coupon-disabled .coupon-discount-val {
+          color: #94a3b8;
+        }
+        .coupon-toggle-btn {
+          border: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 3px 9px;
+          border-radius: 20px;
+          font-size: 0.74rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.18s ease;
+          user-select: none;
+          outline: none;
+        }
+        .coupon-toggle-btn.btn-active {
           background: #dcfce7;
           color: #166534;
-          font-size: 0.72rem;
-          font-weight: 700;
-          padding: 2px 6px;
-          border-radius: 4px;
+          border: 1px solid #bbf7d0;
+        }
+        .coupon-toggle-btn.btn-active:hover {
+          background: #bbf7d0;
+          transform: scale(1.04);
+        }
+        .coupon-toggle-btn.btn-disabled {
+          background: #fee2e2;
+          color: #991b1b;
+          border: 1px solid #fecaca;
+        }
+        .coupon-toggle-btn.btn-disabled:hover {
+          background: #fecaca;
+          transform: scale(1.04);
+        }
+        .status-indicator-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          display: inline-block;
+        }
+        .status-indicator-dot.dot-active {
+          background: #16a34a;
+          box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.25);
+        }
+        .status-indicator-dot.dot-disabled {
+          background: #dc2626;
+          box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
         }
 
         /* Dialogs / Modals */
@@ -9379,8 +9502,8 @@ export default function AdminPanel({
             top: 0;
             left: 0;
             bottom: 0;
-            width: 270px;
-            max-width: 82vw;
+            width: 235px;
+            max-width: 80vw;
             z-index: 99999 !important;
             transform: translateX(-100%);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -9581,7 +9704,7 @@ export default function AdminPanel({
             height: 56px;
             position: sticky;
             top: 0;
-            z-index: 950;
+            z-index: 1000;
             background: rgba(255, 255, 255, 0.98);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             gap: 8px;
@@ -9784,14 +9907,15 @@ export default function AdminPanel({
         }
 
         .pos-customer-top-card {
-          padding: 16px 20px;
-          margin-bottom: 20px;
+          padding: 10px 14px;
+          margin-bottom: 12px;
+          border-radius: 10px;
         }
 
         .pos-customer-compact-grid {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 12px;
+          grid-template-columns: 1.2fr 1fr 2fr 1fr 0.8fr;
+          gap: 10px;
           align-items: end;
         }
 
@@ -9866,14 +9990,16 @@ export default function AdminPanel({
 
         .pos-input-select {
           width: 100%;
-          padding: 10px 14px;
-          border: 1.5px solid #cbd5e1;
-          border-radius: 8px;
-          font-size: 0.88rem;
+          padding: 6px 12px;
+          height: 34px;
+          border: 1px solid #cbd5e1;
+          border-radius: 6px;
+          font-size: 0.82rem;
           font-weight: 600;
           color: #0f172a;
           outline: none;
           background: #f8fafc;
+          box-sizing: border-box;
         }
 
         .pos-input-select:focus {
@@ -9890,7 +10016,8 @@ export default function AdminPanel({
         .pos-form-field {
           display: flex;
           flex-direction: column;
-          gap: 5px;
+          gap: 3px;
+          min-width: 0;
         }
 
         .pos-form-field.full {
@@ -9898,23 +10025,38 @@ export default function AdminPanel({
         }
 
         .pos-form-field label {
-          font-size: 0.78rem;
+          font-size: 0.68rem;
           font-weight: 700;
           color: #475569;
+          letter-spacing: 0.15px;
+          text-transform: uppercase;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
-        .pos-form-field input {
-          padding: 9px 12px;
-          border: 1.5px solid #cbd5e1;
-          border-radius: 8px;
-          font-size: 0.86rem;
+        .pos-form-field input,
+        .pos-compact-small-input {
+          width: 100% !important;
+          max-width: 100% !important;
+          min-width: 0 !important;
+          padding: 4px 8px !important;
+          height: 30px !important;
+          border: 1px solid #cbd5e1 !important;
+          border-radius: 6px !important;
+          font-size: 0.78rem !important;
           outline: none;
-          background: #ffffff;
-          color: #0f172a;
+          background: #ffffff !important;
+          color: #0f172a !important;
+          box-sizing: border-box !important;
+          line-height: 1.2 !important;
+          transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
 
-        .pos-form-field input:focus {
-          border-color: #7c3aed;
+        .pos-form-field input:focus,
+        .pos-compact-small-input:focus {
+          border-color: #7c3aed !important;
+          box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.12) !important;
         }
 
         .pos-custom-item-btn {
@@ -10379,7 +10521,11 @@ export default function AdminPanel({
             position: static;
           }
           .pos-customer-compact-grid {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px 10px !important;
+          }
+          .pos-field-address {
+            grid-column: 1 / -1 !important;
           }
           .pos-payment-methods-grid {
             grid-template-columns: repeat(2, 1fr);
@@ -10388,8 +10534,8 @@ export default function AdminPanel({
 
         @media (max-width: 640px) {
           .pos-billing-screen {
-            padding: 12px 8px;
-            margin: 6px 4px;
+            padding: 10px 8px;
+            margin: 4px;
             border-radius: 12px;
           }
           .pos-card-box {
@@ -10397,13 +10543,40 @@ export default function AdminPanel({
             margin-bottom: 12px;
             border-radius: 10px;
           }
+          .pos-customer-top-card {
+            padding: 10px 10px;
+          }
           .pos-customer-compact-grid {
-            grid-template-columns: 1fr;
-            gap: 8px;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 6px 8px !important;
+          }
+          .pos-field-address {
+            grid-column: 1 / -1 !important;
+          }
+          .pos-form-field {
+            gap: 2px !important;
+            min-width: 0 !important;
+          }
+          .pos-form-field label {
+            font-size: 0.65rem !important;
+          }
+          .pos-form-field input,
+          .pos-compact-small-input {
+            padding: 4px 7px !important;
+            height: 29px !important;
+            font-size: 0.75rem !important;
+            border-radius: 5px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+          }
+          .pos-input-select {
+            height: 30px !important;
+            padding: 4px 8px !important;
+            font-size: 0.78rem !important;
           }
           .pos-form-two-col {
             grid-template-columns: 1fr;
-            gap: 8px;
+            gap: 6px;
           }
           .pos-payment-methods-grid {
             grid-template-columns: repeat(2, 1fr);

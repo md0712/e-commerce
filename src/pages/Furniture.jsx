@@ -1,22 +1,24 @@
 import React, { useState, useMemo } from 'react';
 import { Filter, SlidersHorizontal, ArrowUpDown, Check, Sparkles } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import FilterModal from '../components/FilterModal';
 import { products } from '../data/products';
 
 export default function Furniture({ 
   onSelectProduct, 
   onAddToCart, 
   wishlist = [], 
-  onToggleWishlist,
-  cart = [],
-  onUpdateQuantity,
-  searchQuery = '',
-  selectedSubcategory = 'all',
-  setSelectedSubcategory,
-  products: customProducts
+  onToggleWishlist, 
+  cart = [], 
+  onUpdateQuantity, 
+  searchQuery = '', 
+  selectedSubcategory = 'all', 
+  setSelectedSubcategory, 
+  products: customProducts 
 }) {
   const allProducts = customProducts || products;
   const [selectedSubcat, setSelectedSubcat] = useState(selectedSubcategory);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   React.useEffect(() => {
     if (selectedSubcategory) {
@@ -71,14 +73,14 @@ export default function Furniture({
       </div>
 
       <div className="container main-catalog-container">
-        {/* Filter and Subcategory Bar */}
-        <div className="catalog-toolbar">
-          {/* Subcategory Pills */}
-          <div className="subcat-pills">
+        {/* Compact Short-Size Quick-Shortcut Toolbar */}
+        <div className="compact-catalog-toolbar">
+          {/* Row 1: Subcategory Shortcut Pills */}
+          <div className="subcat-shortcut-strip">
             {subcategories.map(sub => (
               <button
                 key={sub.id}
-                className={`pill-btn ${selectedSubcat === sub.id ? 'active' : ''}`}
+                className={`shortcut-pill-btn ${selectedSubcat === sub.id ? 'active' : ''}`}
                 onClick={() => setSelectedSubcat(sub.id)}
               >
                 {sub.label}
@@ -86,10 +88,91 @@ export default function Furniture({
             ))}
           </div>
 
-          {/* Right Controls: Sort & Price filter */}
-          <div className="toolbar-controls">
-            <div className="price-slider-control">
-              <span className="price-label">Max: ₹{maxPrice.toLocaleString('en-IN')}</span>
+          {/* Row 2: 1-Tap Filter & Sort (Compact & Easy) */}
+          <div className="quick-filter-shortcuts-row">
+            <span className="shortcuts-label filter-label">
+              <SlidersHorizontal size={13} className="filter-label-icon" /> Filter:
+            </span>
+
+            {/* All Filters Button */}
+            <button 
+              type="button"
+              className={`filter-shortcut-chip main-filter-btn ${maxPrice < 60000 || selectedSubcat !== 'all' ? 'has-active-filters' : ''}`}
+              onClick={() => setIsFilterModalOpen(true)}
+              title="Open All Filters"
+            >
+              <Filter size={12} />
+              <span>All Filters</span>
+              {(maxPrice < 60000 || selectedSubcat !== 'all') && (
+                <span className="active-dot"></span>
+              )}
+            </button>
+
+            {/* Quick Price Filters (Put Filters first so they are visible on mobile!) */}
+            <button 
+              type="button"
+              className={`filter-shortcut-chip ${maxPrice === 25000 ? 'active' : ''}`}
+              onClick={() => setMaxPrice(25000)}
+            >
+              &lt; ₹25K
+            </button>
+            <button 
+              type="button"
+              className={`filter-shortcut-chip ${maxPrice === 40000 ? 'active' : ''}`}
+              onClick={() => setMaxPrice(40000)}
+            >
+              &lt; ₹40K
+            </button>
+            <button 
+              type="button"
+              className={`filter-shortcut-chip ${maxPrice >= 60000 ? 'active' : ''}`}
+              onClick={() => setMaxPrice(60000)}
+            >
+              All Prices
+            </button>
+
+            <span className="shortcut-divider">|</span>
+
+            {/* Quick Sort Options */}
+            <button 
+              type="button"
+              className={`filter-shortcut-chip ${sortBy === 'popular' ? 'active' : ''}`}
+              onClick={() => setSortBy('popular')}
+            >
+              Popular
+            </button>
+            <button 
+              type="button"
+              className={`filter-shortcut-chip ${sortBy === 'price-low' ? 'active' : ''}`}
+              onClick={() => setSortBy('price-low')}
+            >
+              ↓ Low-High
+            </button>
+            <button 
+              type="button"
+              className={`filter-shortcut-chip ${sortBy === 'price-high' ? 'active' : ''}`}
+              onClick={() => setSortBy('price-high')}
+            >
+              ↑ High-Low
+            </button>
+            <button 
+              type="button"
+              className={`filter-shortcut-chip ${sortBy === 'discount' ? 'active' : ''}`}
+              onClick={() => setSortBy('discount')}
+            >
+              % Offers
+            </button>
+            <button 
+              type="button"
+              className={`filter-shortcut-chip ${sortBy === 'rating' ? 'active' : ''}`}
+              onClick={() => setSortBy('rating')}
+            >
+              ★ Top Rated
+            </button>
+
+            {/* Compact inline slider if custom price needed */}
+            <div className="compact-price-slider">
+              <span className="compact-price-text">Max: ₹{maxPrice.toLocaleString('en-IN')}</span>
               <input 
                 type="range" 
                 min="5000" 
@@ -97,23 +180,9 @@ export default function Furniture({
                 step="2000"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="range-input"
+                className="compact-range-slider"
+                aria-label="Filter maximum price"
               />
-            </div>
-
-            <div className="sort-select-wrapper">
-              <ArrowUpDown size={14} className="sort-icon" />
-              <select 
-                value={sortBy} 
-                onChange={(e) => setSortBy(e.target.value)}
-                className="sort-dropdown"
-              >
-                <option value="popular">Sort: Popularity</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="discount">Highest Discount</option>
-                <option value="rating">Top Rated</option>
-              </select>
             </div>
           </div>
         </div>
@@ -155,6 +224,27 @@ export default function Furniture({
         )}
       </div>
 
+      {/* Comprehensive Filter Modal Sheet */}
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        title="Filter & Sort Furniture"
+        subcategories={subcategories}
+        selectedSubcat={selectedSubcat}
+        setSelectedSubcat={setSelectedSubcat}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        maxPrice={maxPrice}
+        setMaxPrice={setMaxPrice}
+        minPriceLimit={5000}
+        maxPriceLimit={60000}
+        pricePresets={[
+          { label: '< ₹25,000', val: 25000 },
+          { label: '< ₹40,000', val: 40000 }
+        ]}
+        totalResults={filteredProducts.length}
+      />
+
       <style>{`
         .catalog-page {
           padding-bottom: 60px;
@@ -192,86 +282,159 @@ export default function Furniture({
           line-height: 1.5;
         }
 
-        .catalog-toolbar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
+        /* Compact Short-Size Toolbar with 1-Tap Shortcuts */
+        .compact-catalog-toolbar {
           background: #ffffff;
-          padding: 16px 20px;
-          border-radius: var(--radius-lg);
           border: 1px solid var(--color-border);
-          box-shadow: var(--shadow-sm);
-          margin-bottom: 20px;
-          flex-wrap: wrap;
-          gap: 16px;
-        }
-        .subcat-pills {
+          border-radius: 14px;
+          padding: 10px 14px;
+          margin-bottom: 16px;
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
           display: flex;
+          flex-direction: column;
           gap: 8px;
-          flex-wrap: wrap;
-        }
-        .pill-btn {
-          padding: 8px 16px;
-          border-radius: var(--radius-full);
-          background: #f7f3ee;
-          color: var(--color-text-main);
-          font-size: 0.85rem;
-          font-weight: 600;
-          transition: all var(--transition-fast);
-        }
-        .pill-btn:hover {
-          background: #ecd8cb;
-          color: var(--color-primary);
-        }
-        .pill-btn.active {
-          background: var(--color-primary);
-          color: #ffffff;
         }
 
-        .toolbar-controls {
+        .subcat-shortcut-strip {
           display: flex;
           align-items: center;
-          gap: 20px;
-          flex-wrap: wrap;
+          gap: 6px;
+          overflow-x: auto;
+          scrollbar-width: none;
+          -webkit-overflow-scrolling: touch;
+          padding-bottom: 2px;
         }
-        .price-slider-control {
-          display: flex;
-          align-items: center;
-          gap: 10px;
+        .subcat-shortcut-strip::-webkit-scrollbar {
+          display: none;
         }
-        .price-label {
+
+        .shortcut-pill-btn {
+          white-space: nowrap;
+          padding: 6px 14px;
+          border-radius: 20px;
+          background: #f7f3ee;
+          color: var(--color-text-main);
           font-size: 0.82rem;
+          font-weight: 600;
+          border: 1px solid transparent;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          flex-shrink: 0;
+        }
+        .shortcut-pill-btn:hover {
+          background: #ebdcd0;
+          color: var(--color-primary);
+        }
+        .shortcut-pill-btn.active {
+          background: var(--color-primary);
+          color: #ffffff;
+          border-color: var(--color-primary);
+        }
+
+        .quick-filter-shortcuts-row {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          overflow-x: auto;
+          scrollbar-width: none;
+          -webkit-overflow-scrolling: touch;
+          padding-top: 6px;
+          border-top: 1px dashed #ebdcd0;
+        }
+        .quick-filter-shortcuts-row::-webkit-scrollbar {
+          display: none;
+        }
+
+        .shortcuts-label {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 0.74rem;
+          font-weight: 700;
+          color: var(--color-warm-dark);
+          white-space: nowrap;
+          flex-shrink: 0;
+          margin-right: 2px;
+        }
+        .filter-label-icon, .sparkle-shortcut-icon {
+          color: var(--color-primary);
+        }
+
+        .main-filter-btn {
+          background: #8c3b10 !important;
+          color: #ffffff !important;
+          border-color: #8c3b10 !important;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 4px 10px;
+          font-weight: 700;
+        }
+        .main-filter-btn:hover {
+          background: #732f0c !important;
+        }
+        .has-active-filters {
+          background: #b45309 !important;
+        }
+        .active-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #fde047;
+          display: inline-block;
+        }
+
+        .filter-shortcut-chip {
+          white-space: nowrap;
+          padding: 4px 10px;
+          border-radius: 6px;
+          background: #f9fafb;
+          border: 1px solid #e5e7eb;
+          color: #374151;
+          font-size: 0.76rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          flex-shrink: 0;
+        }
+        .filter-shortcut-chip:hover {
+          background: #f3f4f6;
+          border-color: #d1d5db;
+        }
+        .filter-shortcut-chip.active {
+          background: #fff3ec;
+          border-color: var(--color-primary);
+          color: var(--color-primary);
+          font-weight: 700;
+        }
+
+        .shortcut-divider {
+          color: #d1d5db;
+          font-size: 0.75rem;
+          flex-shrink: 0;
+        }
+
+        .compact-price-slider {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: #f9fafb;
+          border: 1px solid #e5e7eb;
+          border-radius: 6px;
+          padding: 2px 8px;
+          flex-shrink: 0;
+        }
+        .compact-price-text {
+          font-size: 0.72rem;
           font-weight: 700;
           color: var(--color-primary);
           white-space: nowrap;
         }
-        .range-input {
+        .compact-range-slider {
+          width: 80px;
+          height: 4px;
           accent-color: var(--color-primary);
           cursor: pointer;
-          width: 110px;
-        }
-
-        .sort-select-wrapper {
-          position: relative;
-          display: flex;
-          align-items: center;
-        }
-        .sort-icon {
-          position: absolute;
-          left: 10px;
-          color: var(--color-text-muted);
-          pointer-events: none;
-        }
-        .sort-dropdown {
-          padding: 8px 14px 8px 30px;
-          border-radius: var(--radius-md);
-          border: 1px solid var(--color-border);
-          background: #ffffff;
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: var(--color-text-main);
-          cursor: pointer;
-          outline: none;
         }
 
         .results-count-bar {
@@ -320,51 +483,21 @@ export default function Furniture({
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
           }
-          .catalog-toolbar {
-            flex-direction: column;
-            align-items: stretch;
-            padding: 12px;
+          .compact-catalog-toolbar {
+            padding: 8px 10px;
+            margin-bottom: 12px;
           }
         }
         @media (max-width: 640px) {
           .catalog-hero-banner {
-            padding: 26px 0;
-            margin-bottom: 16px;
+            padding: 24px 0;
+            margin-bottom: 14px;
           }
           .banner-heading {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
           }
           .banner-sub {
-            font-size: 0.82rem;
-          }
-          .subcat-pills {
-            overflow-x: auto;
-            flex-wrap: nowrap;
-            padding-bottom: 6px;
-            scrollbar-width: none;
-            -webkit-overflow-scrolling: touch;
-          }
-          .subcat-pills::-webkit-scrollbar {
-            display: none;
-          }
-          .pill-btn {
-            white-space: nowrap;
-            padding: 6px 12px;
-            font-size: 0.78rem;
-          }
-          .toolbar-controls {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 10px;
-          }
-          .price-slider-control {
-            justify-content: space-between;
-          }
-          .range-input {
-            width: 140px;
-          }
-          .sort-dropdown {
-            width: 100%;
+            font-size: 0.8rem;
           }
           .catalog-products-grid {
             grid-template-columns: repeat(2, 1fr) !important;
@@ -372,7 +505,7 @@ export default function Furniture({
           }
           .results-count-bar {
             font-size: 0.78rem;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
           }
         }
       `}</style>

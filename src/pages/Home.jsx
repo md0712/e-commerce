@@ -295,12 +295,6 @@ export default function Home({
               >
                 Electronics
               </button>
-              <button 
-                className={`tab-btn ${activeTab === 'appliances' ? 'active' : ''}`}
-                onClick={() => setActiveTab('appliances')}
-              >
-                Home Appliances
-              </button>
             </div>
 
             <button 
@@ -393,7 +387,7 @@ export default function Home({
                   <MapPin size={18} /> Get Showroom Directions
                 </button>
                 <a 
-                  href="https://wa.me/919876543210?text=Hi%20Sardar%20Mart%2C%20I%20would%20like%20to%20book%20a%20showroom%20visit" 
+                  href="https://wa.me/916383056338?text=Hi%20Sardar%20Mart%2C%20I%20would%20like%20to%20book%20a%20showroom%20visit" 
                   target="_blank" 
                   rel="noreferrer"
                   className="btn-whatsapp"
@@ -406,7 +400,7 @@ export default function Home({
               <div className="showroom-hours-card">
                 <h4>Showroom Hours &amp; Location</h4>
                 <p className="hours-row"><strong>Open:</strong> 9:30 AM – 9:30 PM (All 7 Days)</p>
-                <p className="address-row">123, Market Street, Thousand Lights, Chennai, Tamil Nadu - 600001</p>
+                <p className="address-row">190, Erukkenchery High Rd, Anbalagan Colony, Vyasarpadi, Chennai, Tamil Nadu 600039</p>
                 <div className="live-status-pill">
                   <span className="online-dot"></span> Showroom Open Now
                 </div>

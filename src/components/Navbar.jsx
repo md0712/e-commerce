@@ -30,8 +30,7 @@ export default function Navbar({
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [mobileExpandedCat, setMobileExpandedCat] = useState({
     furniture: false,
-    electronics: false,
-    appliances: false
+    electronics: false
   });
 
   const handleNavClick = (page) => {
@@ -76,9 +75,9 @@ export default function Navbar({
     {
       id: 4,
       icon: <MessageCircle size={14} className="inline-icon text-wa" />,
-      text: "Instant WhatsApp Showroom Help: +91 98765 43210",
+      text: "Instant WhatsApp Showroom Help: +91 63830 56338",
       badge: "WhatsApp Help",
-      action: () => window.open('https://wa.me/919876543210', '_blank')
+      action: () => window.open('https://wa.me/916383056338', '_blank')
     }
   ];
 
@@ -109,7 +108,7 @@ export default function Navbar({
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      if (currentPage !== 'furniture' && currentPage !== 'electronics' && currentPage !== 'appliances') {
+      if (currentPage !== 'furniture' && currentPage !== 'electronics') {
         setCurrentPage('furniture');
       }
       if (onSearch) onSearch(searchQuery);
@@ -163,7 +162,7 @@ export default function Navbar({
               <MapPin size={13} /> Find Showrooms
             </button>
             <span className="bar-separator">|</span>
-            <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" className="top-link top-whatsapp">
+            <a href="https://wa.me/916383056338" target="_blank" rel="noreferrer" className="top-link top-whatsapp">
               <MessageCircle size={13} /> WhatsApp Help
             </a>
           </div>
@@ -201,7 +200,6 @@ export default function Navbar({
                 <option value="all">All Categories</option>
                 <option value="furniture">Furniture</option>
                 <option value="electronics">Electronics</option>
-                <option value="appliances">Home Appliances</option>
               </select>
               <ChevronDown size={14} className="dropdown-arrow" />
             </div>
@@ -219,7 +217,7 @@ export default function Navbar({
               />
             </div>
             <button type="submit" className="search-submit-btn" aria-label="Search">
-              <Search size={18} />
+              <Search size={16} />
             </button>
           </form>
 
@@ -227,18 +225,18 @@ export default function Navbar({
           <div className="header-actions">
             {/* WhatsApp Quick Dial (Desktop) */}
             <a 
-              href="https://wa.me/919876543210?text=Hi%20Sardar%20Mart%2C%20I%20would%20like%20to%20enquire%20about%20your%20products"
+              href="https://wa.me/916383056338?text=Hi%20Sardar%20Mart%2C%20I%20would%20like%20to%20enquire%20about%20your%20products"
               target="_blank" 
               rel="noreferrer"
               className="quick-whatsapp-btn"
               title="Quick WhatsApp Enquiry"
             >
               <div className="wa-icon-circle">
-                <MessageCircle size={18} />
+                <MessageCircle size={15} />
               </div>
               <div className="wa-text-block">
                 <span className="wa-label">Enquiry Helpline</span>
-                <span className="wa-number">+91 98765 43210</span>
+                <span className="wa-number">+91 63830 56338</span>
               </div>
             </a>
 
@@ -251,20 +249,7 @@ export default function Navbar({
               <Search size={22} />
             </button>
 
-            {/* Dashboard Quick Access (Desktop) */}
-            {onOpenAdmin && (
-              <button 
-                className="action-icon-btn admin-quick-btn desk-only-flex" 
-                onClick={onOpenAdmin}
-                title="Admin Dashboard & Invoices"
-                aria-label="Dashboard"
-              >
-                <div className="icon-with-badge">
-                  <ShieldCheck size={22} className="admin-header-icon" />
-                </div>
-                <span className="icon-btn-label">Dashboard</span>
-              </button>
-            )}
+
 
             {/* Wishlist */}
             <button 
@@ -274,7 +259,7 @@ export default function Navbar({
               aria-label="Wishlist"
             >
               <div className="icon-with-badge">
-                <Heart size={22} />
+                <Heart size={20} />
                 {wishlistCount > 0 && <span className="counter-badge">{wishlistCount}</span>}
               </div>
               <span className="icon-btn-label">Wishlist</span>
@@ -288,7 +273,7 @@ export default function Navbar({
               aria-label="Cart"
             >
               <div className="icon-with-badge">
-                <ShoppingBag size={22} />
+                <ShoppingBag size={20} />
                 {cartCount > 0 && <span className="counter-badge badge-accent">{cartCount}</span>}
               </div>
               <span className="icon-btn-label">Cart</span>
@@ -529,101 +514,7 @@ export default function Navbar({
                 </div>
               </div>
             </li>
-            <li className="nav-divider" aria-hidden="true" />
 
-            {/* 3. Home Appliances with Drop List */}
-            <li 
-              className={`nav-item-dropdown dropdown-appliances ${currentPage === 'appliances' ? 'active' : ''}`}
-              onMouseEnter={() => setActiveDropdown('appliances')}
-              onMouseLeave={() => setActiveDropdown(null)}
-            >
-              <button 
-                onClick={() => handleNavClick('appliances')}
-                className="nav-btn-with-dropdown"
-                aria-expanded={activeDropdown === 'appliances'}
-                aria-haspopup="true"
-              >
-                <span>Home Appliances</span>
-                <span 
-                  className="nav-chevron-wrap"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActiveDropdown(activeDropdown === 'appliances' ? null : 'appliances');
-                  }}
-                  title="Toggle Home Appliances menu"
-                >
-                  <ChevronDown size={14} className={`nav-chevron ${activeDropdown === 'appliances' ? 'open' : ''}`} />
-                </span>
-              </button>
-
-              {/* Appliances Drop List Menu */}
-              <div className={`nav-dropdown-menu ${activeDropdown === 'appliances' ? 'show' : ''}`}>
-                <div className="dropdown-grid">
-                  <div className="dropdown-links-col">
-                    <span className="dropdown-col-heading">KITCHEN &amp; HOME ESSENTIALS</span>
-                    <div className="dropdown-links-list">
-                      <button onClick={(e) => { e.stopPropagation(); handleSubcatClick('appliances', 'mixers'); }} className="dropdown-item-link">
-                        <span className="dropdown-item-icon">🍲</span>
-                        <div className="dropdown-item-content">
-                          <strong className="dropdown-item-title">Mixer Grinders &amp; Blenders</strong>
-                          <span className="dropdown-item-desc">1000W Heavy Duty Copper Motor, 4 Jars</span>
-                        </div>
-                        <span className="dropdown-item-badge">8+ Models</span>
-                      </button>
-
-                      <button onClick={(e) => { e.stopPropagation(); handleSubcatClick('appliances', 'kitchen'); }} className="dropdown-item-link">
-                        <span className="dropdown-item-icon">🍳</span>
-                        <div className="dropdown-item-content">
-                          <strong className="dropdown-item-title">Air Fryers &amp; Microwaves</strong>
-                          <span className="dropdown-item-desc">Digital Air Fryers &amp; Convection OTGs</span>
-                        </div>
-                        <span className="dropdown-item-badge">10+ Models</span>
-                      </button>
-
-                      <button onClick={(e) => { e.stopPropagation(); handleSubcatClick('appliances', 'home'); }} className="dropdown-item-link">
-                        <span className="dropdown-item-icon">💧</span>
-                        <div className="dropdown-item-content">
-                          <strong className="dropdown-item-title">RO Water Purifiers</strong>
-                          <span className="dropdown-item-desc">Active Copper + Mineralizer + UV Tech</span>
-                        </div>
-                        <span className="dropdown-item-badge">6+ Models</span>
-                      </button>
-                    </div>
-
-                    <div className="dropdown-footer-link">
-                      <button onClick={() => { setActiveDropdown(null); handleNavClick('appliances'); }}>
-                        View Full Appliances Collection <ArrowRight size={14} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Dropdown Spotlight Card */}
-                  <div className="dropdown-spotlight-card" onClick={() => { setActiveDropdown(null); handleNavClick('offers'); }}>
-                    <div className="spotlight-badge">COMBO OFFER</div>
-                    <img 
-                      src="https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=600&q=80" 
-                      alt="Kitchen Essentials" 
-                      className="spotlight-img"
-                    />
-                    <div className="spotlight-body">
-                      <h4>Smart Kitchen Trio</h4>
-                      <p>Buy Chimney + Cooktop + Mixer &amp; Save Flat ₹5,000.</p>
-                      <span className="spotlight-action">View Appliance Bundles →</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </li>
-            {storeSettings?.showBillingPage !== false && (
-              <>
-                <li className="nav-divider" aria-hidden="true" />
-                <li className={currentPage === 'billing' ? 'active billing-nav-item' : 'billing-nav-item'}>
-                  <button onClick={() => handleNavClick('billing')} title="Tax Billing & Invoice Invoicing">
-                    <FileText size={14} className="billing-nav-icon" /> Billing &amp; Tax Invoice
-                  </button>
-                </li>
-              </>
-            )}
             <li className="nav-divider" aria-hidden="true" />
             <li className={currentPage === 'offers' ? 'active offers-nav-item' : 'offers-nav-item'}>
               <button onClick={() => handleNavClick('offers')}>
@@ -639,17 +530,7 @@ export default function Navbar({
             <li className={currentPage === 'contact' ? 'active' : ''}>
               <button onClick={() => handleNavClick('contact')}>Contact Us</button>
             </li>
-            {onOpenAdmin && (
-              <>
-                <li className="nav-divider" aria-hidden="true" />
-                <li className={currentPage === 'admin' ? 'active admin-nav-item' : 'admin-nav-item'}>
-                  <button onClick={onOpenAdmin} title="Executive Admin Panel & Tax Invoices" className="admin-nav-btn">
-                    <ShieldCheck size={14} className="admin-nav-icon" /> Dashboard
-                    <span className="nav-admin-tag">Admin</span>
-                  </button>
-                </li>
-              </>
-            )}
+
           </ul>
         </div>
       </nav>
@@ -790,64 +671,9 @@ export default function Navbar({
                 )}
               </div>
 
-              {/* Mobile Appliances Accordion Drop List */}
-              <div className="mobile-drawer-accordion">
-                <div className="drawer-accordion-header">
-                  <button 
-                    className={`drawer-link-btn ${currentPage === 'appliances' ? 'active' : ''}`}
-                    onClick={() => handleNavClick('appliances')}
-                  >
-                    <span>🍳 Home Appliances</span>
-                  </button>
-                  <button 
-                    className="drawer-accordion-toggle"
-                    onClick={() => setMobileExpandedCat(prev => ({ ...prev, appliances: !prev.appliances }))}
-                    aria-label="Expand Appliances subcategories"
-                  >
-                    <ChevronDown size={18} className={`accordion-chevron ${mobileExpandedCat.appliances ? 'open' : ''}`} />
-                  </button>
-                </div>
-                {mobileExpandedCat.appliances && (
-                  <div className="drawer-accordion-body animate-fade-in">
-                    <button onClick={() => handleSubcatClick('appliances', 'mixers')} className="drawer-subcat-btn">
-                      <span>🍲 Mixer Grinders</span>
-                      <small>8+ Models</small>
-                    </button>
-                    <button onClick={() => handleSubcatClick('appliances', 'kitchen')} className="drawer-subcat-btn">
-                      <span>🍳 Air Fryers &amp; Microwaves</span>
-                      <small>10+ Models</small>
-                    </button>
-                    <button onClick={() => handleSubcatClick('appliances', 'home')} className="drawer-subcat-btn">
-                      <span>💧 RO Water Purifiers</span>
-                      <small>6+ Models</small>
-                    </button>
-                    <button onClick={() => handleSubcatClick('appliances', 'all')} className="drawer-subcat-btn view-all-subcat">
-                      <span>Explore All Appliances →</span>
-                    </button>
-                  </div>
-                )}
-              </div>
 
-              {storeSettings?.showBillingPage !== false && (
-                <button 
-                  className={`drawer-link-btn ${currentPage === 'billing' ? 'active' : ''}`}
-                  onClick={() => handleNavClick('billing')}
-                >
-                  <span>🧾 Billing &amp; Tax Invoice</span>
-                  <ArrowRight size={16} />
-                </button>
-              )}
 
-              {onOpenAdmin && (
-                <button 
-                  className="drawer-link-btn"
-                  onClick={() => { setMobileMenuOpen(false); onOpenAdmin(); }}
-                  style={{ background: '#f5f3ff', color: '#7c3aed', fontWeight: 700 }}
-                >
-                  <span>⚙️ Admin Dashboard &amp; Invoices</span>
-                  <ArrowRight size={16} />
-                </button>
-              )}
+
 
               <button 
                 className={`drawer-link-btn drawer-offers-btn ${currentPage === 'offers' ? 'active' : ''}`}
@@ -891,13 +717,13 @@ export default function Navbar({
                 </div>
                 <p>Chat directly with our Chennai showroom managers on WhatsApp.</p>
                 <a 
-                  href="https://wa.me/919876543210?text=Hi%20Sardar%20Mart%2C%20I%20need%20assistance%20with%20products" 
+                  href="https://wa.me/916383056338?text=Hi%20Sardar%20Mart%2C%20I%20need%20assistance%20with%20products" 
                   target="_blank" 
                   rel="noreferrer"
                   className="btn-whatsapp"
                   style={{ width: '100%', justifyContent: 'center' }}
                 >
-                  <MessageCircle size={18} /> Chat: +91 98765 43210
+                  <MessageCircle size={18} /> Chat: +91 63830 56338
                 </a>
               </div>
             </div>
@@ -910,17 +736,18 @@ export default function Navbar({
         .navbar-wrapper {
           position: sticky;
           top: 0;
-          z-index: 900;
+          z-index: 1000;
           background: #ffffff;
-          box-shadow: 0 4px 20px rgba(42, 24, 16, 0.08);
+          box-shadow: 0 2px 12px rgba(42, 24, 16, 0.08);
+          width: 100%;
         }
 
         /* Top Sliding Announcement Bar */
         .top-announcement-bar {
           background: var(--color-warm-dark);
           color: #eeddd2;
-          font-size: 0.82rem;
-          padding: 6px 0;
+          font-size: 0.76rem;
+          padding: 3px 0;
           border-bottom: 1px solid rgba(255, 255, 255, 0.08);
           overflow: hidden;
         }
@@ -934,10 +761,10 @@ export default function Navbar({
           flex: 1;
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
           overflow: hidden;
           position: relative;
-          min-height: 28px;
+          min-height: 22px;
         }
 
         .announcement-slide-track {
@@ -958,9 +785,9 @@ export default function Navbar({
           background: rgba(245, 158, 11, 0.25);
           color: #fde047;
           border: 1px solid rgba(253, 224, 71, 0.3);
-          font-size: 0.65rem;
+          font-size: 0.62rem;
           font-weight: 800;
-          padding: 1px 7px;
+          padding: 1px 6px;
           border-radius: var(--radius-full);
           text-transform: uppercase;
           letter-spacing: 0.5px;
@@ -1032,8 +859,8 @@ export default function Navbar({
           color: #f1dfd3;
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          font-size: 0.82rem;
+          gap: 4px;
+          font-size: 0.76rem;
           transition: color var(--transition-fast);
         }
         .top-link:hover {
@@ -1056,7 +883,7 @@ export default function Navbar({
 
         /* Main Header */
         .main-header {
-          padding: 12px 0;
+          padding: 7px 0;
           background: #ffffff;
           border-bottom: 1px solid var(--color-border-subtle);
         }
@@ -1064,7 +891,7 @@ export default function Navbar({
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 20px;
+          gap: 16px;
         }
 
         /* Brand Logo */
@@ -1077,25 +904,25 @@ export default function Navbar({
           flex-shrink: 0;
         }
         .logo-emblem {
-          width: 44px;
-          height: 44px;
+          width: 36px;
+          height: 36px;
           background: linear-gradient(135deg, #a24e23 0%, #6d2f0d 100%);
-          border-radius: 12px;
+          border-radius: 9px;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           color: white;
-          box-shadow: 0 4px 12px rgba(162, 78, 35, 0.3);
+          box-shadow: 0 3px 10px rgba(162, 78, 35, 0.25);
         }
         .logo-icon-roof {
-          font-size: 11px;
+          font-size: 9px;
           line-height: 1;
           margin-bottom: -2px;
           color: #fed7aa;
         }
         .logo-icon-seat {
-          font-size: 18px;
+          font-size: 15px;
           line-height: 1;
         }
         .brand-text {
@@ -1104,19 +931,19 @@ export default function Navbar({
         }
         .brand-title {
           font-family: var(--font-heading);
-          font-size: 1.6rem;
+          font-size: 1.35rem;
           font-weight: 800;
           color: var(--color-warm-dark);
-          letter-spacing: -0.6px;
+          letter-spacing: -0.5px;
           line-height: 1.1;
         }
         .brand-title span {
           color: var(--color-primary);
         }
         .brand-subtitle {
-          font-size: 0.62rem;
+          font-size: 0.58rem;
           font-weight: 700;
-          letter-spacing: 2.2px;
+          letter-spacing: 1.8px;
           color: var(--color-text-muted);
           margin-top: 1px;
         }
@@ -1124,7 +951,8 @@ export default function Navbar({
         /* Search Form */
         .search-bar-form {
           flex: 1;
-          max-width: 600px;
+          max-width: 580px;
+          height: 36px;
           display: flex;
           align-items: center;
           border: 1.5px solid #d4c2b5;
@@ -1142,22 +970,23 @@ export default function Navbar({
           align-items: center;
           background: #faf6f2;
           border-right: 1px solid #e7d8cd;
-          padding: 0 12px;
+          padding: 0 10px;
+          height: 36px;
         }
         .category-dropdown {
           appearance: none;
           background: transparent;
           border: none;
-          font-size: 0.85rem;
+          font-size: 0.8rem;
           font-weight: 600;
           color: var(--color-text-main);
-          padding: 9px 18px 9px 4px;
+          padding: 6px 14px 6px 2px;
           cursor: pointer;
           outline: none;
         }
         .dropdown-arrow {
           position: absolute;
-          right: 8px;
+          right: 6px;
           pointer-events: none;
           color: var(--color-text-muted);
         }
@@ -1168,16 +997,16 @@ export default function Navbar({
         .search-input {
           width: 100%;
           border: none;
-          padding: 9px 16px;
+          padding: 6px 12px;
           outline: none;
           color: var(--color-text-main);
-          font-size: 0.9rem;
+          font-size: 0.84rem;
         }
         .search-submit-btn {
           background: var(--color-primary);
           color: #ffffff;
-          padding: 0 18px;
-          height: 42px;
+          padding: 0 14px;
+          height: 36px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1187,20 +1016,20 @@ export default function Navbar({
         .header-actions {
           display: flex;
           align-items: center;
-          gap: 16px;
+          gap: 12px;
         }
         .quick-whatsapp-btn {
           display: flex;
           align-items: center;
-          gap: 10px;
-          padding: 5px 12px 5px 6px;
+          gap: 7px;
+          padding: 3px 10px 3px 5px;
           background: #f0fdf4;
           border: 1px solid #bbf7d0;
           border-radius: var(--radius-full);
         }
         .wa-icon-circle {
-          width: 30px;
-          height: 30px;
+          width: 24px;
+          height: 24px;
           background: var(--color-whatsapp);
           color: #ffffff;
           border-radius: 50%;
@@ -1213,13 +1042,13 @@ export default function Navbar({
           flex-direction: column;
         }
         .wa-label {
-          font-size: 0.65rem;
+          font-size: 0.6rem;
           text-transform: uppercase;
           font-weight: 700;
           color: #166534;
         }
         .wa-number {
-          font-size: 0.8rem;
+          font-size: 0.74rem;
           font-weight: 700;
           color: #14532d;
         }
@@ -1234,24 +1063,24 @@ export default function Navbar({
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 3px;
+          gap: 2px;
           color: var(--color-warm-dark);
           position: relative;
-          padding: 4px;
+          padding: 3px;
         }
         .icon-with-badge {
           position: relative;
         }
         .counter-badge {
           position: absolute;
-          top: -6px;
-          right: -10px;
+          top: -5px;
+          right: -9px;
           background: var(--color-primary);
           color: white;
-          font-size: 0.68rem;
+          font-size: 0.64rem;
           font-weight: 700;
-          width: 18px;
-          height: 18px;
+          width: 17px;
+          height: 17px;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -1262,7 +1091,7 @@ export default function Navbar({
           background: #b45309;
         }
         .icon-btn-label {
-          font-size: 0.72rem;
+          font-size: 0.68rem;
           font-weight: 600;
         }
 
@@ -1311,9 +1140,9 @@ export default function Navbar({
         }
         .nav-divider {
           width: 1px;
-          height: 18px;
+          height: 14px;
           background: rgba(140, 59, 16, 0.2);
-          margin: 0 4px;
+          margin: 0 3px;
           flex-shrink: 0;
           align-self: center;
           pointer-events: none;
@@ -1321,9 +1150,9 @@ export default function Navbar({
         .nav-menu-list li button {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          padding: 12px 16px;
-          font-size: 0.92rem;
+          gap: 5px;
+          padding: 7px 13px;
+          font-size: 0.84rem;
           font-weight: 600;
           color: var(--color-text-main);
           position: relative;
@@ -1919,22 +1748,26 @@ export default function Navbar({
         /* Breakpoints */
         @media (max-width: 992px) {
           .quick-whatsapp-btn {
-            display: none;
+            display: none !important;
           }
           .desk-search {
-            display: none;
+            display: none !important;
           }
           .primary-nav {
-            display: none;
+            display: none !important;
           }
           .mobile-toggle-btn {
-            display: block;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
           }
           .mobile-search-toggle-btn {
-            display: block;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
           }
           .icon-btn-label {
-            display: none;
+            display: none !important;
           }
           .desk-only-flex {
             display: none !important;
@@ -1942,94 +1775,156 @@ export default function Navbar({
         }
 
         @media (max-width: 768px) {
+          .navbar-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            width: 100%;
+            background: #ffffff;
+            box-shadow: 0 2px 10px rgba(42, 24, 16, 0.08);
+          }
+          .top-announcement-bar {
+            padding: 3px 0;
+            font-size: 0.72rem;
+          }
           .announcement-slider-wrapper {
             width: 100%;
             justify-content: center;
+            min-height: 20px;
           }
           .announcement-slide-track {
             justify-content: center;
           }
           .slide-text {
-            font-size: 0.76rem;
+            font-size: 0.72rem;
+          }
+          .main-header {
+            padding: 6px 0;
+          }
+          .header-container {
+            padding: 0 12px;
+            gap: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+          }
+          .brand-logo {
+            gap: 8px;
+            flex-shrink: 0;
+          }
+          .logo-emblem {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+          }
+          .brand-title {
+            font-size: 1.2rem;
+            line-height: 1.1;
+          }
+          .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+          }
+          .action-icon-btn, .mobile-search-toggle-btn, .mobile-toggle-btn {
+            padding: 4px;
+            min-width: 32px;
+            min-height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            color: var(--color-warm-dark);
           }
         }
 
         @media (max-width: 500px) {
           .header-container {
             padding: 0 10px;
-            gap: 8px;
-          }
-          .slide-badge {
-            display: none;
-          }
-          .slider-dots {
-            display: none;
-          }
-          .top-announcement-bar {
-            padding: 5px 0;
-          }
-          .slide-text {
-            font-size: 0.74rem;
-          }
-          .brand-logo {
-            gap: 8px;
-          }
-          .logo-emblem {
-            width: 36px;
-            height: 36px;
-          }
-          .logo-icon-seat {
-            font-size: 16px;
-          }
-          .brand-title {
-            font-size: 1.25rem;
-          }
-          .brand-subtitle {
-            display: none;
-          }
-          .header-actions {
             gap: 6px;
           }
+          .slide-badge {
+            display: none !important;
+          }
+          .slider-dots {
+            display: none !important;
+          }
+          .top-announcement-bar {
+            padding: 2.5px 0;
+          }
+          .slide-text {
+            font-size: 0.7rem;
+          }
+          .brand-logo {
+            gap: 6px;
+          }
+          .logo-emblem {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+          }
+          .logo-icon-seat {
+            font-size: 13px;
+          }
+          .brand-title {
+            font-size: 1.12rem;
+          }
+          .brand-subtitle {
+            display: none !important;
+          }
+          .header-actions {
+            gap: 3px;
+          }
           .action-icon-btn, .mobile-search-toggle-btn, .mobile-toggle-btn {
-            padding: 4px;
+            padding: 3px;
+            min-width: 30px;
+            min-height: 30px;
+          }
+          .action-icon-btn svg, .mobile-search-toggle-btn svg, .mobile-toggle-btn svg {
+            width: 19px;
+            height: 19px;
           }
         }
 
         @media (max-width: 380px) {
           .header-container {
             padding: 0 6px;
-            gap: 6px;
+            gap: 4px;
           }
           .brand-logo {
-            gap: 6px;
+            gap: 5px;
           }
           .brand-title {
-            font-size: 1.12rem;
+            font-size: 1.05rem;
             letter-spacing: -0.3px;
           }
           .logo-emblem {
-            width: 30px;
-            height: 30px;
+            width: 26px;
+            height: 26px;
           }
           .logo-icon-seat {
-            font-size: 14px;
+            font-size: 12px;
           }
           .header-actions {
-            gap: 3px;
+            gap: 2px;
           }
           .action-icon-btn, .mobile-search-toggle-btn, .mobile-toggle-btn {
             padding: 2px;
+            min-width: 28px;
+            min-height: 28px;
           }
           .action-icon-btn svg, .mobile-search-toggle-btn svg, .mobile-toggle-btn svg {
-            width: 20px;
-            height: 20px;
+            width: 17px;
+            height: 17px;
           }
           .counter-badge {
-            width: 15px;
-            height: 15px;
-            font-size: 0.6rem;
-            top: -4px;
-            right: -6px;
+            width: 14px;
+            height: 14px;
+            font-size: 0.58rem;
+            top: -3px;
+            right: -5px;
           }
         }
       `}</style>

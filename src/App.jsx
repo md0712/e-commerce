@@ -12,7 +12,6 @@ import IntroLoader from './components/IntroLoader';
 import Home from './pages/Home';
 import Furniture from './pages/Furniture';
 import Electronics from './pages/Electronics';
-import Appliances from './pages/Appliances';
 import ProductDetails from './pages/ProductDetails';
 import Offers from './pages/Offers';
 import About from './pages/About';
@@ -106,9 +105,9 @@ export default function App() {
       if (savedPage === 'admin') {
         return 'admin';
       }
-      const validPages = ['furniture', 'electronics', 'appliances', 'offers', 'about', 'contact', 'billing'];
+      const validPages = ['furniture', 'electronics', 'offers', 'about', 'contact', 'billing'];
       if (validPages.includes(path)) return path;
-      return savedPage || 'home';
+      return (savedPage === 'appliances' ? 'home' : savedPage) || 'home';
     } catch {
       return 'home';
     }
@@ -156,7 +155,7 @@ export default function App() {
       storeLegalName: 'Sardar Mart',
       gstNumber: '33DVKPR2334L1Z9',
       showGstinBadge: false,   // Default OFF: Removes GST number across website
-      showBillingPage: true,   // Default ON: Enables Billing & Tax Invoice on website
+      showBillingPage: false,   // Default OFF: Only available in Admin Panel
       showWhatsAppButton: true,
       showOrderTracking: true,
       showWishlist: true,
@@ -194,7 +193,7 @@ export default function App() {
         return {
           ...defaultSettings,
           ...parsed,
-          showBillingPage: parsed.showBillingPage !== undefined ? parsed.showBillingPage : true
+          showBillingPage: parsed.showBillingPage !== undefined ? parsed.showBillingPage : false
         };
       }
       return defaultSettings;
@@ -426,6 +425,9 @@ export default function App() {
   };
 
   const handleNavigate = (page, subcat = 'all') => {
+    if (page === 'appliances') {
+      page = 'home';
+    }
     try {
       localStorage.setItem('hk_current_page', page);
       if (page === 'admin') {
@@ -581,7 +583,7 @@ export default function App() {
         }}
         onSearch={(query) => {
           setSearchQuery(query);
-          if (currentPage !== 'furniture' && currentPage !== 'electronics' && currentPage !== 'appliances') {
+          if (currentPage !== 'furniture' && currentPage !== 'electronics') {
             handleNavigate('furniture');
           }
         }}
@@ -635,21 +637,6 @@ export default function App() {
           />
         )}
 
-        {currentPage === 'appliances' && (
-          <Appliances
-            onSelectProduct={handleSelectProduct}
-            onAddToCart={handleAddToCart}
-            wishlist={wishlist}
-            onToggleWishlist={handleToggleWishlist}
-            cart={cart}
-            onUpdateQuantity={handleUpdateQuantity}
-            searchQuery={searchQuery}
-            selectedSubcategory={selectedSubcategory}
-            setSelectedSubcategory={setSelectedSubcategory}
-            products={catalogProducts}
-          />
-        )}
-
         {currentPage === 'product-details' && (
           <ProductDetails
             product={selectedProduct}
@@ -659,6 +646,9 @@ export default function App() {
             isWishlisted={wishlist.some((item) => item.id === selectedProduct?.id)}
             onToggleWishlist={handleToggleWishlist}
             cartItem={cart.find((item) => item.id === selectedProduct?.id)}
+            cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
+            cart={cart}
+            wishlist={wishlist}
             onUpdateQuantity={handleUpdateQuantity}
             onRemoveFromCart={handleRemoveFromCart}
             onOpenCart={() => setIsCartOpen(true)}
@@ -725,6 +715,7 @@ export default function App() {
           setIsCartOpen(false);
           handleNavigate('billing');
         }}
+        storeSettings={storeSettings}
       />
 
       {/* Wishlist Drawer */}
@@ -786,7 +777,7 @@ export default function App() {
       {/* Floating WhatsApp Quick Action Button */}
       {storeSettings?.showWhatsAppButton !== false && (
         <a
-          href="https://wa.me/919876543210?text=Hi%20Sardar%20Mart%2C%20I%20am%20browsing%20your%20website%20and%20would%20like%20to%20enquire%20about%20your%20products"
+          href="https://wa.me/916383056338?text=Hi%20Sardar%20Mart%2C%20I%20am%20browsing%20your%20website%20and%20would%20like%20to%20enquire%20about%20your%20products"
           target="_blank"
           rel="noreferrer"
           className={`floating-wa-btn pulse-glow ${isBottomNavVisible ? 'nav-visible' : 'nav-hidden'}`}

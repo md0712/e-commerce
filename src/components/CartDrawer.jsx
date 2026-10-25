@@ -15,7 +15,8 @@ export default function CartDrawer({
   onPlaceOrder,
   onOpenTrackOrder,
   onViewInvoice,
-  onNavigateToBilling
+  onNavigateToBilling,
+  storeSettings
 }) {
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
@@ -48,6 +49,12 @@ export default function CartDrawer({
 
   const finalTotal = Math.max(0, subtotal - discountAmount);
 
+  // Commercial Indian GST Tax Calculations (18% GST Included in Retail Price)
+  const taxableAmount = Math.round(finalTotal / 1.18);
+  const gstAmount = finalTotal - taxableAmount;
+  const cgst = Math.round(gstAmount / 2);
+  const sgst = gstAmount - cgst;
+
   const formatPrice = (val) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -60,6 +67,20 @@ export default function CartDrawer({
     e.preventDefault();
     const clean = couponCode.trim().toUpperCase();
     if (!clean) return;
+
+    // Check if coupon is disabled in Admin Panel
+    try {
+      const saved = localStorage.getItem('hk_admin_coupons');
+      if (saved) {
+        const adminCoupons = JSON.parse(saved);
+        const match = adminCoupons.find(c => c.code === clean);
+        if (match && match.status === 'Inactive') {
+          setCouponError(`Coupon code "${clean}" is currently disabled / inactive`);
+          setAppliedCoupon(null);
+          return;
+        }
+      }
+    } catch {}
 
     if (clean === 'FESTIVE50') {
       if (subtotal < 40000) {
@@ -90,7 +111,7 @@ export default function CartDrawer({
       `Hello Sardar Mart, I want to confirm my order enquiry:%0A%0A${itemsList}%0A%0ASubtotal: ${formatPrice(subtotal)}%0ADiscount: ${formatPrice(discountAmount)}%0ANet Total: ${formatPrice(finalTotal)}%0A%0APlease provide delivery schedule and invoice confirmation.`
     );
 
-    window.open(`https://wa.me/919876543210?text=${message}`, '_blank');
+    window.open(`https://wa.me/916383056338?text=${message}`, '_blank');
   };
 
   const handleProceedToBilling = () => {
@@ -213,34 +234,7 @@ export default function CartDrawer({
                   ))}
                 </div>
 
-                {/* Coupon Code Section */}
-                <div className="coupon-section">
-                  <form onSubmit={handleApplyCoupon} className="coupon-form">
-                    <div className="coupon-input-box">
-                      <Tag size={16} className="tag-icon" />
-                      <input 
-                        id="cart-coupon-input"
-                        name="couponCode"
-                        type="text" 
-                        autoComplete="off"
-                        aria-label="Enter coupon discount code"
-                        placeholder="Enter Coupon (e.g. COMBOBEST, FESTIVE50)"
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value)}
-                        className="coupon-input"
-                      />
-                    </div>
-                    <button type="submit" className="coupon-apply-btn">Apply</button>
-                  </form>
-                  {appliedCoupon && (
-                    <div className="applied-tag">
-                      <Check size={14} /> Coupon <strong>{appliedCoupon}</strong> applied successfully!
-                    </div>
-                  )}
-                  {couponError && (
-                    <div className="coupon-err">{couponError}</div>
-                  )}
-                </div>
+
               </div>
             ) : (
               <div className="empty-cart-state">
@@ -260,9 +254,46 @@ export default function CartDrawer({
               <div className="drawer-footer">
                 <div className="summary-table">
                   <div className="summary-row">
-                    <span>Subtotal</span>
+                    <span>Gross Value (MRP Base)</span>
                     <span>{formatPrice(subtotal)}</span>
                   </div>
+
+                  {/* Comprehensive GST Tax Breakdown & Explanation */}
+                  <div className="cart-gst-breakdown-card">
+                    <div className="cart-gst-title-row">
+                      <div className="cart-gst-title-left">
+                        <FileText size={14} className="cart-gst-icon" />
+                        <strong>GST Tax Breakdown (18% Included)</strong>
+                      </div>
+                      <span className="cart-gst-sum-badge">{formatPrice(gstAmount)}</span>
+                    </div>
+
+                    <div className="cart-gst-lines">
+                      <div className="summary-row gst-sub-row">
+                        <span>• Net Taxable Value (Base)</span>
+                        <span>{formatPrice(taxableAmount)}</span>
+                      </div>
+                      <div className="summary-row gst-sub-row">
+                        <span>• CGST (Central Tax @ 9%)</span>
+                        <span className="gst-tax-val">+{formatPrice(cgst)}</span>
+                      </div>
+                      <div className="summary-row gst-sub-row">
+                        <span>• SGST (State Tax @ 9%)</span>
+                        <span className="gst-tax-val">+{formatPrice(sgst)}</span>
+                      </div>
+                    </div>
+
+                    <div className="cart-gst-legal-box">
+                      <div className="cart-gst-legal-meta">
+                        <span>GSTIN: <strong>{storeSettings?.gstNumber || '33DVKPR2334L1Z9'}</strong></span>
+                        <span className="cart-hsn-tag">HSN: 9403 / 8528</span>
+                      </div>
+                      <p className="cart-gst-explainer">
+                        All catalog prices are 100% inclusive of 18% GST (CGST 9% + SGST 9%). An official Tax Invoice is issued with B2B Input Tax Credit (ITC) eligibility.
+                      </p>
+                    </div>
+                  </div>
+
                   {discountAmount > 0 && (
                     <div className="summary-row discount-row">
                       <span>Discount</span>
@@ -274,7 +305,7 @@ export default function CartDrawer({
                     <span className="free-text">FREE</span>
                   </div>
                   <div className="summary-row total-row">
-                    <strong>Total Amount</strong>
+                    <strong>Total Amount (Inc. GST)</strong>
                     <strong className="grand-total">{formatPrice(finalTotal)}</strong>
                   </div>
                 </div>
@@ -408,11 +439,19 @@ export default function CartDrawer({
                 </div>
               </div>
 
-              {/* Order Amount Preview */}
+              {/* Order Amount Preview with Full GST Breakdown */}
               <div className="billing-order-summary">
                 <div className="summary-row">
                   <span>Items Total ({cartItems.reduce((a, b) => a + b.quantity, 0)})</span>
                   <span>{formatPrice(subtotal)}</span>
+                </div>
+                <div className="summary-row">
+                  <span>Net Taxable Base Value</span>
+                  <span>{formatPrice(taxableAmount)}</span>
+                </div>
+                <div className="summary-row" style={{ color: '#047857', fontWeight: 600 }}>
+                  <span>CGST (9%) + SGST (9%) [Included]</span>
+                  <span>+{formatPrice(gstAmount)}</span>
                 </div>
                 {discountAmount > 0 && (
                   <div className="summary-row discount-row">
@@ -425,7 +464,7 @@ export default function CartDrawer({
                   <span className="free-text">FREE</span>
                 </div>
                 <div className="summary-row total-row">
-                  <strong>Total Payable</strong>
+                  <strong>Total Payable (Inc. GST)</strong>
                   <strong className="grand-total">{formatPrice(finalTotal)}</strong>
                 </div>
               </div>
@@ -766,6 +805,88 @@ export default function CartDrawer({
           color: var(--color-text-muted);
           font-size: 0.88rem;
           margin-bottom: 20px;
+        }
+
+        /* Cart GST Breakdown Card */
+        .cart-gst-breakdown-card {
+          background: #fcf9f5;
+          border: 1px solid #ebdcd0;
+          border-radius: var(--radius-md);
+          padding: 10px 12px;
+          margin: 4px 0;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .cart-gst-title-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 1px solid #ebdcd0;
+          padding-bottom: 6px;
+        }
+        .cart-gst-title-left {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.82rem;
+          color: var(--color-warm-dark);
+        }
+        .cart-gst-icon {
+          color: var(--color-primary);
+        }
+        .cart-gst-sum-badge {
+          background: rgba(140, 59, 16, 0.1);
+          color: var(--color-primary);
+          font-size: 0.76rem;
+          font-weight: 700;
+          padding: 2px 7px;
+          border-radius: 4px;
+        }
+        .cart-gst-lines {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .gst-sub-row {
+          font-size: 0.78rem;
+          color: #64748b;
+        }
+        .gst-tax-val {
+          color: #0f172a;
+          font-weight: 600;
+        }
+        .cart-gst-legal-box {
+          border-top: 1px dashed #ebdcd0;
+          padding-top: 6px;
+          margin-top: 2px;
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+        }
+        .cart-gst-legal-meta {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-size: 0.72rem;
+          color: #475569;
+        }
+        .cart-gst-legal-meta strong {
+          color: var(--color-text-main);
+        }
+        .cart-hsn-tag {
+          background: #e2e8f0;
+          color: #334155;
+          font-size: 0.68rem;
+          font-weight: 700;
+          padding: 1px 5px;
+          border-radius: 3px;
+        }
+        .cart-gst-explainer {
+          font-size: 0.7rem;
+          color: #64748b;
+          margin: 0;
+          line-height: 1.35;
         }
 
         /* Footer totals */

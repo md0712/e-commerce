@@ -52,46 +52,7 @@ export default function Offers({
         </div>
       </section>
 
-      {/* 2. Active Coupons Strip */}
-      <section className="coupons-section">
-        <div className="container">
-          <h2 className="section-title">Claim Exclusive Discount Coupons</h2>
-          <div className="coupons-grid">
-            {specialOffers.map((offer) => (
-              <div key={offer.id} className="coupon-card">
-                <div className="coupon-left">
-                  <div className="coupon-tag-badge">
-                    <Tag size={14} /> {offer.subtitle}
-                  </div>
-                  <h3 className="coupon-title">{offer.title}</h3>
-                  <p className="coupon-desc">{offer.discountHighlight}</p>
-                  <span className="coupon-validity">{offer.validTill}</span>
-                </div>
 
-                <div className="coupon-right">
-                  <div className="coupon-code-box">
-                    <span className="code-text">{offer.code}</span>
-                  </div>
-                  <button 
-                    className={`copy-code-btn ${copiedCode === offer.code ? 'copied' : ''}`}
-                    onClick={() => handleCopyCode(offer.code)}
-                  >
-                    {copiedCode === offer.code ? (
-                      <>
-                        <Check size={14} /> Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy size={14} /> Copy Code
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* 3. Curated Combo Bundles (Furniture + Electronics) */}
       <section className="combos-section">

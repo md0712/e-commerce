@@ -11,7 +11,7 @@ export default function Contact({ storeSettings }) {
     phone: '',
     email: '',
     category: 'Furniture & Living Room',
-    branch: 'Flagship Showroom (Thousand Lights, Chennai)',
+    branch: 'Flagship Showroom (Vyasarpadi, Chennai)',
     message: ''
   });
 
@@ -20,16 +20,16 @@ export default function Contact({ storeSettings }) {
 
   const branches = [
     {
-      name: 'Flagship Mega Showroom (Thousand Lights)',
-      city: 'Chennai Central',
-      address: '123, Market Street, Thousand Lights, Mount Road, Chennai, Tamil Nadu - 600001',
-      phone: '+91 98765 43210',
-      whatsapp: '919876543210',
+      name: 'Flagship Mega Showroom (Vyasarpadi)',
+      city: 'Chennai North',
+      address: '190, Erukkenchery High Rd, Anbalagan Colony, Vyasarpadi, Chennai, Tamil Nadu 600039',
+      phone: '+91 63830 56338',
+      whatsapp: '916383056338',
       email: 'chennai.central@sardarmart.com',
       timing: '9:30 AM – 9:30 PM (All 7 Days Open)',
-      // Google Maps embed URL for Chennai Thousand Lights
-      mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3886.586675549005!2d80.2520845!3d13.0619864!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a5266157121b6a7%3A0x6b8471c261e3895e!2sThousand%20Lights%2C%20Chennai%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin',
-      directionsUrl: 'https://maps.google.com/?q=Thousand+Lights+Chennai'
+      // Google Maps embed URL for Chennai Vyasarpadi / Erukkenchery High Rd
+      mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3885.6797825316335!2d80.2582766!3d13.1194212!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a5265ecb902e861%3A0x6bfa5f73d8e578c7!2sErukkenchery%20High%20Rd%2C%20Chennai%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin',
+      directionsUrl: 'https://maps.google.com/?q=190,+Erukkenchery+High+Rd,+Anbalagan+Colony,+Vyasarpadi,+Chennai,+Tamil+Nadu+600039'
     },
     {
       name: 'OMR Tech Corridor Experience Center',
@@ -125,18 +125,18 @@ export default function Contact({ storeSettings }) {
 
               {/* Quick Communication Cards */}
               <div className="quick-channels-grid">
-                <a href="tel:+919876543210" className="channel-card">
+                <a href="tel:+916383056338" className="channel-card">
                   <div className="channel-icon-circle">
                     <Phone size={20} />
                   </div>
                   <div>
                     <span className="channel-label">Call Showroom</span>
-                    <strong>+91 98765 43210</strong>
+                    <strong>+91 63830 56338</strong>
                   </div>
                 </a>
 
                 <a 
-                  href="https://wa.me/919876543210" 
+                  href="https://wa.me/916383056338" 
                   target="_blank" 
                   rel="noreferrer" 
                   className="channel-card wa-channel"
@@ -279,7 +279,6 @@ export default function Contact({ storeSettings }) {
                             <option>Bedroom Suites &amp; Mattresses</option>
                             <option>Smart TVs &amp; Home Audio</option>
                             <option>Refrigerators &amp; Washers</option>
-                            <option>Kitchen &amp; Home Appliances</option>
                             <option>Complete Home Combo Bundles</option>
                             <option>Bulk / Commercial Showroom Orders</option>
                           </select>
@@ -292,7 +291,7 @@ export default function Contact({ storeSettings }) {
                             value={formData.branch}
                             onChange={handleChange}
                           >
-                            <option>Flagship Showroom (Thousand Lights, Chennai)</option>
+                            <option>Flagship Showroom (Vyasarpadi, Chennai)</option>
                             <option>OMR Tech Showroom (Thoraipakkam)</option>
                             <option>Coimbatore Experience Center</option>
                             <option>Online Order &amp; Home Delivery Assistance</option>

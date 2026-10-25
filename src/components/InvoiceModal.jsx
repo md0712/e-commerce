@@ -67,18 +67,24 @@ export default function InvoiceModal({ isOpen, onClose, order, storeSettings: pr
       <div className="invoice-modal-container" onClick={(e) => e.stopPropagation()}>
         {/* Top Control Bar (Hidden during Print) */}
         <div className="invoice-controls-bar no-print">
-          <div className="controls-left">
-            <span className="invoice-pill-tag">Tax Invoice &amp; Customer Receipt</span>
-            <span className="invoice-order-ref">#{id}</span>
+          <div className="controls-top-row">
+            <div className="controls-left">
+              <span className="invoice-pill-tag">Tax Invoice</span>
+              <span className="invoice-order-ref">#{id}</span>
+            </div>
+            <button className="btn-close-invoice mobile-only-close" onClick={onClose} title="Close Invoice" aria-label="Close Invoice">
+              <X size={18} />
+            </button>
           </div>
+
           <div className="controls-right">
             <button className="btn-download-pdf" onClick={handleDownload} title="Download Tax Invoice File">
-              <Download size={15} /> Download File
+              <Download size={14} /> <span>Download File</span>
             </button>
             <button className="btn-print" onClick={handlePrint} title="Print Invoice / Save as PDF">
-              <Printer size={16} /> Print / Save PDF
+              <Printer size={15} /> <span>Print / Save PDF</span>
             </button>
-            <button className="btn-close-invoice" onClick={onClose} title="Close Invoice">
+            <button className="btn-close-invoice desktop-only-close" onClick={onClose} title="Close Invoice" aria-label="Close Invoice">
               <X size={18} />
             </button>
           </div>
@@ -95,10 +101,10 @@ export default function InvoiceModal({ isOpen, onClose, order, storeSettings: pr
               <p className="invoice-brand-sub">FURNITURE &amp; ELECTRONICS SHOWROOM</p>
               <p className="invoice-company-details">
                 Sardar Mart Retail Private Limited<br />
-                123, Market Street, Thousand Lights, Anna Salai<br />
+                190, Erukkenchery High Rd, Anbalagan Colony, Vyasarpadi, Chennai, Tamil Nadu 600039<br />
                 {storeSettings?.showGstinBadge && (
                   <><strong>GSTIN:</strong> {storeSettings?.gstNumber || '33DVKPR2334L1Z9'} | </>
-                )}<strong>Phone:</strong> +91 98765 43210<br />
+                )}<strong>Phone:</strong> +91 63830 56338<br />
                 <strong>Email:</strong> care@sardarmart.com | <strong>Web:</strong> www.sardarmart.com
               </p>
             </div>
@@ -148,7 +154,7 @@ export default function InvoiceModal({ isOpen, onClose, order, storeSettings: pr
               <p className="customer-address">
                 {customer.address || 'Showroom In-Store Order'}<br />
                 {customer.city ? `${customer.city} - ${customer.pincode || ''}` : 'Chennai, Tamil Nadu'}<br />
-                <strong>Phone:</strong> {customer.phone || '+91 98765 43210'}
+                <strong>Phone:</strong> {customer.phone || '+91 63830 56338'}
               </p>
             </div>
             <div className="party-box party-right">
@@ -163,33 +169,35 @@ export default function InvoiceModal({ isOpen, onClose, order, storeSettings: pr
           </div>
 
           {/* Items Table */}
-          <table className="invoice-items-table">
-            <thead>
-              <tr>
-                <th style={{ width: '40px' }}>#</th>
-                <th>Item Description</th>
-                <th style={{ width: '80px', textAlign: 'center' }}>Qty</th>
-                <th style={{ width: '110px', textAlign: 'right' }}>Unit Rate</th>
-                <th style={{ width: '80px', textAlign: 'center' }}>GST</th>
-                <th style={{ width: '120px', textAlign: 'right' }}>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>
-                    <strong>{item.name}</strong>
-                    <div className="item-sub-sku">SKU: {item.id}</div>
-                  </td>
-                  <td style={{ textAlign: 'center' }}>{item.quantity}</td>
-                  <td style={{ textAlign: 'right' }}>{formatPrice(item.price)}</td>
-                  <td style={{ textAlign: 'center' }}>18% Incl.</td>
-                  <td style={{ textAlign: 'right' }}><strong>{formatPrice(item.price * item.quantity)}</strong></td>
+          <div className="invoice-table-wrap">
+            <table className="invoice-items-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '40px' }}>#</th>
+                  <th>Item Description</th>
+                  <th style={{ width: '80px', textAlign: 'center' }}>Qty</th>
+                  <th style={{ width: '110px', textAlign: 'right' }}>Unit Rate</th>
+                  <th style={{ width: '80px', textAlign: 'center' }}>GST</th>
+                  <th style={{ width: '120px', textAlign: 'right' }}>Amount</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {items.map((item, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>
+                      <strong>{item.name}</strong>
+                      <div className="item-sub-sku">SKU: {item.id}</div>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>{item.quantity}</td>
+                    <td style={{ textAlign: 'right' }}>{formatPrice(item.price)}</td>
+                    <td style={{ textAlign: 'center' }}>18% Incl.</td>
+                    <td style={{ textAlign: 'right' }}><strong>{formatPrice(item.price * item.quantity)}</strong></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {/* Summary & Tax Calculation */}
           <div className="invoice-summary-row">
@@ -306,6 +314,12 @@ export default function InvoiceModal({ isOpen, onClose, order, storeSettings: pr
           background: #2b170e;
           color: #ffffff;
           border-radius: 12px 12px 0 0;
+          gap: 12px;
+        }
+        .controls-top-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
         }
         .controls-left {
           display: flex;
@@ -319,11 +333,19 @@ export default function InvoiceModal({ isOpen, onClose, order, storeSettings: pr
           font-size: 0.75rem;
           font-weight: 700;
           letter-spacing: 0.5px;
+          white-space: nowrap;
         }
         .invoice-order-ref {
           font-weight: 800;
           color: #fcd34d;
           font-size: 0.95rem;
+          white-space: nowrap;
+        }
+        .mobile-only-close {
+          display: none;
+        }
+        .desktop-only-close {
+          display: flex;
         }
         .controls-right {
           display: flex;
@@ -657,75 +679,267 @@ export default function InvoiceModal({ isOpen, onClose, order, storeSettings: pr
           padding-top: 8px;
         }
 
+        /* Small Page / Small Size Mobile Presentation */
         @media (max-width: 640px) {
           .invoice-modal-backdrop {
-            padding: 8px;
+            padding: 6px;
           }
           .invoice-modal-container {
             max-height: 96vh;
-            border-radius: 8px;
+            border-radius: 10px;
+            width: 100%;
+            margin: 0 auto;
           }
+          
+          /* Clean 2-Row Control Bar (Never squished) */
           .invoice-controls-bar {
-            padding: 10px 14px;
-            border-radius: 8px 8px 0 0;
+            padding: 10px 12px;
+            flex-direction: column;
+            gap: 8px;
+            border-radius: 10px 10px 0 0;
+            align-items: stretch;
           }
+          .controls-top-row {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          .controls-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+          }
+          .invoice-pill-tag {
+            font-size: 0.68rem;
+            padding: 2px 7px;
+            white-space: nowrap;
+            border-radius: 12px;
+          }
+          .invoice-order-ref {
+            font-size: 0.82rem;
+            font-weight: 800;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 160px;
+          }
+          .mobile-only-close {
+            display: flex;
+            width: 28px;
+            height: 28px;
+          }
+          .desktop-only-close {
+            display: none;
+          }
+          .controls-right {
+            width: 100%;
+            display: flex;
+            gap: 8px;
+          }
+          .btn-download-pdf, .btn-print {
+            flex: 1;
+            justify-content: center;
+            padding: 7px 10px;
+            font-size: 0.74rem;
+            border-radius: 6px;
+          }
+          .btn-download-pdf span, .btn-print span {
+            white-space: nowrap;
+          }
+
+          /* Small Page Sheet Layout */
           .invoice-sheet {
-            padding: 16px 12px;
-            font-size: 0.8rem;
+            padding: 14px 12px;
+            font-size: 0.74rem;
+            line-height: 1.35;
           }
           .invoice-header {
             flex-direction: column;
-            gap: 14px;
+            gap: 10px;
+            align-items: flex-start;
+          }
+          .invoice-brand-title {
+            font-size: 1.25rem;
+            font-weight: 900;
+            line-height: 1.1;
+          }
+          .invoice-brand-sub {
+            font-size: 0.62rem;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+          }
+          .invoice-company-details {
+            font-size: 0.68rem;
+            line-height: 1.3;
           }
           .invoice-meta-block {
             width: 100%;
             text-align: left;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px 10px;
+          }
+          .invoice-title-stamp {
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+            color: #1e293b;
           }
           .meta-table {
             width: 100%;
+            font-size: 0.72rem;
+            margin-left: 0;
           }
-          .billing-shipping-grid {
-            grid-template-columns: 1fr;
-            gap: 12px;
+          .meta-table td {
+            padding: 2px 4px;
+          }
+          .invoice-divider {
+            margin: 10px 0;
+          }
+          .invoice-parties-row {
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+          }
+          .party-box h4 {
+            font-size: 0.72rem;
+            margin-bottom: 2px;
+          }
+          .customer-name {
+            font-size: 0.85rem;
+          }
+          .customer-address, .party-box p {
+            font-size: 0.72rem;
+            line-height: 1.3;
+          }
+          .party-right {
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 8px;
+            margin-top: 4px;
           }
           .invoice-table-wrap {
             overflow-x: auto;
             width: 100%;
             -webkit-overflow-scrolling: touch;
+            margin-bottom: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
           }
-          .invoice-table {
-            min-width: 480px;
+          .invoice-items-table {
+            margin-bottom: 0;
+            font-size: 0.72rem;
+            min-width: 440px;
           }
-          .invoice-calculation-section {
+          .invoice-items-table th {
+            padding: 6px 8px;
+            font-size: 0.68rem;
+          }
+          .invoice-items-table td {
+            padding: 7px 8px;
+            font-size: 0.72rem;
+          }
+          .item-sub-sku {
+            font-size: 0.64rem;
+          }
+          .invoice-summary-row {
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
+            margin-bottom: 14px;
+          }
+          .tax-breakdown-box {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 6px;
+          }
+          .tax-breakdown-box h5 {
+            font-size: 0.72rem;
+            margin-bottom: 4px;
+          }
+          .tax-table {
+            font-size: 0.7rem;
           }
           .totals-box {
             width: 100%;
-            padding: 12px 14px;
+            padding: 10px 12px;
+            border-radius: 6px;
+          }
+          .calc-row {
+            font-size: 0.76rem;
+            margin-bottom: 4px;
+          }
+          .grand-total-calc {
+            font-size: 0.92rem;
+            padding-top: 6px;
+            margin-top: 6px;
+          }
+          .amount-in-words {
+            font-size: 0.65rem;
+            margin-top: 4px;
           }
           .invoice-terms-row {
             flex-direction: column;
-            gap: 16px;
+            gap: 12px;
             align-items: stretch;
+            margin-top: 10px;
+            padding-top: 10px;
+          }
+          .terms-col h5 {
+            font-size: 0.7rem;
+          }
+          .terms-col ol {
+            padding-left: 14px;
+            font-size: 0.66rem;
+            line-height: 1.35;
           }
           .signature-col {
             width: 100%;
-            margin-top: 8px;
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            margin-top: 4px;
+          }
+          .signature-line {
+            height: 40px;
+            width: 120px;
+            justify-content: flex-end;
+          }
+          .seal-badge {
+            font-size: 0.58rem;
+            padding: 2px 6px;
+          }
+          .signature-col p {
+            font-size: 0.72rem;
+          }
+          .signature-col strong {
+            font-size: 0.76rem !important;
+          }
+          .signature-col small {
+            font-size: 0.64rem;
+          }
+          .invoice-footer-note {
+            font-size: 0.64rem;
+            margin-top: 12px;
+            padding-top: 6px;
           }
         }
 
         @media (max-width: 380px) {
           .invoice-brand-title {
-            font-size: 1.4rem;
+            font-size: 1.15rem;
           }
           .invoice-pill-tag {
-            font-size: 0.68rem;
+            font-size: 0.64rem;
             padding: 2px 6px;
           }
-          .btn-print {
-            font-size: 0.76rem;
-            padding: 6px 10px;
+          .btn-download-pdf, .btn-print {
+            font-size: 0.7rem;
+            padding: 6px 8px;
           }
         }
 

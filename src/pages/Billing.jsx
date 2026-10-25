@@ -353,7 +353,7 @@ export default function Billing({
       `Hello Sardar Mart Team!%0A%0AI have placed an order:%0A*Order Bill No:* #${order.id}%0A*Customer Name:* ${order.customer.name}%0A*Phone:* ${order.customer.phone}%0A*Delivery City:* ${order.customer.city} (${order.customer.pincode})%0A%0A*Items:*%0A${itemsList}%0A%0A*Grand Total:* ${formatPrice(order.total)}%0A*Payment Mode:* ${order.paymentMethod}%0A${storeSettings?.showGstinBadge ? `*GSTIN:* ${storeSettings?.gstNumber || '33DVKPR2334L1Z9'}%0A` : ''}%0APlease confirm my delivery schedule and dispatch timing!`
     );
 
-    window.open(`https://wa.me/919876543210?text=${msg}`, '_blank');
+    window.open(`https://wa.me/916383056338?text=${msg}`, '_blank');
   };
 
   // Download Official Tax Invoice File (Instant HTML/PDF Download + Print Modal)
@@ -415,8 +415,8 @@ export default function Billing({
         <h1 class="brand-h1">Sardar Mart</h1>
         <div class="brand-sub">FURNITURE &amp; ELECTRONICS</div>
         <div class="brand-addr">
-          42, Grand Southern Trunk Rd, Chromepet, Chennai, Tamil Nadu 600044<br>
-          ${storeSettings?.showGstinBadge ? `GSTIN: <strong>${storeSettings?.gstNumber || '33DVKPR2334L1Z9'}</strong> • ` : ''}Contact: +91 98765 43210
+          190, Erukkenchery High Rd, Anbalagan Colony, Vyasarpadi, Chennai, Tamil Nadu 600039<br>
+          ${storeSettings?.showGstinBadge ? `GSTIN: <strong>${storeSettings?.gstNumber || '33DVKPR2334L1Z9'}</strong> • ` : ''}Contact: +91 63830 56338
         </div>
       </div>
       <div class="invoice-right">
@@ -533,31 +533,33 @@ export default function Billing({
     }
   };
 
-  // SUCCESS VIEW: When order is placed
+  // SUCCESS VIEW: When order is placed (Compact Box & Card Design for Mobile)
   if (placedOrder) {
     return (
-      <div className="billing-page-wrap">
-        <div className="container" style={{ maxWidth: '900px', padding: '40px 16px' }}>
+      <div className="billing-page-wrap billing-success-page">
+        <div className="container success-card-container">
           <div className="order-success-hero animate-fade-in">
+            {/* Header Badge & Title */}
             <div className="success-badge-circle">
-              <CheckCircle2 size={54} color="#15803d" />
+              <CheckCircle2 size={38} color="#15803d" />
             </div>
             <span className="success-tag">Order Confirmed &amp; Invoiced</span>
             <h1 className="success-title">Thank You, {placedOrder.customer.name}!</h1>
             <p className="success-lead">
-              Your order has been officially registered with <strong>Sardar Mart</strong>. Our logistics fleet is preparing your items for white-glove delivery and assembly.
+              Your order is registered with <strong>Sardar Mart</strong>. Our team is preparing your items for delivery &amp; installation.
             </p>
 
-            {/* Bill Summary Card */}
+            {/* Main Confirmed Bill Card / Box */}
             <div className="confirmed-bill-card">
+              {/* Reference & Tax Badge Box */}
               <div className="bill-card-header">
-                <div>
+                <div className="bill-ref-col">
                   <span className="bill-label">TAX INVOICE REFERENCE</span>
                   <h3 className="bill-id">#{placedOrder.id}</h3>
                   <small className="bill-date">{placedOrder.date}</small>
                 </div>
                 <div className="bill-tax-seal">
-                  <ShieldCheck size={22} color="#15803d" className="seal-shield-icon" />
+                  <ShieldCheck size={18} color="#15803d" className="seal-shield-icon" />
                   <div className="seal-text-group">
                     {storeSettings?.showGstinBadge && (
                       <span className="gstin-code">GSTIN: <strong>33DVKPR2334L1Z9</strong></span>
@@ -567,22 +569,22 @@ export default function Billing({
                 </div>
               </div>
 
-              {/* PROMINENT TOP DOWNLOAD FILE BUTTON LAYOUT */}
+              {/* Download Tax Invoice CTA Box */}
               <div className="invoice-download-cta-banner">
                 <div className="download-cta-left">
                   <div className="download-file-icon-box">
-                    <FileText size={26} />
+                    <FileText size={20} />
                   </div>
                   <div className="download-cta-info">
                     <div className="download-badge-row">
                       <span className="doc-pill">OFFICIAL TAX INVOICE</span>
                       <span className="ready-pill">
-                        <span className="pulse-dot"></span> Ready for Download
+                        <span className="pulse-dot"></span> Ready
                       </span>
                     </div>
-                    <h4 className="download-doc-title">Invoice #{placedOrder.id} • GST Compliant</h4>
+                    <h4 className="download-doc-title">Invoice #{placedOrder.id}</h4>
                     <p className="download-doc-subtitle">
-                      Download the official computer-generated tax invoice document with GST breakdown, HSN classification, and store warranty.
+                      Official computer-generated tax invoice with 18% GST breakdown &amp; warranty.
                     </p>
                   </div>
                 </div>
@@ -594,10 +596,10 @@ export default function Billing({
                     onClick={() => handleDownloadInvoiceFile(placedOrder)}
                     title="Download Official Tax Invoice File (PDF / HTML)"
                   >
-                    <Download size={20} className="download-arrow-icon" />
+                    <Download size={16} className="download-arrow-icon" />
                     <div className="btn-text-column">
                       <strong className="btn-main-title">Download Invoice (PDF)</strong>
-                      <small className="btn-sub-caption">Save Official Tax Receipt File</small>
+                      <small className="btn-sub-caption">Save Official Tax Receipt</small>
                     </div>
                   </button>
 
@@ -607,80 +609,78 @@ export default function Billing({
                     onClick={() => onViewInvoice && onViewInvoice(placedOrder)}
                     title="View and Print Invoice in Browser"
                   >
-                    <Printer size={17} />
+                    <Printer size={15} />
                     <span>View &amp; Print</span>
                   </button>
                 </div>
               </div>
 
-              <div className="bill-card-body">
-                <div className="bill-grid-row">
-                  <div>
-                    <span className="b-label">Delivery Address:</span>
-                    <p className="b-val">{placedOrder.customer.address}, {placedOrder.customer.city} - {placedOrder.customer.pincode}</p>
-                  </div>
-                  <div>
-                    <span className="b-label">Contact Mobile:</span>
-                    <p className="b-val">{placedOrder.customer.phone}</p>
-                  </div>
+              {/* Delivery & Payment Info Boxes */}
+              <div className="bill-info-box-grid">
+                <div className="bill-info-box">
+                  <span className="b-label">Delivery Address:</span>
+                  <p className="b-val">{placedOrder.customer.address}, {placedOrder.customer.city} - {placedOrder.customer.pincode}</p>
                 </div>
-
-                <div className="bill-grid-row" style={{ marginTop: '12px' }}>
-                  <div>
-                    <span className="b-label">Payment Mode:</span>
-                    <p className="b-val">{placedOrder.paymentMethod}</p>
-                  </div>
-                  <div>
-                    <span className="b-label">Logistics Fleet:</span>
-                    <p className="b-val">🚚 {placedOrder.courier}</p>
-                  </div>
+                <div className="bill-info-box">
+                  <span className="b-label">Contact Mobile:</span>
+                  <p className="b-val">{placedOrder.customer.phone}</p>
                 </div>
-
-                {/* Items Mini List */}
-                <div className="bill-items-summary">
-                  <h4>Ordered Products ({placedOrder.items.length})</h4>
-                  <div className="mini-items-list">
-                    {placedOrder.items.map(item => (
-                      <div key={item.id} className="mini-item-row">
-                        <img src={item.image} alt={item.name} className="mini-item-thumb" />
-                        <div className="mini-item-info">
-                          <strong>{item.name}</strong>
-                          <span>Qty: {item.quantity} × {formatPrice(item.price)}</span>
-                        </div>
-                        <strong className="mini-item-total">{formatPrice(item.price * item.quantity)}</strong>
-                      </div>
-                    ))}
-                  </div>
+                <div className="bill-info-box">
+                  <span className="b-label">Payment Mode:</span>
+                  <p className="b-val">{placedOrder.paymentMethod}</p>
                 </div>
-
-                {/* Amount Totals */}
-                <div className="bill-totals-box">
-                  <div className="totals-line">
-                    <span>Taxable Value:</span>
-                    <span>{formatPrice(placedOrder.taxableAmount)}</span>
-                  </div>
-                  <div className="totals-line">
-                    <span>CGST (9%) + SGST (9%):</span>
-                    <span>{formatPrice(placedOrder.gstAmount)}</span>
-                  </div>
-                  {placedOrder.discount > 0 && (
-                    <div className="totals-line discount-line">
-                      <span>Promotional Discount:</span>
-                      <span>-{formatPrice(placedOrder.discount)}</span>
-                    </div>
-                  )}
-                  <div className="totals-line">
-                    <span>White-Glove Delivery &amp; Setup:</span>
-                    <span style={{ color: '#15803d', fontWeight: 600 }}>FREE (₹0)</span>
-                  </div>
-                  <div className="totals-line grand-total-line">
-                    <strong>Invoice Total (Incl. Taxes):</strong>
-                    <strong className="grand-val">{formatPrice(placedOrder.total)}</strong>
-                  </div>
+                <div className="bill-info-box">
+                  <span className="b-label">Logistics Fleet:</span>
+                  <p className="b-val">🚚 {placedOrder.courier}</p>
                 </div>
               </div>
 
-              {/* Bottom Action Buttons Grid with Download File */}
+              {/* Ordered Products Compact Box / Card */}
+              <div className="bill-items-summary">
+                <h4 className="ordered-products-title">Ordered Products ({placedOrder.items.length})</h4>
+                <div className="mini-items-list">
+                  {placedOrder.items.map(item => (
+                    <div key={item.id} className="mini-item-row">
+                      <div className="mini-item-thumb-box">
+                        <img src={item.image} alt={item.name} className="mini-item-thumb" />
+                      </div>
+                      <div className="mini-item-info">
+                        <strong className="mini-item-name">{item.name}</strong>
+                        <span className="mini-item-qty">Qty: {item.quantity} × {formatPrice(item.price)}</span>
+                      </div>
+                      <strong className="mini-item-total">{formatPrice(item.price * item.quantity)}</strong>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Amount & Tax Breakdown Box / Card */}
+              <div className="bill-totals-box">
+                <div className="totals-line">
+                  <span>Taxable Value:</span>
+                  <span>{formatPrice(placedOrder.taxableAmount)}</span>
+                </div>
+                <div className="totals-line">
+                  <span>CGST (9%) + SGST (9%):</span>
+                  <span>{formatPrice(placedOrder.gstAmount)}</span>
+                </div>
+                {placedOrder.discount > 0 && (
+                  <div className="totals-line discount-line">
+                    <span>Promotional Discount:</span>
+                    <span>-{formatPrice(placedOrder.discount)}</span>
+                  </div>
+                )}
+                <div className="totals-line">
+                  <span>White-Glove Delivery &amp; Setup:</span>
+                  <span style={{ color: '#15803d', fontWeight: 700 }}>FREE (₹0)</span>
+                </div>
+                <div className="totals-line grand-total-line">
+                  <strong>Invoice Total (Incl. Taxes):</strong>
+                  <strong className="grand-val">{formatPrice(placedOrder.total)}</strong>
+                </div>
+              </div>
+
+              {/* Bottom Quick-Action Cards Grid */}
               <div className="bill-card-actions">
                 <button 
                   type="button"
@@ -688,7 +688,7 @@ export default function Billing({
                   onClick={() => handleDownloadInvoiceFile(placedOrder)}
                   title="Download Tax Invoice File to your device"
                 >
-                  <Download size={18} />
+                  <Download size={15} />
                   <span>Download Invoice (PDF)</span>
                 </button>
                 <button 
@@ -697,8 +697,8 @@ export default function Billing({
                   onClick={() => onViewInvoice && onViewInvoice(placedOrder)}
                   title="Print Official Tax Invoice"
                 >
-                  <Printer size={18} />
-                  <span>View &amp; Print Invoice</span>
+                  <Printer size={15} />
+                  <span>View &amp; Print</span>
                 </button>
                 <button 
                   type="button"
@@ -706,8 +706,8 @@ export default function Billing({
                   onClick={() => onOpenTrackOrder && onOpenTrackOrder(placedOrder.id)}
                   title="Track delivery status live"
                 >
-                  <Truck size={18} />
-                  <span>Track Delivery Status</span>
+                  <Truck size={15} />
+                  <span>Track Status</span>
                 </button>
                 <button 
                   type="button"
@@ -715,22 +715,534 @@ export default function Billing({
                   onClick={() => handleSendOrderOnWhatsApp(placedOrder)}
                   title="Receive order copy on WhatsApp"
                 >
-                  <MessageCircle size={18} />
-                  <span>WhatsApp Order Copy</span>
+                  <MessageCircle size={15} />
+                  <span>WhatsApp</span>
                 </button>
               </div>
             </div>
 
-            <div className="back-to-shop-wrap" style={{ marginTop: '24px', textAlign: 'center' }}>
+            <div className="back-to-shop-wrap" style={{ marginTop: '18px', textAlign: 'center' }}>
               <button 
                 className="btn-return-home"
                 onClick={() => onNavigate && onNavigate('home')}
               >
-                ← Continue Browsing Sardar Mart
+                ← Continue Shopping at Sardar Mart
               </button>
             </div>
           </div>
         </div>
+
+        {/* Embedded Scoped Styles for Order Success View */}
+        <style>{`
+          .billing-success-page {
+            background-color: var(--color-warm-cream, #faf7f2);
+            min-height: 80vh;
+            padding: 20px 0 60px;
+          }
+          .success-card-container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 10px 14px;
+          }
+          .order-success-hero {
+            text-align: center;
+          }
+          .success-badge-circle {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            background: #dcfce7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px auto;
+            border: 2px solid #bbf7d0;
+          }
+          .success-tag {
+            font-size: 0.72rem;
+            background: #15803d;
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+          }
+          .success-title {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #24140e;
+            margin-top: 8px;
+            margin-bottom: 4px;
+            line-height: 1.2;
+          }
+          .success-lead {
+            font-size: 0.84rem;
+            color: #6e584f;
+            max-width: 520px;
+            margin: 0 auto 16px auto;
+            line-height: 1.4;
+          }
+
+          /* Main Box / Card */
+          .confirmed-bill-card {
+            background: #ffffff;
+            border: 1px solid #ebdcd0;
+            border-radius: 14px;
+            padding: 16px 14px;
+            text-align: left;
+            box-shadow: 0 4px 18px rgba(42, 24, 16, 0.06);
+          }
+
+          /* Bill Card Header */
+          .bill-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f0e6de;
+            padding-bottom: 12px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 10px;
+          }
+          .bill-ref-col {
+            display: flex;
+            flex-direction: column;
+          }
+          .bill-label {
+            font-size: 0.68rem;
+            color: #9c887e;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+          }
+          .bill-id {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #8c3b10;
+            margin: 1px 0;
+            line-height: 1.1;
+          }
+          .bill-date {
+            font-size: 0.74rem;
+            color: #786358;
+          }
+          .bill-tax-seal {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 6px 10px;
+            border-radius: 8px;
+          }
+          .seal-shield-icon {
+            flex-shrink: 0;
+          }
+          .seal-text-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            text-align: left;
+          }
+          .gstin-code {
+            font-size: 0.72rem;
+            color: #166534;
+            font-family: monospace;
+          }
+          .signatory-name {
+            font-size: 0.7rem;
+            color: #15803d;
+          }
+
+          /* Download CTA Box */
+          .invoice-download-cta-banner {
+            background: linear-gradient(135deg, #fdf8f4 0%, #f6ebe2 100%);
+            border: 1px solid #ecd8ca;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+          }
+          .download-cta-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            flex: 1;
+          }
+          .download-file-icon-box {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #5c2c16 0%, #8c3b10 100%);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+          }
+          .download-cta-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+          }
+          .download-badge-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 2px;
+          }
+          .doc-pill {
+            background: #5c2c16;
+            color: #ffffff;
+            font-size: 0.62rem;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+          }
+          .ready-pill {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+          }
+          .pulse-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #16a34a;
+          }
+          .download-doc-title {
+            margin: 0;
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: #24140e;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .download-doc-subtitle {
+            margin: 1px 0 0;
+            font-size: 0.7rem;
+            color: #786358;
+            line-height: 1.25;
+          }
+          .download-cta-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+          }
+          .btn-download-primary {
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+            color: #ffffff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+          }
+          .btn-download-primary:hover {
+            background: #14532d;
+          }
+          .btn-text-column {
+            display: flex;
+            flex-direction: column;
+          }
+          .btn-main-title {
+            font-size: 0.78rem;
+            font-weight: 800;
+            line-height: 1.15;
+            white-space: nowrap;
+          }
+          .btn-sub-caption {
+            font-size: 0.62rem;
+            opacity: 0.9;
+            font-weight: 500;
+            white-space: nowrap;
+          }
+          .btn-print-secondary {
+            background: #ffffff;
+            color: #8c3b10;
+            border: 1px solid #d9c2b2;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.78rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+          }
+          .btn-print-secondary:hover {
+            background: #fdfaf7;
+            border-color: #8c3b10;
+          }
+
+          /* Info Boxes Grid */
+          .bill-info-box-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 14px;
+          }
+          .bill-info-box {
+            background: #fcfaf7;
+            border: 1px solid #f0e6de;
+            border-radius: 8px;
+            padding: 8px 10px;
+          }
+          .b-label {
+            font-size: 0.68rem;
+            color: #8c766b;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 2px;
+          }
+          .b-val {
+            font-size: 0.78rem;
+            color: #24140e;
+            font-weight: 600;
+            line-height: 1.3;
+            margin: 0;
+          }
+
+          /* Ordered Products Box */
+          .bill-items-summary {
+            margin-bottom: 14px;
+          }
+          .ordered-products-title {
+            font-size: 0.85rem;
+            color: #24140e;
+            font-weight: 700;
+            margin-bottom: 8px;
+          }
+          .mini-items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+          }
+          .mini-item-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            background: #fdfbf9;
+            border: 1px solid #f0e6de;
+            border-radius: 8px;
+          }
+          .mini-item-thumb-box {
+            width: 50px;
+            height: 50px;
+            min-width: 50px;
+            max-width: 50px;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #f3ece5;
+            flex-shrink: 0;
+            border: 1px solid #ebdcd0;
+          }
+          .mini-item-thumb {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            display: block;
+          }
+          .mini-item-info {
+            flex: 1;
+            min-width: 0;
+          }
+          .mini-item-name {
+            display: block;
+            font-size: 0.8rem;
+            color: #24140e;
+            line-height: 1.25;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .mini-item-qty {
+            font-size: 0.72rem;
+            color: #786358;
+            display: block;
+            margin-top: 2px;
+          }
+          .mini-item-total {
+            font-size: 0.88rem;
+            color: #8c3b10;
+            font-weight: 800;
+            white-space: nowrap;
+            flex-shrink: 0;
+          }
+
+          /* Totals Box */
+          .bill-totals-box {
+            background: #fcf9f6;
+            border: 1px solid #ebdcd0;
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 14px;
+          }
+          .totals-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            color: #4b362c;
+            margin-bottom: 4px;
+          }
+          .totals-line.discount-line {
+            color: #15803d;
+            font-weight: 700;
+          }
+          .totals-line.grand-total-line {
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1.5px dashed #d97706;
+            font-size: 0.95rem;
+            color: #24140e;
+          }
+          .grand-val {
+            font-size: 1.15rem;
+            color: #8c3b10;
+            font-weight: 800;
+          }
+
+          /* Actions Grid */
+          .bill-card-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            padding-top: 10px;
+            border-top: 1px solid #f0e6de;
+          }
+          .btn-download-bill-footer, .btn-print-bill, .btn-track-bill, .btn-wa-bill {
+            border: none;
+            padding: 9px 8px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.76rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+          }
+          .btn-download-bill-footer {
+            background: #15803d;
+            color: #ffffff;
+          }
+          .btn-download-bill-footer:hover {
+            background: #166534;
+          }
+          .btn-print-bill {
+            background: #8c3b10;
+            color: #ffffff;
+          }
+          .btn-print-bill:hover {
+            background: #732f0c;
+          }
+          .btn-track-bill {
+            background: #ffffff;
+            color: #8c3b10;
+            border: 1px solid #8c3b10;
+          }
+          .btn-track-bill:hover {
+            background: #fdf5f0;
+          }
+          .btn-wa-bill {
+            background: #25d366;
+            color: #ffffff;
+          }
+          .btn-wa-bill:hover {
+            background: #1ebd5a;
+          }
+
+          .btn-return-home {
+            background: none;
+            border: none;
+            color: #8c3b10;
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: pointer;
+          }
+          .btn-return-home:hover {
+            text-decoration: underline;
+          }
+
+          /* Mobile Small Size Responsive Tuning */
+          @media (max-width: 540px) {
+            .billing-success-page {
+              padding: 10px 0 50px;
+            }
+            .success-card-container {
+              padding: 6px 8px;
+            }
+            .confirmed-bill-card {
+              padding: 12px 10px;
+              border-radius: 12px;
+            }
+            .success-title {
+              font-size: 1.25rem;
+            }
+            .success-lead {
+              font-size: 0.78rem;
+              margin-bottom: 12px;
+            }
+            .bill-card-header {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 8px;
+            }
+            .bill-tax-seal {
+              width: 100%;
+            }
+            .invoice-download-cta-banner {
+              flex-direction: column;
+              align-items: stretch;
+              padding: 10px;
+            }
+            .download-cta-actions {
+              width: 100%;
+              flex-direction: column;
+            }
+            .btn-download-primary, .btn-print-secondary {
+              width: 100%;
+              justify-content: center;
+              padding: 8px 10px;
+            }
+            .bill-info-box-grid {
+              grid-template-columns: 1fr;
+              gap: 6px;
+            }
+            .bill-card-actions {
+              grid-template-columns: 1fr;
+              gap: 6px;
+            }
+            .btn-download-bill-footer, .btn-print-bill, .btn-track-bill, .btn-wa-bill {
+              padding: 10px;
+              font-size: 0.8rem;
+            }
+          }
+        `}</style>
       </div>
     );
   }
@@ -757,47 +1269,7 @@ export default function Billing({
             </div>
 
             <h1 className="billing-headline">Showroom POS Billing &amp; Tax Invoicing</h1>
-            <p className="billing-sub">
-              Create instant showroom bills, browse and add catalog products, calculate GST breakdown, and issue official printable Tax Invoices.
-            </p>
 
-            {/* Quick Showroom Actions Bar */}
-            <div className="header-quick-actions-row">
-              <button
-                type="button"
-                className="btn-header-quick-action"
-                onClick={handleAutofillDemoClient}
-                title="Autofill realistic customer contact & address"
-              >
-                <User size={14} /> ⚡ 1-Click Demo Client
-              </button>
-              <button
-                type="button"
-                className="btn-header-quick-action"
-                onClick={handleAddSampleItems}
-                title="Add 2 sample demo items to bill"
-              >
-                <Sparkles size={14} /> + Add 2 Demo Items
-              </button>
-              <button
-                type="button"
-                className="btn-header-quick-action"
-                onClick={handleAddCustomLineItem}
-                title="Add custom carpentry, delivery, or warranty charge"
-              >
-                <Plus size={14} /> + Custom Item / Charge
-              </button>
-              {billItems.length > 0 && (
-                <button
-                  type="button"
-                  className="btn-header-quick-action action-danger"
-                  onClick={handleClearAllBillItems}
-                  title="Clear all bill items"
-                >
-                  <Trash2 size={14} /> Clear Bill
-                </button>
-              )}
-            </div>
 
             {/* 4-Step Visual Progress Stepper */}
             <div className="checkout-stepper-bar">
@@ -1441,46 +1913,7 @@ export default function Billing({
                     )}
                   </div>
 
-                  {/* Coupon Box */}
-                  <div className="billing-coupon-card">
-                    <div className="coupon-form-wrap">
-                      <div className="input-wrap">
-                        <Tag size={16} className="tag-icon" />
-                        <input 
-                          type="text" 
-                          placeholder="Coupon (e.g. SARDAR5000)" 
-                          value={couponCode}
-                          onChange={(e) => setCouponCode(e.target.value)}
-                        />
-                      </div>
-                      <button 
-                        type="button" 
-                        className="btn-apply-coupon"
-                        onClick={handleApplyCoupon}
-                      >
-                        Apply
-                      </button>
-                    </div>
 
-                    {appliedCoupon && (
-                      <div className="applied-coupon-pill animate-fade-in">
-                        <Check size={14} /> Coupon <strong>{appliedCoupon}</strong> Applied! (-{formatPrice(discountAmount)})
-                        <button type="button" onClick={handleRemoveCoupon} className="btn-remove-coupon">×</button>
-                      </div>
-                    )}
-                    {couponError && (
-                      <div className="coupon-error-pill animate-fade-in">
-                        <AlertCircle size={14} /> {couponError}
-                      </div>
-                    )}
-
-                    <div className="suggested-coupons">
-                      <span>Available: </span>
-                      <button type="button" onClick={() => { setCouponCode('SARDAR5000'); }}>SARDAR5000</button>
-                      <button type="button" onClick={() => { setCouponCode('FESTIVE10'); }}>FESTIVE10</button>
-                      <button type="button" onClick={() => { setCouponCode('WELCOME'); }}>WELCOME</button>
-                    </div>
-                  </div>
 
                   {/* Comprehensive GST Calculation Breakdown */}
                   <div className="billing-calculation-sheet">
@@ -1570,7 +2003,7 @@ export default function Billing({
                         {storeSettings?.showGstinBadge && (
                           <span>GSTIN: 33DVKPR2334L1Z9 • Authorized Signatory: Rahim Baig</span>
                         )}
-                        <small>Flagship Showroom: Thousand Lights, Chennai - 600001</small>
+                        <small>Flagship Showroom: 190, Erukkenchery High Rd, Vyasarpadi, Chennai - 600039</small>
                       </div>
                     </div>
                   </div>
@@ -2102,10 +2535,10 @@ export default function Billing({
 
         .form-field-item label {
           display: block;
-          font-size: 0.85rem;
+          font-size: 0.74rem;
           font-weight: 600;
           color: #38241b;
-          margin-bottom: 6px;
+          margin-bottom: 3px;
         }
         .form-field-item label .req {
           color: #dc2626;
@@ -2113,12 +2546,14 @@ export default function Billing({
         .form-field-item input,
         .form-field-item select {
           width: 100%;
-          padding: 10px 14px;
+          padding: 6px 10px;
+          height: 33px;
           border: 1px solid #d8c4b6;
-          border-radius: 8px;
-          font-size: 0.92rem;
+          border-radius: 6px;
+          font-size: 0.8rem;
           color: #24140e;
           background: #ffffff;
+          box-sizing: border-box;
           transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .form-field-item input:focus,
@@ -3404,7 +3839,18 @@ export default function Billing({
           }
           .panel-form-grid {
             grid-template-columns: 1fr;
-            gap: 10px;
+            gap: 6px;
+          }
+          .form-field-item label {
+            font-size: 0.7rem;
+            margin-bottom: 2px;
+          }
+          .form-field-item input,
+          .form-field-item select {
+            padding: 4px 8px;
+            height: 30px;
+            font-size: 0.76rem;
+            border-radius: 5px;
           }
           .form-field-item.full-width {
             grid-column: span 1;

@@ -12,36 +12,10 @@ export default function MobileBottomNav({
   isVisible: externalVisible
 }) {
   const [internalVisible, setInternalVisible] = useState(true);
-  const lastScrollY = useRef(0);
 
+  // Keep bottom navigation always visible and accessible on mobile
   useEffect(() => {
-    let ticking = false;
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const currentScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
-          const diff = currentScrollY - lastScrollY.current;
-
-          // Always visible near top of page
-          if (currentScrollY < 30) {
-            setInternalVisible(true);
-          } else if (diff > 8) {
-            // Scrolling down -> hide navbar
-            setInternalVisible(false);
-          } else if (diff < -8) {
-            // Scrolling up -> show navbar
-            setInternalVisible(true);
-          }
-
-          lastScrollY.current = currentScrollY <= 0 ? 0 : currentScrollY;
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    setInternalVisible(true);
   }, []);
 
   const visible = externalVisible !== undefined ? externalVisible : internalVisible;
@@ -69,7 +43,7 @@ export default function MobileBottomNav({
       {/* 2. Browse / Categories */}
       <button 
         type="button"
-        className={`mob-nav-btn ${currentPage === 'furniture' || currentPage === 'electronics' || currentPage === 'appliances' ? 'active' : ''}`}
+        className={`mob-nav-btn ${currentPage === 'furniture' || currentPage === 'electronics' ? 'active' : ''}`}
         onClick={() => {
           if (onOpenCategories) {
             onOpenCategories();
@@ -82,26 +56,12 @@ export default function MobileBottomNav({
       >
         <Grid size={19} />
         <span>Browse</span>
-        {(currentPage === 'furniture' || currentPage === 'electronics' || currentPage === 'appliances') && (
+        {(currentPage === 'furniture' || currentPage === 'electronics') && (
           <span className="active-pill-dot" />
         )}
       </button>
 
-      {/* 3. Showroom Billing & Tax Invoice */}
-      <button 
-        type="button"
-        className={`mob-nav-btn ${currentPage === 'billing' ? 'active' : ''}`}
-        onClick={() => {
-          onNavigate('billing');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-        aria-label="Showroom Billing & Tax Invoice"
-        title="Billing"
-      >
-        <ReceiptIndianRupee size={19} />
-        <span>Billing</span>
-        {currentPage === 'billing' && <span className="active-pill-dot" />}
-      </button>
+
 
       {/* 4. Offers */}
       <button 
